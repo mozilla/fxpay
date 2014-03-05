@@ -1,0 +1,24 @@
+{
+  "name": "fxpay",
+  "version": "0.0.1",
+  "homepage": "https://github.com/mozilla/fxpay",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mozilla/fxpay.git"
+  },
+  "description": "JavaScript library for Firefox Marketplace payments",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-jshint": "~0.6.5",
+    "grunt-contrib-uglify": "~0.4.0",
+    "grunt-mocha-test": "~0.9.4",
+    "mocha": "~1.17.1"
+  },
+  "scripts": {
+    "test": "node -e \"require('grunt').cli()\" null test"
+  },
+  "author": "Kumar McMillan",
+  "contributors": [],
+  "license": "MPL-2.0"
+}

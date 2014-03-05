@@ -1,0 +1,32 @@
+{
+  "boss": true,
+  "browser": true,
+  "camelcase": false,
+  "eqeqeq": true,
+  "eqnull": true,
+  "es5": false,
+  "esnext": true,
+  "expr": true,
+  "forin": false,
+  "globals": {
+    "define": false
+  },
+  "indent": 2,
+  "laxbreak": true,
+  "laxcomma": true,
+  "maxerr": 100,
+  "node": true,
+  "noarg": true,
+  "passfail": false,
+  "predef": [
+    "exports",
+    "require",
+    "process"
+  ],
+  "shadow": false,
+  "strict": false,
+  "supernew": false,
+  "undef": true,
+  "unused": true,
+  "white": false
+}

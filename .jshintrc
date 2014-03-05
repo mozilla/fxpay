@@ -15,6 +15,7 @@
   "laxbreak": true,
   "laxcomma": true,
   "maxerr": 100,
+  "maxlen": 80,
   "node": true,
   "noarg": true,
   "passfail": false,

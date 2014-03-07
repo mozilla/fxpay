@@ -11,13 +11,16 @@ module.exports = function(grunt) {
       ],
     },
 
-    mochaTest: {
-      test: {
-        options: {
-          reporter: 'spec'
-        },
-        src: ['tests/test*.js']
-      }
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js',
+        autoWatch: true
+      },
+      ci: {
+        configFile: 'karma.conf.js',
+        singleRun: true,
+        browsers: ['PhantomJS']
+      },
     },
 
     uglify: {
@@ -33,11 +36,10 @@ module.exports = function(grunt) {
   grunt.option('stack', true);
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-mocha-test');
 
   grunt.registerTask('compress', 'uglify');
-  grunt.registerTask('unittest', 'mochaTest');
-  grunt.registerTask('test', ['jshint', 'mochaTest']);
+  grunt.registerTask('test', ['jshint', 'karma:ci']);
   grunt.registerTask('default', 'test');
 };

@@ -36,7 +36,7 @@ However, you need to build a few things. Run this::
 To execute scripts, you should add the local ``.bin`` directory to
 your ``$PATH``::
 
-    PATH="./node_modules/.bin/:${PATH}"
+    PATH="./node_modules/.bin:${PATH}"
     export PATH
 
 This is pretty standard for any Node project so you you might already have it.

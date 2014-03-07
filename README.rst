@@ -43,7 +43,7 @@ From a source checkout, run all tests like this::
 
     npm test
 
-To run just the JavaScript unit tests, run::
+To run just the JavaScript unit tests, type::
 
     grunt karma:unit
 
@@ -52,7 +52,7 @@ As you edit your tests, it will re-run the tests continuously.
 
 For a single-run, headless (i.e. no browser) execution, run::
 
-    grunt karama:ci
+    grunt karma:ci
 
 To check for syntax errors, run::
 

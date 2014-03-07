@@ -26,6 +26,10 @@ Developers
 
 To develop on this library you need `NodeJS`_ and `npm`_ installed.
 When you clone the source, all other dependencies are included for you.
+However, you need to build a few things. Run this::
+
+    npm rebuild
+
 To execute scripts, you should add the local ``.bin`` directory to
 your ``$PATH``::
 
@@ -39,13 +43,20 @@ From a source checkout, run all tests like this::
 
     npm test
 
-or::
+To run just the JavaScript unit tests, run::
 
-    grunt test
+    grunt karma:unit
 
-To just run unit tests, type::
+This opens a web browser and will report test results to your console.
+As you edit your tests, it will re-run the tests continuously.
 
-    grunt unittest
+For a single-run, headless (i.e. no browser) execution, run::
+
+    grunt karama:ci
+
+To check for syntax errors, run::
+
+    grunt jshint
 
 To build yourself a compressed version of ``fxpay.js``, run this::
 

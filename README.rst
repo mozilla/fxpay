@@ -4,6 +4,9 @@ fxpay
 
 JavaScript library for `Firefox Marketplace`_ payments.
 
+.. image:: https://travis-ci.org/mozilla/fxpay.png?branch=master
+    :target: https://travis-ci.org/mozilla/fxpay
+
 This is a helper library for web apps to accept in-app payments on
 `Firefox OS`_.
 The `in-app payments guide`_ provides a deep dive into the underlying APIs and

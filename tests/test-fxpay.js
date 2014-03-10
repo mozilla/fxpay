@@ -1,19 +1,25 @@
 describe('fxpay', function () {
-  var mozPay;
   var server;
 
   beforeEach(function() {
     console.log('beginEach');
     server = sinon.fakeServer.create();
-    mozPay = sinon.spy(mozPayStub);
   });
 
   afterEach(function() {
     server.restore();
-    mozPay.reset();
   });
 
   describe('purchase()', function () {
+    var mozPay;
+
+    beforeEach(function() {
+      mozPay = sinon.spy(mozPayStub);
+    });
+
+    afterEach(function() {
+      mozPay.reset();
+    });
 
     it('should send a JWT to mozPay', function (done) {
       var productId = 123;
@@ -48,77 +54,6 @@ describe('fxpay', function () {
         /http.*\/transaction\/XYZ/,
         [200, {"Content-Type": "application/json"},
          JSON.stringify({state: 'COMPLETED'})]);
-      server.respond();
-    });
-
-    it('should report XHR abort', function (done) {
-      server.respondWith(function(xhr, id) {
-        // We use a custom event because xhr.abort() triggers load first
-        // (probably a sinon bug).
-        dispatchXhrEvent(xhr, 'abort');
-      });
-
-      fxpay.purchase(123, {
-        onpurchase: function(err) {
-          assert.equal(err, 'API_REQUEST_ABORTED');
-          done();
-        },
-        mozPay: mozPay
-      });
-
-      server.respond();
-    });
-
-    it('should report XHR errors', function (done) {
-      server.respondWith(function(xhr, id) {
-        dispatchXhrEvent(xhr, 'error');
-      });
-
-      fxpay.purchase(123, {
-        onpurchase: function(err) {
-          assert.equal(err, 'API_REQUEST_ERROR');
-          done();
-        },
-        mozPay: mozPay
-      });
-
-      server.respond();
-    });
-
-    it('should report non-200 responses', function (done) {
-      server.respondWith(
-        'POST',
-        /http.*\/payments\/in\-app\/purchase\/product\/123/,
-        [500, {"Content-Type": "application/json"},
-         JSON.stringify({webpayJWT: '<jwt>',
-                         contribStatusURL: '/somewhere'})]);
-
-      fxpay.purchase(123, {
-        onpurchase: function(err) {
-          assert.equal(err, 'BAD_API_RESPONSE');
-          done();
-        },
-        mozPay: mozPay
-      });
-
-      server.respond();
-    });
-
-    it('should report unparsable JSON', function (done) {
-      server.respondWith(
-        'POST',
-        /http.*\/payments\/in\-app\/purchase\/product\/123/,
-        [200, {"Content-Type": "application/json"},
-         "{this\is not; valid JSON'"]);
-
-      fxpay.purchase(123, {
-        onpurchase: function(err) {
-          assert.equal(err, 'BAD_JSON_RESPONSE');
-          done();
-        },
-        mozPay: mozPay
-      });
-
       server.respond();
     });
 
@@ -187,6 +122,128 @@ describe('fxpay', function () {
         [200, {"Content-Type": "application/json"},
          JSON.stringify({state: 'THIS_IS_NOT_A_VALID_STATE'})]);
       server.respond();
+    });
+  });
+
+  describe('API', function () {
+    var api;
+    var baseUrl = 'https://not-a-real-api';
+    var versionPrefix = '/api/v1';
+
+    beforeEach(function() {
+      api = new fxpay.API(baseUrl, {versionPrefix: versionPrefix});
+    });
+
+    it('should report XHR abort', function (done) {
+      server.respondWith(function(xhr, id) {
+        // We use a custom event because xhr.abort() triggers load first
+        // (probably a sinon bug).
+        dispatchXhrEvent(xhr, 'abort');
+      });
+
+      api.post('/some/path', null, function(err) {
+        assert.equal(err, 'API_REQUEST_ABORTED');
+        done();
+      });
+
+      server.respond();
+    });
+
+    it('should report XHR errors', function (done) {
+      server.respondWith(function(xhr, id) {
+        dispatchXhrEvent(xhr, 'error');
+      });
+
+      api.post('/some/path', null, function(err) {
+        assert.equal(err, 'API_REQUEST_ERROR');
+        done();
+      });
+
+      server.respond();
+    });
+
+    it('should report non-200 responses', function (done) {
+      server.respondWith(
+        'POST', /.*\/some\/path/,
+        [500, {"Content-Type": "application/json"},
+         JSON.stringify({webpayJWT: '<jwt>',
+                         contribStatusURL: '/somewhere'})]);
+
+      api.post('/some/path', null, function(err) {
+        assert.equal(err, 'BAD_API_RESPONSE');
+        done();
+      });
+
+      server.respond();
+    });
+
+    it('should report unparsable JSON', function (done) {
+      server.respondWith(
+        'POST', /.*\/some\/path/,
+        [200, {"Content-Type": "application/json"},
+         "{this\is not; valid JSON'"]);
+
+      api.post('/some/path', null, function(err) {
+        assert.equal(err, 'BAD_JSON_RESPONSE');
+        done();
+      });
+
+      server.respond();
+    });
+
+    it('should parse and return JSON', function (done) {
+      server.respondWith(
+        'POST', /.*\/some\/path/,
+        [200, {"Content-Type": "application/json"},
+         '{"is_json": true}']);
+
+      api.post('/some/path', null, function(err, data) {
+        assert.equal(data.is_json, true);
+        done(err);
+      });
+
+      server.respond();
+    });
+
+    it('should request a full URL based on a path', function (done) {
+      server.respondWith(
+        'POST', new RegExp(baseUrl + versionPrefix + '/path/check'),
+        [200, {"Content-Type": "application/json"},
+         '{"foo":"bar"}']);
+
+      api.post('/path/check', null, function(err) {
+        // If this is not a 404 then we're good.
+        done(err);
+      });
+
+      server.respond();
+    });
+
+    it('should request an absolute URL when specified', function (done) {
+      var absUrl = 'https://somewhere-else.com/some/page';
+
+      server.respondWith('POST', absUrl,
+                         [200, {"Content-Type": "application/json"},
+                          '{"foo":"bar"}']);
+
+      api.post(absUrl, null, function(err) {
+        // If this is not a 404 then we're good.
+        done(err);
+      });
+
+      server.respond();
+    });
+
+    it('should allow you to get unversioned URLs', function (done) {
+      assert.equal(api.url('/not/versioned', {versioned: false}),
+                   baseUrl + '/not/versioned');
+      done();
+    });
+
+    it('should allow you to get versioned URLs', function (done) {
+      assert.equal(api.url('/this/is/versioned'),
+                   baseUrl + versionPrefix + '/this/is/versioned');
+      done();
     });
   });
 });

@@ -97,6 +97,61 @@ describe('fxpay', function () {
       server.respond();
     });
 
+    it('should call back when mozPay window closes', function (done) {
+
+      fxpay.purchase(123, {
+        oncheckpayment: function() {
+          done();
+        },
+        onpurchase: function(err) {
+          // Make sure we don't have an unexpected error.
+          assert.equal(err, null)
+        },
+        mozPay: mozPay
+      });
+
+      // Respond to fetching the JWT.
+      server.respondWith(
+        'POST',
+        /.*payments\/in\-app\/purchase\/product\/123/,
+        [200, {"Content-Type": "application/json"},
+         JSON.stringify({webpayJWT: '<jwt>',
+                         contribStatusURL: '/transaction/XYZ'})]);
+      server.respond();
+
+      mozPay.returnValues[0].onsuccess();  // resolve the DOM request.
+
+      // Respond to polling the transaction.
+      server.respondWith(
+        'POST',
+        /.*\/transaction\/XYZ/,
+        [200, {"Content-Type": "application/json"},
+         JSON.stringify({state: 'COMPLETED'})]);
+      server.respond();
+    });
+
+    it('should call back with mozPay error', function (done) {
+
+      fxpay.purchase(123, {
+        onpurchase: function(err) {
+          assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+          done();
+        },
+        mozPay: mozPay
+      });
+
+      // Respond to fetching the JWT.
+      server.respondWith(
+        'POST',
+        /.*payments\/in\-app\/purchase\/product\/123/,
+        [200, {"Content-Type": "application/json"},
+         JSON.stringify({webpayJWT: '<jwt>',
+                         contribStatusURL: '/transaction/XYZ'})]);
+      server.respond();
+
+      mozPay.returnValues[0].onerror('DIALOG_CLOSED_BY_USER');
+    });
+
     it('should report invalid transaction state', function (done) {
       var productId = 123;
 

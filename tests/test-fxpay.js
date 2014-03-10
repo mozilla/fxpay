@@ -195,7 +195,8 @@ describe('fxpay', function () {
 function dispatchXhrEvent(xhr, eventName, bubbles, cancelable) {
   xhr.dispatchEvent(new sinon.Event(eventName, bubbles, cancelable, xhr));
   // Prevent future listening, like, in future tests.
-  // Sinon should be cleaning these up on restore() so this is probably a bug.
+  // Make this is fixed now?
+  // See https://github.com/cjohansen/Sinon.JS/issues/430
   xhr.eventListeners = {};
 }
 

@@ -53,10 +53,9 @@ describe('fxpay', function () {
 
     it('should report XHR abort', function (done) {
       server.respondWith(function(xhr, id) {
-        // This is dumb but xhr.abort() triggers load first.
-        xhr.dispatchEvent(new sinon.Event("abort", false, false, xhr));
-        // Prevent future listening.
-        xhr.eventListeners = {};
+        // We use a custom event because xhr.abort() triggers load first
+        // (probably a sinon bug).
+        dispatchXhrEvent(xhr, 'abort');
       });
 
       fxpay.purchase(123, {
@@ -72,9 +71,7 @@ describe('fxpay', function () {
 
     it('should report XHR errors', function (done) {
       server.respondWith(function(xhr, id) {
-        xhr.dispatchEvent(new sinon.Event("error", false, false, xhr));
-        // Prevent future listening.
-        xhr.eventListeners = {};
+        dispatchXhrEvent(xhr, 'error');
       });
 
       fxpay.purchase(123, {
@@ -193,6 +190,14 @@ describe('fxpay', function () {
     });
   });
 });
+
+
+function dispatchXhrEvent(xhr, eventName, bubbles, cancelable) {
+  xhr.dispatchEvent(new sinon.Event(eventName, bubbles, cancelable, xhr));
+  // Prevent future listening, like, in future tests.
+  // Sinon should be cleaning these up on restore() so this is probably a bug.
+  xhr.eventListeners = {};
+}
 
 
 function mozPayStub() {

@@ -24,6 +24,8 @@ describe('fxpay', function () {
     it('should send a JWT to mozPay', function (done) {
       var productId = 123;
       var webpayJWT = '<base64 JWT>';
+      var apiUrl = 'https://not-the-real-marketplace';
+      var versionPrefix = '/api/v1';
 
       fxpay.purchase(productId, {
         onpurchase: function(err) {
@@ -33,13 +35,15 @@ describe('fxpay', function () {
           }
           done(err);
         },
-        mozPay: mozPay
+        mozPay: mozPay,
+        apiUrlBase: apiUrl,
+        apiVersionPrefix: versionPrefix
       });
 
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        /http.*\/payments\/in\-app\/purchase\/product\/123/,
+        apiUrl + versionPrefix + '/payments/in-app/purchase/product/123',
         [200, {"Content-Type": "application/json"},
          JSON.stringify({webpayJWT: webpayJWT,
                          contribStatusURL: '/transaction/XYZ'})]);
@@ -51,7 +55,7 @@ describe('fxpay', function () {
       // TODO: make the state value realistic.
       server.respondWith(
         'POST',
-        /http.*\/transaction\/XYZ/,
+        apiUrl + '/transaction/XYZ',
         [200, {"Content-Type": "application/json"},
          JSON.stringify({state: 'COMPLETED'})]);
       server.respond();

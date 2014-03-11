@@ -193,6 +193,62 @@ describe('fxpay', function () {
       api = new fxpay.API(baseUrl, {versionPrefix: versionPrefix});
     });
 
+    it('should handle POSTs', function (done) {
+      server.respondWith(
+        'POST', /.*\/post/,
+        [200, {"Content-Type": "application/json"},
+         '{"data": "received"}']);
+
+      api.post('/post', {foo: 'bar'}, function(err, data) {
+        assert.equal(data.data, 'received');
+        done(err);
+      });
+
+      server.respond();
+    });
+
+    it('should handle GETs', function (done) {
+      server.respondWith(
+        'GET', /.*\/get/,
+        [200, {"Content-Type": "application/json"},
+         '{"data": "received"}']);
+
+      api.get('/get', function(err, data) {
+        assert.equal(data.data, 'received');
+        done(err);
+      });
+
+      server.respond();
+    });
+
+    it('should handle PUTs', function (done) {
+      server.respondWith(
+        'PUT', /.*\/put/,
+        [200, {"Content-Type": "application/json"},
+         '{"data": "received"}']);
+
+      api.put('/put', {foo: 'bar'}, function(err, data) {
+        assert.equal(data.data, 'received');
+        done(err);
+      });
+
+      server.respond();
+    });
+
+    it('should handle DELETEs', function (done) {
+      server.respondWith(
+        'DELETE', /.*\/delete/,
+        [200, {"Content-Type": "application/json"},
+         '{"data": "received"}']);
+
+      api.del('/delete', function(err, data) {
+        assert.equal(data.data, 'received');
+        done(err);
+      });
+
+      server.respond();
+    });
+
     it('should report XHR abort', function (done) {
       server.respondWith(function(xhr, id) {
         // We use a custom event because xhr.abort() triggers load first

@@ -196,7 +196,7 @@ describe('fxpay', function () {
     it('should report XHR abort', function (done) {
       server.respondWith(function(xhr, id) {
         // We use a custom event because xhr.abort() triggers load first
-        // (probably a sinon bug).
+        // https://github.com/cjohansen/Sinon.JS/issues/432
         dispatchXhrEvent(xhr, 'abort');
       });
 
@@ -288,6 +288,22 @@ describe('fxpay', function () {
       api.post(absUrl, null, function(err) {
         // If this is not a 404 then we're good.
         done(err);
+      });
+
+      server.respond();
+    });
+
+    it('should timeout', function (done) {
+      server.respondWith(function(xhr, id) {
+        // We simulate a timeout event here because Sinon
+        // doesn't seem to support the XHR.timeout property.
+        // https://github.com/cjohansen/Sinon.JS/issues/431
+        dispatchXhrEvent(xhr, 'timeout');
+      });
+
+      api.post('/timeout', null, function(err) {
+        assert.equal(err, 'API_REQUEST_TIMEOUT');
+        done();
       });
 
       server.respond();

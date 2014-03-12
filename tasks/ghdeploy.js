@@ -1,19 +1,27 @@
 var fs = require('fs');
 var proc = require('child_process');
+
+var async = require('async');
+
 var grunt;
 
 
-exports.createTask = function(_grunt, siteDir, repoDir) {
+exports.createTask = function(_grunt, siteDir, repoDir, opt) {
+  opt = opt || {};
+  opt.otherFiles = opt.otherFiles || undefined;
   grunt = _grunt;
   return function() {
-    run(this.async(), siteDir, repoDir);
+    run(this.async(), siteDir, repoDir, opt);
   };
 };
 
 
-function run(done, siteDir, repoDir) {
+function run(done, siteDir, repoDir, opt) {
+  opt = opt || {};
+  opt.otherFiles = opt.otherFiles || undefined;
+
   function doUpdate() {
-    updatePages(siteDir, repoDir, done);
+    updatePages(siteDir, repoDir, done, opt);
   }
   fs.exists(repoDir, function(exists) {
     if (!exists) {
@@ -86,15 +94,44 @@ function syncRepo(dest, callback) {
 }
 
 
-function updatePages(siteDir, repoDir, done) {
+function copySiteFiles(siteDir, repoDir, otherFiles, done) {
+  shell('cp', ['-r', siteDir + '/*', repoDir + '/'], function() {
+    process.chdir(repoDir);
+    var keys = Object.keys(otherFiles);
+    if (!keys.length) {
+      done();
+    } else {
+      var copies = [];
+      keys.forEach(function(k) {
+        var src = k;
+        var dest = './' + otherFiles[k];  // relative dest.
+        copies.push(function(callback) {
+          shell('cp', [src, dest], callback)
+        });
+      });
+      async.parallel(copies, function(err) {
+        if (err) {
+          throw err;
+        }
+        done();
+      });
+    }
+  });
+}
+
+
+function updatePages(siteDir, repoDir, done, opt) {
+  opt = opt || {};
+  opt.otherFiles = opt.otherFiles || {};
+
   removeAll(repoDir, function() {
-    shell('cp', ['-r', siteDir + '/*', repoDir + '/'], function() {
+    copySiteFiles(siteDir, repoDir, opt.otherFiles, function() {
       addAll(repoDir, function() {
         process.chdir(repoDir);
         shell('git', ['status', '-s'], function(out) {
           if (out) {
             shell('git', ['commit', '-m', 'deploy'], function() {
-              grunt.log.writeln('pushing gh-pages deploy');
+              grunt.log.writeln('pushing gh-pages changes');
               shell('git', ['push'], function() {
                 done();
               })

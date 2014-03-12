@@ -43,12 +43,13 @@ module.exports = function(grunt) {
 
   var siteDir = __dirname + '/example';
   var repoDir = __dirname + '/.ghpages';
-  var otherFiles = {};
-  otherFiles[__dirname + '/lib/fxpay.js'] = 'fxpay.js';
+  var copyFiles = {};
+  copyFiles[__dirname + '/lib/fxpay.js'] = 'fxpay.js';
   grunt.registerTask('ghdeploy',
                      'publish example site to github pages',
                      ghdeploy.createTask(grunt, siteDir, repoDir,
-                                         {otherFiles: otherFiles}));
+                                         {copyFiles: copyFiles,
+                                          removeFiles: ['node_modules']}));
 
   grunt.registerTask('compress', 'uglify');
   grunt.registerTask('test', ['jshint', 'karma:ci']);

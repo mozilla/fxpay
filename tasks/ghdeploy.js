@@ -8,7 +8,9 @@ var grunt;
 
 exports.createTask = function(_grunt, siteDir, repoDir, opt) {
   opt = opt || {};
-  opt.otherFiles = opt.otherFiles || undefined;
+  opt.copyFiles = opt.copyFiles || undefined;
+  opt.removeFiles = opt.removeFiles || undefined;
+
   grunt = _grunt;
   return function() {
     run(this.async(), siteDir, repoDir, opt);
@@ -18,7 +20,7 @@ exports.createTask = function(_grunt, siteDir, repoDir, opt) {
 
 function run(done, siteDir, repoDir, opt) {
   opt = opt || {};
-  opt.otherFiles = opt.otherFiles || undefined;
+  opt.copyFiles = opt.copyFiles || undefined;
 
   function doUpdate() {
     updatePages(siteDir, repoDir, done, opt);
@@ -84,9 +86,10 @@ function cloneRepo(dest, callback) {
 
 
 function syncRepo(dest, callback) {
-  process.chdir(dest);
   grunt.log.writeln('pulling gh-pages changes in', dest);
+  process.chdir(dest);
   shell('git', ['checkout', 'gh-pages'], function() {
+    process.chdir(dest);
     shell('git', ['pull'], function() {
       callback(dest);
     });
@@ -94,17 +97,29 @@ function syncRepo(dest, callback) {
 }
 
 
-function copySiteFiles(siteDir, repoDir, otherFiles, done) {
+function copySiteFiles(siteDir, repoDir, done, opt) {
+  opt = opt || {};
+  opt.copyFiles = opt.copyFiles || {};
+  opt.removeFiles = opt.removeFiles || [];
+
   shell('cp', ['-r', siteDir + '/*', repoDir + '/'], function() {
-    process.chdir(repoDir);
-    var keys = Object.keys(otherFiles);
-    if (!keys.length) {
-      done();
-    } else {
+    var removes = [];
+    opt.removeFiles.forEach(function(fn) {
+      removes.push(function(callback) {
+        var fullFn = repoDir + '/' + fn;
+        grunt.log.writeln('Removing:', fullFn);
+        shell('rm', ['-rf', fullFn], callback)
+      });
+    });
+    async.parallel(removes, function(err) {
+      if (err) {
+        throw err;
+      }
+
       var copies = [];
-      keys.forEach(function(k) {
+      Object.keys(opt.copyFiles).forEach(function(k) {
         var src = k;
-        var dest = './' + otherFiles[k];  // relative dest.
+        var dest = repoDir + '/' + opt.copyFiles[k];
         copies.push(function(callback) {
           shell('cp', [src, dest], callback)
         });
@@ -115,23 +130,26 @@ function copySiteFiles(siteDir, repoDir, otherFiles, done) {
         }
         done();
       });
-    }
+    });
   });
 }
 
 
 function updatePages(siteDir, repoDir, done, opt) {
   opt = opt || {};
-  opt.otherFiles = opt.otherFiles || {};
+  opt.copyFiles = opt.copyFiles || undefined;
+  opt.removeFiles = opt.removeFiles || undefined;
 
   removeAll(repoDir, function() {
-    copySiteFiles(siteDir, repoDir, opt.otherFiles, function() {
+    copySiteFiles(siteDir, repoDir, function() {
       addAll(repoDir, function() {
         process.chdir(repoDir);
         shell('git', ['status', '-s'], function(out) {
           if (out) {
-            shell('git', ['commit', '-m', 'deploy'], function() {
+            process.chdir(repoDir);
+            shell('git', ['commit', '-a', '-m', 'deploy'], function() {
               grunt.log.writeln('pushing gh-pages changes');
+              process.chdir(repoDir);
               shell('git', ['push'], function() {
                 done();
               })
@@ -142,7 +160,7 @@ function updatePages(siteDir, repoDir, done, opt) {
           }
         });
       });
-    });
+    }, opt);
   });
 }
 
@@ -161,8 +179,7 @@ function addAll(repoDir, callback) {
 
 
 function iterFiles(inDir, callback) {
-  process.chdir(inDir);
-  fs.readdir('.', function(err, files) {
+  fs.readdir(inDir, function(err, files) {
     if (err) {
       throw err;
     }
@@ -180,7 +197,8 @@ function iterFiles(inDir, callback) {
 function removeAll(repoDir, callback) {
   iterFiles(repoDir, function(files) {
     if (files.length) {
-      shell('git', ['rm', '-rf'].concat(files), function() {
+      process.chdir(repoDir);
+      shell('rm', ['-rf'].concat(files), function() {
         callback();
       });
     } else {

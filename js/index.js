@@ -1,4 +1,5 @@
 $(function() {
+  var apiUrlBase;
 
   var products = {
     '1': {
@@ -19,27 +20,25 @@ $(function() {
     }
   };
 
-  startup();
+  var apiUrls = {
+    prod: 'https://marketplace.firefox.com',
+    dev: 'https://marketplace-dev.allizom.org',
+    stage: 'https://marketplace.allizom.org'
+  };
 
-  $('ul').on('click', '.product button', function() {
-    var id = $(this).data('productId');
-    var prod = $(this).data('product');
-    console.log('purchasing', prod.name, id);
 
-    fxpay.purchase(id, {
-      oncheckpayment: function() {
-        // TODO: update the UI here with a spinner or something.
-        console.log('checking for payment');
-      },
-      onpurchase: function(err) {
-        if (err) {
-          throw err;
-        }
-        $('#your-products ul li.placeholder').remove();
-        addProduct($('#your-products ul'), id, prod, {showBuy: false});
-      }
-    });
-  });
+  // Helper functions:
+  //
+  function setApiServer(env) {
+    if (!env) {
+      env = $('#api-server option:selected').val();
+    }
+    apiUrlBase = apiUrls[env];
+    if (!apiUrlBase) {
+      throw 'unknown API env: ' + env;
+    }
+    console.log('setting API to', apiUrlBase);
+  }
 
   function addProduct(parent, prodID, prod, opt) {
     opt = opt || {showBuy: true};
@@ -54,13 +53,47 @@ $(function() {
     parent.append(li);
   }
 
-  function startup() {
-    console.log('example app startup');
-    var ul = $('#products ul');
-    console.log('iter', products);
-    for (var prodID in products) {
-      var prod = products[prodID];
-      addProduct(ul, prodID, prod);
-    }
+  function showError(msg) {
+    console.error(msg);
+    $('#error').text(msg);
+  }
+
+
+  // DOM handling:
+  //
+  $('ul').on('click', '.product button', function() {
+    var id = $(this).data('productId');
+    var prod = $(this).data('product');
+    console.log('purchasing', prod.name, id);
+
+    fxpay.purchase(id, {
+      oncheckpayment: function() {
+        // TODO: update the UI here with a spinner or something.
+        console.log('checking for payment');
+      },
+      onpurchase: function(err) {
+        if (err) {
+          return showError(err);
+        }
+        $('#your-products ul li.placeholder').remove();
+        addProduct($('#your-products ul'), id, prod, {showBuy: false});
+      },
+      apiUrlBase: apiUrlBase
+    });
+  });
+
+  $('#api-server').change(function(evt) {
+    setApiServer();
+  });
+
+
+  // Startup
+  //
+  console.log('example app startup');
+  setApiServer();
+  var ul = $('#products ul');
+  for (var prodID in products) {
+    var prod = products[prodID];
+    addProduct(ul, prodID, prod);
   }
 });

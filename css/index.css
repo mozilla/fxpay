@@ -65,8 +65,16 @@ button {
     cursor: pointer;
 }
 
+select {
+    font-size: 1.3em;
+    width: 100%;
+    display: inline-block;
+    text-overflow: ellipsis;
+    margin-bottom: 0.5em;
+}
+
 #app {
-    margin: 1em 10em;
+    margin: 1em 17em;
     padding: 2em;
     border-width: 1px;
     border-style: solid;

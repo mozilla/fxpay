@@ -1,0 +1,150 @@
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+body {
+    text-align: center;
+    font-size: 80%;
+    color: #121007;
+    font-family: Arial, Helvetica;
+}
+
+h2 {
+    font-size: 2em;
+    margin-bottom: 1em;
+}
+
+h3 {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+a, button {
+    color: #121007;
+    text-decoration: none;
+}
+
+ul li {
+    list-style: none;
+}
+
+button {
+    font-size: 1.5em;
+    padding: 1em;
+    text-align: center;
+    text-shadow: 0pt 1px 1px rgba(255, 255, 255, 0.75);
+    background-color: rgb(245, 245, 245);
+    background-image: -moz-linear-gradient(center top , rgb(255, 255, 255), rgb(230, 230, 230));
+    box-shadow: 0pt 1px 0pt rgba(255, 255, 255, 0.2) inset, 0pt 1px 2px rgba(0, 0, 0, 0.05);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(204, 204, 204) rgb(204, 204, 204) rgb(179, 179, 179);
+    border-radius: 6px 6px 6px 6px;
+    cursor: pointer;
+}
+
+select {
+    font-size: 1.3em;
+    width: 100%;
+    display: inline-block;
+    text-overflow: ellipsis;
+    margin-bottom: 0.5em;
+}
+
+#app {
+    margin: 1em 17em;
+    padding: 2em;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(204, 204, 204) rgb(204, 204, 204) rgb(179, 179, 179);
+    border-radius: 6px 6px 6px 6px;
+}
+
+.clear {
+    clear: both;
+}
+
+.product img {
+    float: left;
+    margin-right: 1em;
+}
+.product button {
+    float: right;
+}
+
+.product {
+    text-align: left;
+    padding: 1em;
+}
+
+ul {
+    margin: 0 auto;
+    width: 25em;
+    border: 1px solid #C0C0C0;
+    border-radius: 6px;
+}
+
+ul li {
+    border-bottom: 1px solid #C0C0C0;
+}
+
+ul li:nth-last-child(1) {
+    border-bottom: none;
+}
+
+.placeholder {
+    text-align: center;
+}
+
+#your-products {
+    margin-top: 3em;
+}
+
+#error {
+    text-align: center;
+    font-size: 1.5em;
+    color: red;
+}
+
+/* portrait tablet */
+@media (max-width: 768px) {
+    h2 {
+        margin-bottom: 0.5em;
+    }
+    h3 {
+        margin-bottom: 0.1em;
+    }
+    #app {
+        margin: 0;
+        border: 0;
+        padding: 0.5em;
+    }
+    ul {
+        width: 100%;
+    }
+    #your-products {
+        margin-top: 1em;
+    }
+}

@@ -149,7 +149,9 @@ describe('fxpay', function () {
                          contribStatusURL: '/transaction/XYZ'})]);
       server.respond();
 
-      mozPay.returnValues[0].onerror('DIALOG_CLOSED_BY_USER');
+      var domReq = mozPay.returnValues[0];
+      domReq.error = {name: 'DIALOG_CLOSED_BY_USER'};
+      domReq.onerror();
     });
 
     it('should report invalid transaction state', function (done) {

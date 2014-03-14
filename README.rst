@@ -194,22 +194,22 @@ your ``$PATH``::
 
 This is pretty standard for any Node project so you you might already have it.
 
-From a source checkout, run all tests like this::
+From a source checkout, run all tests and lint checks like this::
 
     npm test
 
-To run just the JavaScript unit tests, type::
+To run the JavaScript unit tests continuously while you are developing, type::
 
-    grunt karma:unit
+    grunt karma:dev
 
 This opens a web browser and will report test results to your console.
-As you edit your tests, it will re-run the tests continuously.
+As you edit a code file, it will re-run the tests.
 
-For a single-run, headless (i.e. no browser) execution, run::
+To fire off a single test run with a browser and see the results, type::
 
-    grunt karma:ci
+    grunt karma:run
 
-To check for syntax errors, run::
+To check for syntax errors (lint), run::
 
     grunt jshint
 

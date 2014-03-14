@@ -14,14 +14,13 @@ module.exports = function(grunt) {
     },
 
     karma: {
-      unit: {
+      dev: {
         configFile: 'karma.conf.js',
         autoWatch: true
       },
-      ci: {
+      run: {
         configFile: 'karma.conf.js',
-        singleRun: true,
-        browsers: ['PhantomJS']
+        singleRun: true
       },
     },
 
@@ -52,6 +51,6 @@ module.exports = function(grunt) {
                                           removeFiles: ['node_modules']}));
 
   grunt.registerTask('compress', 'uglify');
-  grunt.registerTask('test', ['jshint', 'karma:ci']);
+  grunt.registerTask('test', ['jshint', 'karma:run']);
   grunt.registerTask('default', 'test');
 };

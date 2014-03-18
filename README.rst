@@ -141,6 +141,11 @@ Here are the possible error strings you might receive and what they mean:
 **INVALID_TRANSACTION_STATE**
     The transaction was in an invalid state and cannot be processed.
 
+**PAY_PLATFORM_UNAVAILABLE**
+    This platform does not support payments. This could mean
+    the `navigator.mozApps`_ namespace or the `mozPay()`_ function
+    is unavailable or the ``Apps.addReceipt`` method doesn't exist.
+
 **TRANSACTION_TIMEOUT**
     The HTTP request to check the transaction state timed out.
 
@@ -148,6 +153,8 @@ Here are the possible error strings you might receive and what they mean:
     The user cancelled the purchase. You can probably ignore this
     error or maybe display a cancelled message. This error comes from
     `mozPay()`_.
+
+.. _`navigator.mozApps`: https://developer.mozilla.org/en-US/docs/Web/API/Apps
 
 Logging
 ~~~~~~~

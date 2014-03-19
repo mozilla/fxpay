@@ -154,7 +154,11 @@ Here are the possible error strings you might receive and what they mean:
     error or maybe display a cancelled message. This error comes from
     `mozPay()`_.
 
+Additionally, your callback may receive one of the `App error strings`_
+such as ``INVALID_MANIFEST``.
+
 .. _`navigator.mozApps`: https://developer.mozilla.org/en-US/docs/Web/API/Apps
+.. _`App error strings`: https://developer.mozilla.org/en-US/Apps/Build/JavaScript_API/Error_object
 
 Logging
 ~~~~~~~

@@ -19,6 +19,8 @@ describe('fxpay', function () {
 
     afterEach(function() {
       mozPay.reset();
+      receiptAdd.reset();
+      appSelf.reset();
     });
 
     it('should send a JWT to mozPay', function (done) {
@@ -36,29 +38,29 @@ describe('fxpay', function () {
           done(err);
         },
         mozPay: mozPay,
+        mozApps: mozAppsStub,
         apiUrlBase: apiUrl,
         apiVersionPrefix: versionPrefix
       });
+
+      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
         apiUrl + versionPrefix + '/payments/in-app/purchase/product/123',
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({webpayJWT: webpayJWT,
-                         contribStatusURL: '/transaction/XYZ'})]);
+        productData({webpayJWT: webpayJWT}));
       server.respond();
 
-      mozPay.returnValues[0].onsuccess();  // resolve the DOM request.
+      mozPay.returnValues[0].onsuccess();
 
-      // Respond to polling the transaction.
-      // TODO: make the state value realistic.
       server.respondWith(
         'POST',
         apiUrl + '/transaction/XYZ',
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({state: 'COMPLETED'})]);
+        transactionData());
       server.respond();
+
+      receiptAdd.onsuccess();
     });
 
     it('should timeout polling the transaction', function (done) {
@@ -71,29 +73,27 @@ describe('fxpay', function () {
           done();
         },
         mozPay: mozPay,
+        mozApps: mozAppsStub,
         maxTries: 2,
         pollIntervalMs: 1
       });
+
+      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
         /http.*\/payments\/in\-app\/purchase\/product\/123/,
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({webpayJWT: '<jwt>',
-                         contribStatusURL: '/transaction/XYZ'})]);
+        productData());
       server.respond();
 
-      mozPay.returnValues[0].onsuccess();  // resolve the DOM request.
+      mozPay.returnValues[0].onsuccess();
 
-      // Respond to polling the transaction.
-      // TODO: make the state value realistic.
       server.autoRespond = true;
       server.respondWith(
         'POST',
         /http.*\/transaction\/XYZ/,
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({state: 'PENDING'})]);
+        transactionData({state: 'PENDING'}));
       server.respond();
     });
 
@@ -107,27 +107,29 @@ describe('fxpay', function () {
           // Make sure we don't have an unexpected error.
           assert.equal(err, null)
         },
-        mozPay: mozPay
+        mozPay: mozPay,
+        mozApps: mozAppsStub,
       });
+
+      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
         /.*payments\/in\-app\/purchase\/product\/123/,
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({webpayJWT: '<jwt>',
-                         contribStatusURL: '/transaction/XYZ'})]);
+        productData());
       server.respond();
 
-      mozPay.returnValues[0].onsuccess();  // resolve the DOM request.
+      mozPay.returnValues[0].onsuccess();
 
       // Respond to polling the transaction.
       server.respondWith(
         'POST',
         /.*\/transaction\/XYZ/,
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({state: 'COMPLETED'})]);
+        transactionData());
       server.respond();
+
+      receiptAdd.onsuccess();
     });
 
     it('should call back with mozPay error', function (done) {
@@ -137,16 +139,17 @@ describe('fxpay', function () {
           assert.equal(err, 'DIALOG_CLOSED_BY_USER');
           done();
         },
-        mozPay: mozPay
+        mozPay: mozPay,
+        mozApps: mozAppsStub,
       });
+
+      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
         /.*payments\/in\-app\/purchase\/product\/123/,
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({webpayJWT: '<jwt>',
-                         contribStatusURL: '/transaction/XYZ'})]);
+        productData());
       server.respond();
 
       var domReq = mozPay.returnValues[0];
@@ -162,29 +165,164 @@ describe('fxpay', function () {
           assert.equal(err, 'INVALID_TRANSACTION_STATE');
           done();
         },
-        mozPay: mozPay
+        mozPay: mozPay,
+        mozApps: mozAppsStub
       });
+
+      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
         /http.*\/payments\/in\-app\/purchase\/product\/123/,
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({webpayJWT: '<jwt>',
-                         contribStatusURL: '/transaction/XYZ'})]);
+        productData());
       server.respond();
 
-      mozPay.returnValues[0].onsuccess();  // resolve the DOM request.
+      mozPay.returnValues[0].onsuccess();
 
       // Respond to polling the transaction.
       server.respondWith(
         'POST',
         /http.*\/transaction\/XYZ/,
-        [200, {"Content-Type": "application/json"},
-         JSON.stringify({state: 'THIS_IS_NOT_A_VALID_STATE'})]);
+        transactionData({state: 'THIS_IS_NOT_A_VALID_STATE'}));
       server.respond();
+
+      receiptAdd.onsuccess();
+    });
+
+    it('should error when apps are not supported', function (done) {
+      fxpay.purchase('123', {
+        onpurchase: function(err) {
+          console.log('GOT error', err);
+          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+          done();
+        },
+        mozPay: mozPay,
+        mozApps: {},  // invalid mozApps.
+      });
+    });
+
+    it('should error when mozPay is not supported', function (done) {
+      fxpay.purchase('123', {
+        onpurchase: function(err) {
+          console.log('GOT error', err);
+          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+          done();
+        },
+        mozPay: undefined,
+        mozApps: mozAppsStub,
+      });
+    });
+
+    it('should error when addReceipt does not exist', function (done) {
+      var receipt = '<receipt>';
+
+      var appStub = {
+        addReceipt: undefined,  // older FxOSs do not have this.
+        onsuccess: function() {},
+        onerror: function() {}
+      };
+      appStub.result = appStub;  // result of DOM request.
+
+      fxpay.purchase('123', {
+        onpurchase: function(err) {
+          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+          done();
+        },
+        mozPay: mozPay,
+        mozApps: {
+          getSelf: function() {
+            return appStub;
+          }
+        },
+      });
+
+      appStub.onsuccess();
+    });
+
+    it('should pass through apps platform errors', function (done) {
+      fxpay.purchase('123', {
+        onpurchase: function(err) {
+          console.log('GOT error', err);
+          assert.equal(err, 'INVALID_MANIFEST');
+          done();
+        },
+        mozPay: mozPay,
+        mozApps: mozAppsStub,
+      });
+
+      // Simulate an apps platform error.
+      appSelf.error = {name: 'INVALID_MANIFEST'};
+      appSelf.onerror();
+    });
+
+    it('should add a Marketplace receipt to device', function (done) {
+      var receipt = '<receipt>';
+
+      fxpay.purchase('123', {
+        onpurchase: function(err) {
+          if (!err) {
+            assert.equal(receiptAdd._receipt, receipt);
+          }
+          done(err);
+        },
+        mozPay: mozPay,
+        mozApps: mozAppsStub,
+      });
+
+      appSelf.onsuccess();
+
+      // Respond to fetching the JWT.
+      server.respondWith(
+        'POST',
+        /.*\/payments\/in\-app\/purchase\/product\/123/,
+        productData());
+      server.respond();
+
+      mozPay.returnValues[0].onsuccess();
+
+      server.respondWith(
+        'POST',
+        /.*\/transaction\/XYZ/,
+        transactionData({receipt: receipt}));
+      server.respond();
+
+      receiptAdd.onsuccess();
+    });
+
+    it('should path through receipt errors', function (done) {
+      fxpay.purchase('123', {
+        onpurchase: function(err) {
+          assert.equal(err, 'ADD_RECEIPT_ERROR');
+          done();
+        },
+        mozPay: mozPay,
+        mozApps: mozAppsStub,
+      });
+
+      appSelf.onsuccess();
+
+      // Respond to fetching the JWT.
+      server.respondWith(
+        'POST',
+        /.*\/payments\/in\-app\/purchase\/product\/123/,
+        productData());
+      server.respond();
+
+      mozPay.returnValues[0].onsuccess();
+
+      server.respondWith(
+        'POST',
+        /.*\/transaction\/XYZ/,
+        transactionData());
+      server.respond();
+
+      // Simulate a receipt installation error.
+      receiptAdd.error = {name: 'ADD_RECEIPT_ERROR'};
+      receiptAdd.onerror();
     });
   });
+
 
   describe('API', function () {
     var api;
@@ -391,6 +529,42 @@ function dispatchXhrEvent(xhr, eventName, bubbles, cancelable) {
 }
 
 
+function productData(overrides, status) {
+  // Create a JSON server response to a request for product data.
+  overrides = overrides || {};
+  var data = {
+    webpayJWT: '<jwt>',
+    contribStatusURL: '/transaction/XYZ',
+  };
+  for (var k in data) {
+    if (overrides[k]) {
+      data[k] = overrides[k];
+    }
+  }
+  return [status || 200, {"Content-Type": "application/json"},
+          JSON.stringify(data)];
+}
+
+
+function transactionData(overrides, status) {
+  // Create a JSON server response to a request for transaction data.
+  overrides = overrides || {};
+  var data = {
+    // TODO: make the state value realistic.
+    state: 'COMPLETED',
+    // Pretend this is a real Marketplace receipt.
+    receipt: '<keys>~<receipt>'
+  };
+  for (var k in data) {
+    if (overrides[k]) {
+      data[k] = overrides[k];
+    }
+  }
+  return [status || 200, {"Content-Type": "application/json"},
+          JSON.stringify(data)];
+}
+
+
 function mozPayStub() {
   // https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay
   return {
@@ -398,3 +572,39 @@ function mozPayStub() {
     onerror: function() {}
   };
 }
+
+
+var receiptAdd = {
+  error: null,
+  _receipt: null,
+  onsuccess: function() {},
+  onerror: function() {},
+  reset: function() {
+    this._receipt = null;
+    this.error = null;
+  }
+};
+
+
+var appSelf = {
+  error: null,
+  addReceipt: function(receipt) {
+    receiptAdd._receipt = receipt;
+    return receiptAdd;
+  },
+  onsuccess: function() {},
+  onerror: function() {},
+  reset: function() {
+    this.error = null;
+  }
+};
+
+appSelf.result = appSelf;  // this is the async return value of getSelf()
+
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Apps.getSelf
+var mozAppsStub = {
+  getSelf: function() {
+    return appSelf;
+  }
+};

@@ -141,6 +141,10 @@ Here are the possible error strings you might receive and what they mean:
 **INVALID_TRANSACTION_STATE**
     The transaction was in an invalid state and cannot be processed.
 
+**NOT_INSTALLED_AS_APP**
+    This platform supports apps but the app has not been installed
+    on device. This could happen if it was accessed directly from the browser.
+
 **PAY_PLATFORM_UNAVAILABLE**
     This platform does not support payments. This could mean
     the `navigator.mozApps`_ namespace or the `mozPay()`_ function

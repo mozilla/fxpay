@@ -15,12 +15,12 @@ describe('fxpay', function () {
 
     beforeEach(function() {
       mozPay = sinon.spy(mozPayStub);
+      appSelf.init();
     });
 
     afterEach(function() {
       mozPay.reset();
       receiptAdd.reset();
-      appSelf.reset();
     });
 
     it('should send a JWT to mozPay', function (done) {
@@ -253,6 +253,22 @@ describe('fxpay', function () {
       // Simulate an apps platform error.
       appSelf.error = {name: 'INVALID_MANIFEST'};
       appSelf.onerror();
+    });
+
+    it('should error when not running as app', function (done) {
+      fxpay.purchase('123', {
+        onpurchase: function(err) {
+          assert.equal(err, 'NOT_INSTALLED_AS_APP');
+          done();
+        },
+        mozPay: mozPay,
+        mozApps: mozAppsStub,
+      });
+
+      // This happens when you access the app from a browser
+      // (i.e. not installed).
+      appSelf.result = null;
+      appSelf.onsuccess();
     });
 
     it('should add a Marketplace receipt to device', function (done) {
@@ -593,12 +609,12 @@ var appSelf = {
   },
   onsuccess: function() {},
   onerror: function() {},
-  reset: function() {
+  init: function() {
     this.error = null;
+    // This is the result of getSelf(). Setting it to this makes stubbing easier.
+    this.result = this;
   }
 };
-
-appSelf.result = appSelf;  // this is the async return value of getSelf()
 
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Apps.getSelf

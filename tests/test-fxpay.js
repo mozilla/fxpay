@@ -24,12 +24,11 @@ describe('fxpay', function () {
     });
 
     it('should send a JWT to mozPay', function (done) {
-      var productId = 123;
       var webpayJWT = '<base64 JWT>';
       var apiUrl = 'https://not-the-real-marketplace';
       var versionPrefix = '/api/v1';
 
-      fxpay.purchase(productId, {
+      fxpay.purchase('123', {
         onpurchase: function(err) {
           if (!err) {
             assert.ok(mozPay.called);
@@ -48,7 +47,8 @@ describe('fxpay', function () {
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        apiUrl + versionPrefix + '/payments/in-app/purchase/product/123',
+        apiUrl + versionPrefix + '/webpay/inapp/prepare/',
+        // TODO: assert somehow that productId is part of post data.
         productData({webpayJWT: webpayJWT}));
       server.respond();
 
@@ -64,9 +64,8 @@ describe('fxpay', function () {
     });
 
     it('should timeout polling the transaction', function (done) {
-      var productId = 123;
 
-      fxpay.purchase(productId, {
+      fxpay.purchase('123', {
         onpurchase: function(err) {
           console.log('GOT error', err);
           assert.equal(err, 'TRANSACTION_TIMEOUT');
@@ -83,7 +82,7 @@ describe('fxpay', function () {
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        /http.*\/payments\/in\-app\/purchase\/product\/123/,
+        /http.*\/webpay\/inapp\/prepare/,
         productData());
       server.respond();
 
@@ -116,7 +115,7 @@ describe('fxpay', function () {
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        /.*payments\/in\-app\/purchase\/product\/123/,
+        /.*webpay\/inapp\/prepare/,
         productData());
       server.respond();
 
@@ -148,7 +147,7 @@ describe('fxpay', function () {
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        /.*payments\/in\-app\/purchase\/product\/123/,
+        /.*webpay\/inapp\/prepare/,
         productData());
       server.respond();
 
@@ -174,7 +173,7 @@ describe('fxpay', function () {
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        /http.*\/payments\/in\-app\/purchase\/product\/123/,
+        /http.*\/webpay\/inapp\/prepare/,
         productData());
       server.respond();
 
@@ -275,7 +274,7 @@ describe('fxpay', function () {
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        /.*\/payments\/in\-app\/purchase\/product\/123/,
+        /.*\/webpay\/inapp\/prepare/,
         productData());
       server.respond();
 
@@ -290,7 +289,7 @@ describe('fxpay', function () {
       receiptAdd.onsuccess();
     });
 
-    it('should path through receipt errors', function (done) {
+    it('should pass through receipt errors', function (done) {
       fxpay.purchase('123', {
         onpurchase: function(err) {
           assert.equal(err, 'ADD_RECEIPT_ERROR');
@@ -305,7 +304,7 @@ describe('fxpay', function () {
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        /.*\/payments\/in\-app\/purchase\/product\/123/,
+        /.*\/webpay\/inapp\/prepare/,
         productData());
       server.respond();
 

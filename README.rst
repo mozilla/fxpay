@@ -37,6 +37,16 @@ to help us iron out bugs and if you don't mind dealing with API changes.
 This tracker bug will keep you up to date on our progress:
 https://bugzilla.mozilla.org/show_bug.cgi?id=944480
 
+Example App
+===========
+
+If you'd like to see a working example of ``fxpay``, you're in luck.
+We built one here: https://github.com/mozilla/fxpay/tree/master/example
+
+The README on that page has instructions for how to install the
+example app on a Firefox OS device;
+the app can also be used to test ``fxpay``.
+
 Usage
 =====
 
@@ -181,16 +191,6 @@ that implements the same `window.console`_ methods::
     });
 
 .. _`window.console`: https://developer.mozilla.org/en-US/docs/Web/API/console
-
-Example App
-===========
-
-If you'd like to see a working example of ``fxpay``, you're in luck.
-We built one here: https://github.com/mozilla/fxpay/tree/master/example
-
-The README on that page has instructions for how to install the
-example app on a Firefox OS device;
-the app can also be used to test ``fxpay``.
 
 Developers
 ==========

@@ -6,8 +6,10 @@
       "name": "Kumar McMillan"
    },
   "icons": {
-    "512": "/fxpay/img/kiwi.png",
-    "128": "/fxpay/img/kiwi-128.png"
+    "128": "/fxpay/img/kiwi_128.png",
+    "64": "/fxpay/img/kiwi_64.png",
+    "48": "/fxpay/img/kiwi_48.png",
+    "32": "/fxpay/img/kiwi_32.png"
   },
   "launch_path": "/fxpay/",
   "installs_allowed_from": ["*"]

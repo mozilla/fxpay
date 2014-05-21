@@ -22,7 +22,8 @@ $(function() {
   var apiUrls = {
     prod: 'https://marketplace.firefox.com',
     dev: 'https://marketplace-dev.allizom.org',
-    stage: 'https://marketplace.allizom.org'
+    stage: 'https://marketplace.allizom.org',
+    local: 'http://fireplace.loc',
   };
 
 

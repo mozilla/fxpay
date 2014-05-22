@@ -1,16 +1,22 @@
 {
   "version": "0.0.1",
-  "name": "FxPay Example",
-  "description": "Example of an app that can do server-less in-app payments",
+  "name": "FxPay",
+  "description": "Example of a packaged app that can do server-less in-app payments",
   "developer": {
       "name": "Kumar McMillan"
    },
   "icons": {
-    "128": "/fxpay/img/kiwi_128.png",
-    "64": "/fxpay/img/kiwi_64.png",
-    "48": "/fxpay/img/kiwi_48.png",
-    "32": "/fxpay/img/kiwi_32.png"
+    "128": "/img/kiwi_128.png",
+    "64": "/img/kiwi_64.png",
+    "48": "/img/kiwi_48.png",
+    "32": "/img/kiwi_32.png"
   },
-  "launch_path": "/fxpay/",
-  "installs_allowed_from": ["*"]
+  "launch_path": "/index.html",
+  "installs_allowed_from": ["*"],
+  "permissions": {
+    "systemXHR": {
+      "description": "Required to access payment API"
+    }
+  },
+  "type": "privileged"
 }

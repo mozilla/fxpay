@@ -2,6 +2,7 @@ var fs = require('fs');
 var proc = require('child_process');
 
 var async = require('async');
+var shell = require('./shell');
 
 var grunt;
 
@@ -38,19 +39,6 @@ function run(done, siteDir, repoDir, opt) {
     }
   });
 };
-
-
-function shell(cmd, args, callback) {
-  proc.exec(cmd + ' ' + args.join(' '),
-            function(err, stdout, stderr) {
-    if (err) {
-      grunt.log.writeln('Ran:', cmd, args);
-      grunt.log.writeln('output', stderr, stdout);
-      throw err;
-    }
-    callback(stdout);
-  });
-}
 
 
 function getOrigin(callback) {

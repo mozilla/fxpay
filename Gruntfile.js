@@ -1,4 +1,5 @@
 var ghdeploy = require('./tasks/ghdeploy');
+var packager = require('./tasks/packager');
 
 module.exports = function(grunt) {
   grunt.initConfig({
@@ -49,6 +50,10 @@ module.exports = function(grunt) {
                      ghdeploy.createTask(grunt, siteDir, repoDir,
                                          {copyFiles: copyFiles,
                                           removeFiles: ['node_modules']}));
+
+  grunt.registerTask('package',
+                     'create a packaged example app',
+                     packager.createTask(grunt, siteDir));
 
   grunt.registerTask('compress', 'uglify');
   grunt.registerTask('test', ['jshint', 'karma:run']);

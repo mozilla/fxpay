@@ -1,7 +1,7 @@
 *.sw[po]
 *~
 .DS_Store
-build
+build/*
 
 # Built node artifacts:
 # fsevents is mac only and gets pulled in by chokidar if needed.

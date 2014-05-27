@@ -3,7 +3,7 @@ $(function() {
 
   // TODO: get these from the API instead.
   var products = {
-    '1': {
+    '237': {
       name: 'Virtual Kiwi',
       description: 'The forbidden fruit',
       icons: {

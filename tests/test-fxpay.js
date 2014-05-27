@@ -351,8 +351,13 @@ describe('fxpay', function () {
     it('should handle POSTs', function (done) {
       server.respondWith(
         'POST', /.*\/post/,
-        [200, {"Content-Type": "application/json"},
-         '{"data": "received"}']);
+        function(request) {
+          assert.equal(request.requestHeaders['Accept'], 'application/json');
+          assert.equal(request.requestHeaders['Content-Type'],
+                       'application/x-www-form-urlencoded;charset=utf-8');
+          request.respond(200, {"Content-Type": "application/json"},
+                          '{"data": "received"}');
+        });
 
       api.post('/post', {foo: 'bar'}, function(err, data) {
         assert.equal(data.data, 'received');
@@ -365,8 +370,12 @@ describe('fxpay', function () {
     it('should handle GETs', function (done) {
       server.respondWith(
         'GET', /.*\/get/,
-        [200, {"Content-Type": "application/json"},
-         '{"data": "received"}']);
+        function(request) {
+          assert.equal(request.requestHeaders['Accept'], 'application/json');
+          assert.equal(request.requestHeaders['Content-Type'], undefined);
+          request.respond(200, {"Content-Type": "application/json"},
+                          '{"data": "received"}');
+        });
 
       api.get('/get', function(err, data) {
         assert.equal(data.data, 'received');
@@ -379,8 +388,13 @@ describe('fxpay', function () {
     it('should handle PUTs', function (done) {
       server.respondWith(
         'PUT', /.*\/put/,
-        [200, {"Content-Type": "application/json"},
-         '{"data": "received"}']);
+        function(request) {
+          assert.equal(request.requestHeaders['Accept'], 'application/json');
+          assert.equal(request.requestHeaders['Content-Type'],
+                       'application/x-www-form-urlencoded;charset=utf-8');
+          request.respond(200, {"Content-Type": "application/json"},
+                          '{"data": "received"}');
+        });
 
       api.put('/put', {foo: 'bar'}, function(err, data) {
         assert.equal(data.data, 'received');

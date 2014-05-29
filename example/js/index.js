@@ -23,6 +23,7 @@ $(function() {
     prod: 'https://marketplace.firefox.com',
     dev: 'https://marketplace-dev.allizom.org',
     stage: 'https://marketplace.allizom.org',
+    alt: 'https://payments-alt.allizom.org',
     local: 'http://fireplace.loc',
   };
 

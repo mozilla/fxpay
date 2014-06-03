@@ -55,7 +55,7 @@ describe('fxpay', function () {
       mozPay.returnValues[0].onsuccess();
 
       server.respondWith(
-        'POST',
+        'GET',
         apiUrl + '/transaction/XYZ',
         transactionData());
       server.respond();
@@ -90,9 +90,9 @@ describe('fxpay', function () {
 
       server.autoRespond = true;
       server.respondWith(
-        'POST',
+        'GET',
         /http.*\/transaction\/XYZ/,
-        transactionData({state: 'PENDING'}));
+        transactionData({status: 'incomplete'}));
       server.respond();
     });
 
@@ -123,7 +123,7 @@ describe('fxpay', function () {
 
       // Respond to polling the transaction.
       server.respondWith(
-        'POST',
+        'GET',
         /.*\/transaction\/XYZ/,
         transactionData());
       server.respond();
@@ -181,9 +181,9 @@ describe('fxpay', function () {
 
       // Respond to polling the transaction.
       server.respondWith(
-        'POST',
+        'GET',
         /http.*\/transaction\/XYZ/,
-        transactionData({state: 'THIS_IS_NOT_A_VALID_STATE'}));
+        transactionData({status: 'THIS_IS_NOT_A_VALID_STATE'}));
       server.respond();
 
       receiptAdd.onsuccess();
@@ -297,7 +297,7 @@ describe('fxpay', function () {
       mozPay.returnValues[0].onsuccess();
 
       server.respondWith(
-        'POST',
+        'GET',
         /.*\/transaction\/XYZ/,
         transactionData({receipt: receipt}));
       server.respond();
@@ -327,7 +327,7 @@ describe('fxpay', function () {
       mozPay.returnValues[0].onsuccess();
 
       server.respondWith(
-        'POST',
+        'GET',
         /.*\/transaction\/XYZ/,
         transactionData());
       server.respond();
@@ -503,8 +503,23 @@ describe('fxpay', function () {
       server.respond();
     });
 
-    it('should request an absolute URL when specified', function (done) {
-      var absUrl = 'https://somewhere-else.com/some/page';
+    it('should request an absolute https URL when specified', function (done) {
+      var absUrl = 'https://secure-site.com/some/page';
+
+      server.respondWith('POST', absUrl,
+                         [200, {"Content-Type": "application/json"},
+                          '{"foo":"bar"}']);
+
+      api.post(absUrl, null, function(err) {
+        // If this is not a 404 then we're good.
+        done(err);
+      });
+
+      server.respond();
+    });
+
+    it('should request an absolute http URL when specified', function (done) {
+      var absUrl = 'http://insecure-site.com/some/page';
 
       server.respondWith('POST', absUrl,
                          [200, {"Content-Type": "application/json"},
@@ -579,8 +594,7 @@ function transactionData(overrides, status) {
   // Create a JSON server response to a request for transaction data.
   overrides = overrides || {};
   var data = {
-    // TODO: make the state value realistic.
-    state: 'COMPLETED',
+    status: 'complete',
     // Pretend this is a real Marketplace receipt.
     receipt: '<keys>~<receipt>'
   };

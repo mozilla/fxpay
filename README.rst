@@ -151,6 +151,12 @@ Here are the possible error strings you might receive and what they mean:
 **INVALID_TRANSACTION_STATE**
     The transaction was in an invalid state and cannot be processed.
 
+**NOT_STARTED**
+    The library did not start up yet; no actions can be
+    performed. Check the console for details on the startup failure.
+    This could also mean that the library encountered an unexpected
+    exception.
+
 **NOT_INSTALLED_AS_APP**
     This platform supports apps but the app has not been installed
     on device. This could happen if it was accessed directly from the browser.
@@ -191,6 +197,30 @@ that implements the same `window.console`_ methods::
     });
 
 .. _`window.console`: https://developer.mozilla.org/en-US/docs/Web/API/console
+
+Startup
+~~~~~~~
+
+The ``fxpay`` library has to initialize itself with the mozApps
+API when it starts up. You cannot call ``fxpay.purchase()`` until
+it has started successfully. To get notified on startup,
+define a global function called ``_fxpay_onstart``  *before* you
+load the ``fxpay.js`` library into the page. Here is an example::
+
+    <script type="text/javascript">
+
+      window._fxpay_onstart = function(error) {
+        if (error) {
+          console.error('fxpay startup error:', error);
+        }
+      };
+
+    </script>
+    <script type="text/javascript" src="fxpay.js"></script>
+
+If an error occurs during startup, that same error will be returned
+when you first call ``fxpay.purchase()``.
+
 
 Developers
 ==========

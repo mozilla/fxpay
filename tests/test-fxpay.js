@@ -396,11 +396,12 @@ describe('fxpay', function () {
           assert.equal(request.requestHeaders['Accept'], 'application/json');
           assert.equal(request.requestHeaders['Content-Type'],
                        'application/x-www-form-urlencoded;charset=utf-8');
+          assert.equal(request.requestBody, 'foo=bar&baz=zop');
           request.respond(200, {"Content-Type": "application/json"},
                           '{"data": "received"}');
         });
 
-      api.post('/post', {foo: 'bar'}, function(err, data) {
+      api.post('/post', {foo: 'bar', 'baz': 'zop'}, function(err, data) {
         assert.equal(data.data, 'received');
         done(err);
       });
@@ -455,6 +456,41 @@ describe('fxpay', function () {
         assert.equal(data.data, 'received');
         done(err);
       });
+
+      server.respond();
+    });
+
+    it('should allow custom content-type POSTs', function (done) {
+      server.respondWith(
+        'POST', /.*\/post/,
+        function(request) {
+          assert.equal(request.requestHeaders['Content-Type'],
+                       'text/plain;charset=utf-8');
+          assert.equal(request.requestBody, 'custom-data');
+          request.respond(200, {"Content-Type": "application/json"},
+                          '{"data": "received"}');
+        });
+
+      api.post('/post', 'custom-data', function(err, data) {
+        done(err);
+      }, {contentType: 'text/plain'});
+
+      server.respond();
+    });
+
+    it('should send custom headers', function (done) {
+      server.respondWith(
+        'GET', /.*\/get/,
+        function(request) {
+          assert.equal(request.requestHeaders['Foobar'], 'bazba');
+          assert.equal(request.requestHeaders['Zoopa'], 'wonza');
+          request.respond(200, {"Content-Type": "application/json"},
+                          '{"data": "received"}');
+        });
+
+      api.get('/get', function(err, data) {
+        done(err);
+      }, {headers: {Foobar: 'bazba', Zoopa: 'wonza'}});
 
       server.respond();
     });

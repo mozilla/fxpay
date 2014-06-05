@@ -4,10 +4,119 @@ describe('fxpay', function () {
   beforeEach(function() {
     console.log('beginEach');
     server = sinon.fakeServer.create();
+    if (window._fxpay_onstart) {
+      delete window._fxpay_onstart;
+    }
+    fxpay._startupError = null;
   });
 
   afterEach(function() {
     server.restore();
+  });
+
+  describe('startup()', function() {
+
+    beforeEach(function() {
+      appSelf.init();
+    });
+
+    it('should call back when started', function (done) {
+      fxpay.startup({
+        onstart: function(err) {
+          done(err);
+        },
+        mozApps: mozAppsStub,
+      });
+
+      appSelf.onsuccess();
+    });
+
+    it('should error when addReceipt does not exist', function (done) {
+      var appStub = {
+        addReceipt: undefined,  // older FxOSs do not have this.
+        onsuccess: function() {},
+        onerror: function() {}
+      };
+      appStub.result = appStub;  // result of DOM request.
+
+      fxpay.startup({
+        onstart: function(err) {
+          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+          done();
+        },
+        mozApps: {
+          getSelf: function() {
+            return appStub;
+          }
+        },
+      });
+
+      appStub.onsuccess();
+    });
+
+    it('should error when not running as app', function (done) {
+      fxpay.startup({
+        onstart: function(err) {
+          assert.equal(err, 'NOT_INSTALLED_AS_APP');
+          done();
+        },
+        mozApps: mozAppsStub,
+      });
+
+      // This happens when you access the app from a browser
+      // (i.e. not installed).
+      appSelf.result = null;
+      appSelf.onsuccess();
+    });
+
+    it('should pass through apps platform errors', function (done) {
+      fxpay.startup({
+        onstart: function(err) {
+          console.log('GOT error', err);
+          assert.equal(err, 'INVALID_MANIFEST');
+          done();
+        },
+        mozApps: mozAppsStub,
+      });
+
+      // Simulate an apps platform error.
+      appSelf.error = {name: 'INVALID_MANIFEST'};
+      appSelf.onerror();
+    });
+
+    it('should error when apps are not supported', function (done) {
+      fxpay.startup({
+        onstart: function(err) {
+          console.log('GOT error', err);
+          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+          done();
+        },
+        mozApps: {},  // invalid mozApps.
+      });
+    });
+
+    it('should error when no apps API at all', function (done) {
+      fxpay.startup({
+        onstart: function(err) {
+          console.log('GOT error', err);
+          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+          done();
+        },
+        mozApps: null,  // no API, like Chrome or whatever.
+      });
+    });
+
+    it('should support a global startup error handler', function (done) {
+      window._fxpay_onstart = function(err) {
+        console.log('GOT error', err);
+        assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        done();
+      };
+      fxpay.startup({
+        mozApps: {},  // invalid mozApps.
+      });
+    });
+
   });
 
   describe('purchase()', function () {
@@ -21,6 +130,22 @@ describe('fxpay', function () {
     afterEach(function() {
       mozPay.reset();
       receiptAdd.reset();
+    });
+
+    it('should pass through startup errors', function (done) {
+      // Trigger a startup error:
+      fxpay.startup({
+        mozApps: {},  // invalid mozApps.
+      });
+      // Try to start a purchase.
+      fxpay.purchase('123', {
+        onpurchase: function(err) {
+          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+          done();
+        },
+        mozPay: mozPay,
+        appSelf: appSelf,
+      });
     });
 
     it('should send a JWT to mozPay', function (done) {
@@ -37,12 +162,10 @@ describe('fxpay', function () {
           done(err);
         },
         mozPay: mozPay,
-        mozApps: mozAppsStub,
+        appSelf: appSelf,
         apiUrlBase: apiUrl,
         apiVersionPrefix: versionPrefix
       });
-
-      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -72,12 +195,10 @@ describe('fxpay', function () {
           done();
         },
         mozPay: mozPay,
-        mozApps: mozAppsStub,
+        appSelf: appSelf,
         maxTries: 2,
         pollIntervalMs: 1
       });
-
-      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -107,10 +228,8 @@ describe('fxpay', function () {
           assert.equal(err, null)
         },
         mozPay: mozPay,
-        mozApps: mozAppsStub,
+        appSelf: appSelf,
       });
-
-      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -139,10 +258,8 @@ describe('fxpay', function () {
           done();
         },
         mozPay: mozPay,
-        mozApps: mozAppsStub,
+        appSelf: appSelf,
       });
-
-      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -165,10 +282,8 @@ describe('fxpay', function () {
           done();
         },
         mozPay: mozPay,
-        mozApps: mozAppsStub
+        appSelf: appSelf
       });
-
-      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -189,18 +304,6 @@ describe('fxpay', function () {
       receiptAdd.onsuccess();
     });
 
-    it('should error when apps are not supported', function (done) {
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          console.log('GOT error', err);
-          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-          done();
-        },
-        mozPay: mozPay,
-        mozApps: {},  // invalid mozApps.
-      });
-    });
-
     it('should error when mozPay is not supported', function (done) {
       fxpay.purchase('123', {
         onpurchase: function(err) {
@@ -209,66 +312,8 @@ describe('fxpay', function () {
           done();
         },
         mozPay: undefined,
-        mozApps: mozAppsStub,
+        appSelf: appSelf,
       });
-    });
-
-    it('should error when addReceipt does not exist', function (done) {
-      var receipt = '<receipt>';
-
-      var appStub = {
-        addReceipt: undefined,  // older FxOSs do not have this.
-        onsuccess: function() {},
-        onerror: function() {}
-      };
-      appStub.result = appStub;  // result of DOM request.
-
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-          done();
-        },
-        mozPay: mozPay,
-        mozApps: {
-          getSelf: function() {
-            return appStub;
-          }
-        },
-      });
-
-      appStub.onsuccess();
-    });
-
-    it('should pass through apps platform errors', function (done) {
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          console.log('GOT error', err);
-          assert.equal(err, 'INVALID_MANIFEST');
-          done();
-        },
-        mozPay: mozPay,
-        mozApps: mozAppsStub,
-      });
-
-      // Simulate an apps platform error.
-      appSelf.error = {name: 'INVALID_MANIFEST'};
-      appSelf.onerror();
-    });
-
-    it('should error when not running as app', function (done) {
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          assert.equal(err, 'NOT_INSTALLED_AS_APP');
-          done();
-        },
-        mozPay: mozPay,
-        mozApps: mozAppsStub,
-      });
-
-      // This happens when you access the app from a browser
-      // (i.e. not installed).
-      appSelf.result = null;
-      appSelf.onsuccess();
     });
 
     it('should add a Marketplace receipt to device', function (done) {
@@ -282,10 +327,8 @@ describe('fxpay', function () {
           done(err);
         },
         mozPay: mozPay,
-        mozApps: mozAppsStub,
+        appSelf: appSelf,
       });
-
-      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -312,10 +355,8 @@ describe('fxpay', function () {
           done();
         },
         mozPay: mozPay,
-        mozApps: mozAppsStub,
+        appSelf: appSelf,
       });
-
-      appSelf.onsuccess();
 
       // Respond to fetching the JWT.
       server.respondWith(

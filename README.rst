@@ -61,26 +61,59 @@ Set Up Your Products
 
 Log into the `Firefox Marketplace Developer Hub`_. There will be a page
 where you can enter the names and prices for each of your products.
-These docs will be updated with a link when the page exists :)
+These docs will be updated with a link when the page is working :)
+
+When you create a product on the Developer Hub you'll get
+unique identifiers for each product, such as ``543123``.
+You'll use these ID numbers to reference the products when
+working with the ``fxpay`` library.
+
+Initialization
+~~~~~~~~~~~~~~
+
+When your app starts up, you need to initialize ``fxpay`` so it can
+check for any existing product receipts. This is also your chance to
+register some callbacks for error handling and other events.
+
+::
+
+    fxpay.init({
+      onpurchase: function(info) {
+        console.log('product', info.productId, 'purchased and verified!');
+      },
+      onerror: function(error) {
+        console.error('An error occurred:', error);
+      },
+      oninit: function() {
+        console.log('fxpay initialized without errors');
+      }
+    });
 
 Capture A Purchase
 ~~~~~~~~~~~~~~~~~~
 
-When you create a product on the Developer Hub you'll get
-unique identifiers for each product, such as ``543123``.
-Make a screen in your app where you offer a product for purchase.
+You can call ``fxpay.purchase(productId)`` to start the buy flow for an
+item.
+First, you'll probably want to make a screen in your app
+where you offer some product for purchase.
 Create a buy button that when tapped, runs this code::
 
     var productId = 543123;
+    fxpay.purchase(productId);
 
-    fxpay.purchase(productId, {
-      onpurchase: function(err) {
-        if (err) {
-          throw err;
-        } else {
-          console.log('product', productId, 'has been purchased!');
-          // It is now safe to deliver the product to your user.
-        }
+This ``productId`` is the same one you got from the Developer Hub
+when you set up your products.
+
+When the user completes the buy flow and the Marketplace server has
+verified the receipt, the same callback you registered in ``init()`` will
+be invoked. Here it is again::
+
+    fxpay.init({
+      onpurchase: function(info) {
+        console.log('product', info.productId, 'purchased and verified!');
+        // ***************************************************
+        // It is now safe to deliver the product to your user.
+        // ***************************************************
       }
     });
 
@@ -91,28 +124,7 @@ How does this work? The ``fxpay.purchase()`` function automates
 the process of calling `mozPay()`_ then
 waiting for and verifying an incoming JWT signature.
 If you want to know the specifics, see the `in-app payments guide`_
-but you could follow this guide start to finish and you'd already be
-doing payments.
-
-``fxpay.purchase()`` kicks the user into a buyflow. When the user
-completes the payment, the payment window closes and they are returned
-to your app; ``fxpay`` waits for a postback message.
-It would be a good idea to show the user a progress indicator
-while they wait using ``oncheckpayment()`` like this::
-
-    fxpay.purchase(productId, {
-      oncheckpayment: function() {
-        // Show a progress indicator in your UI
-        // while the payment is being checked.
-      },
-      onpurchase: function(err) {
-        if (err) {
-          throw err;
-        } else {
-          // It is now safe to deliver the product to your user.
-        }
-      }
-    });
+but that's not mandatory for using the ``fxpay`` library.
 
 .. _`in-app payments guide`: https://developer.mozilla.org/en-US/Marketplace/Monetization/In-app_payments
 .. _`Firefox Marketplace Developer Hub`: https://marketplace.firefox.com/developers/
@@ -120,8 +132,8 @@ while they wait using ``oncheckpayment()`` like this::
 Errors
 ~~~~~~
 
-Errors come back to you as the first argument to the ``onpurchase(err)``
-callback. If no error occurs, ``err`` will be null.
+Errors come back to you as the first argument to the ``onerror(error)`` callback
+that was passed to ``fxpay.init()``.
 The errors are strings and are
 meant to be treated like readable codes that you can map to localized text, etc.
 A detailed error explanation will be logged; read on for logging details.
@@ -151,11 +163,11 @@ Here are the possible error strings you might receive and what they mean:
 **INVALID_TRANSACTION_STATE**
     The transaction was in an invalid state and cannot be processed.
 
-**NOT_STARTED**
-    The library did not start up yet; no actions can be
-    performed. Check the console for details on the startup failure.
-    This could also mean that the library encountered an unexpected
-    exception.
+**NOT_INITIALIZED**
+    The library was not initialized correctly; no actions can be
+    performed. This might mean you didn't call ``init()`` or it
+    could mean there was an uncaught exception. Check the console for
+    details.
 
 **NOT_INSTALLED_AS_APP**
     This platform supports apps but the app has not been installed
@@ -187,39 +199,38 @@ By default, ``fxpay`` logs everything using `window.console`_. If you want to
 replace ``console`` with your own logger, pass in an object as ``log``
 that implements the same `window.console`_ methods::
 
-    fxpay.purchase(productId, {
-      onpurchase: function(err) {
-        if (err) {
-          throw err;
-        }
-      },
+    fxpay.configure({
       log: myConsole
     });
 
-.. _`window.console`: https://developer.mozilla.org/en-US/docs/Web/API/console
+Configuration
+~~~~~~~~~~~~~
 
-Startup
-~~~~~~~
+You can call ``fxpay.configure(overrides)`` to set some internal variables.
+If you call this repeatedly, the old keys will be preserved unless
+overidden.
 
-The ``fxpay`` library has to initialize itself with the mozApps
-API when it starts up. You cannot call ``fxpay.purchase()`` until
-it has started successfully. To get notified on startup,
-define a global function called ``_fxpay_onstart``  *before* you
-load the ``fxpay.js`` library into the page. Here is an example::
+Example::
 
-    <script type="text/javascript">
+    fxpay.configure({log: myCustomLog});
 
-      window._fxpay_onstart = function(error) {
-        if (error) {
-          console.error('fxpay startup error:', error);
-        }
-      };
+Possible overrides:
 
-    </script>
-    <script type="text/javascript" src="fxpay.js"></script>
+*apiUrlBase*
+    The base URL of the internal ``fxpay`` API.
+    Default: ``https://marketplace.firefox.com``.
 
-If an error occurs during startup, that same error will be returned
-when you first call ``fxpay.purchase()``.
+*apiTimeoutMs*
+    A length of time in milleseconds until any API request will time out.
+    Default: 5000.
+
+*apiVersionPrefix*
+    A Path that gets appended to ``apiUrlBase`` to access the right API version.
+    Default: ``/api/v1``.
+
+*log*
+    A log object compatible with `window.console`_ to use internally.
+    Default: ``window.console``.
 
 
 Developers
@@ -267,3 +278,4 @@ The compressed source file will appear in the ``build`` directory.
 .. _`NodeJS`: http://nodejs.org/
 .. _`npm`: https://www.npmjs.org/
 .. _`mozPay()`: https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay
+.. _`window.console`: https://developer.mozilla.org/en-US/docs/Web/API/console

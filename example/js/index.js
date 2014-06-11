@@ -39,17 +39,19 @@ $(function() {
       throw 'unknown API env: ' + env;
     }
     console.log('setting API to', apiUrlBase);
+    fxpay.configure({apiUrlBase: apiUrlBase});
   }
 
-  function addProduct(parent, prodID, prod, opt) {
+  function addProduct(parent, prodID, prodData, opt) {
     opt = opt || {showBuy: true};
     var li = $('<li></li>', {class: 'product'});
     li.append($('<img />', {src: prod.icons['64'], height: 64, width: 64}));
     if (opt.showBuy) {
-      li.append($('<button>Buy</button>').data({productId: prodID, product: prod}));
+      li.append($('<button>Buy</button>').data({productId: prodID,
+                                                product: prodData}));
     }
-    li.append($('<h3>' + prod.name + '</h3>'));
-    li.append($('<p>' + prod.description + '</p>'));
+    li.append($('<h3>' + prodData.name + '</h3>'));
+    li.append($('<p>' + prodData.description + '</p>'));
     li.append($('<div></div>', {class: 'clear'}));
     parent.append(li);
   }
@@ -67,20 +69,9 @@ $(function() {
     var prod = $(this).data('product');
     console.log('purchasing', prod.name, id);
 
-    fxpay.purchase(id, {
-      oncheckpayment: function() {
-        // TODO: update the UI here with a spinner or something.
-        console.log('checking for payment');
-      },
-      onpurchase: function(err) {
-        if (err) {
-          return showError(err);
-        }
-        $('#your-products ul li.placeholder').remove();
-        addProduct($('#your-products ul'), id, prod, {showBuy: false});
-      },
-      apiUrlBase: apiUrlBase
-    });
+    fxpay.purchase(id);
+
+    // TODO: update the UI here with a spinner or something.
   });
 
   $('#api-server').change(function(evt) {
@@ -93,8 +84,26 @@ $(function() {
   console.log('example app startup');
   setApiServer();
   var ul = $('#products ul');
-  for (var prodID in products) {
-    var prod = products[prodID];
-    addProduct(ul, prodID, prod);
+
+  for (var prodId in products) {
+    addProduct(ul, prodId, products[prodId]);
   }
+
+  fxpay.init({
+    onerror: function(err) {
+      showError(err);
+    },
+    onpurchase: function(info) {
+      console.log('product:', info.productId,
+                  'purchased for the first time?', info.newPurchase);
+      $('#your-products ul li.placeholder').remove();
+      var prodData = products[info.productId];
+      addProduct($('#your-products ul'), info.productId, prodData,
+                 {showBuy: false});
+    },
+    onsetup: function() {
+      console.log('all products were set up successfully');
+    }
+  });
+
 });

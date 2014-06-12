@@ -4,31 +4,48 @@ describe('fxpay', function () {
   beforeEach(function() {
     console.log('beginEach');
     server = sinon.fakeServer.create();
-    if (window._fxpay_onstart) {
-      delete window._fxpay_onstart;
-    }
-    fxpay._startupError = null;
+    fxpay.configure({
+      apiUrlBase: 'http://tests-should-never-hit-this.com',
+      callbacks: {},
+      initError: null,
+      mozApps: mozAppsStub
+    });
   });
 
   afterEach(function() {
     server.restore();
   });
 
-  describe('startup()', function() {
+  describe('init()', function() {
 
     beforeEach(function() {
       appSelf.init();
     });
 
     it('should call back when started', function (done) {
-      fxpay.startup({
-        onstart: function(err) {
+      fxpay.init({
+        onerror: function(err) {
           done(err);
         },
-        mozApps: mozAppsStub,
+        oninit: function() {
+          done();
+        }
       });
 
       appSelf.onsuccess();
+    });
+
+    it('should error with unknown options', function (done) {
+      fxpay.init({
+        onerror: function(err) {
+          assert.equal(err, 'INCORRECT_USAGE');
+          done();
+        },
+        oninit: function() {
+          done('init should not have been called');
+        },
+        notAvalidOption: false
+      });
     });
 
     it('should error when addReceipt does not exist', function (done) {
@@ -39,28 +56,30 @@ describe('fxpay', function () {
       };
       appStub.result = appStub;  // result of DOM request.
 
-      fxpay.startup({
-        onstart: function(err) {
-          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-          done();
-        },
+      fxpay.configure({
         mozApps: {
           getSelf: function() {
             return appStub;
           }
-        },
+        }
+      });
+
+      fxpay.init({
+        onerror: function(err) {
+          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+          done();
+        }
       });
 
       appStub.onsuccess();
     });
 
     it('should error when not running as app', function (done) {
-      fxpay.startup({
-        onstart: function(err) {
+      fxpay.init({
+        onerror: function(err) {
           assert.equal(err, 'NOT_INSTALLED_AS_APP');
           done();
-        },
-        mozApps: mozAppsStub,
+        }
       });
 
       // This happens when you access the app from a browser
@@ -70,13 +89,12 @@ describe('fxpay', function () {
     });
 
     it('should pass through apps platform errors', function (done) {
-      fxpay.startup({
-        onstart: function(err) {
+      fxpay.init({
+        onerror: function(err) {
           console.log('GOT error', err);
           assert.equal(err, 'INVALID_MANIFEST');
           done();
-        },
-        mozApps: mozAppsStub,
+        }
       });
 
       // Simulate an apps platform error.
@@ -85,35 +103,28 @@ describe('fxpay', function () {
     });
 
     it('should error when apps are not supported', function (done) {
-      fxpay.startup({
-        onstart: function(err) {
+      fxpay.configure({
+        mozApps: {}  // invalid mozApps.
+      });
+      fxpay.init({
+        onerror: function(err) {
           console.log('GOT error', err);
           assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
           done();
-        },
-        mozApps: {},  // invalid mozApps.
+        }
       });
     });
 
     it('should error when no apps API at all', function (done) {
-      fxpay.startup({
-        onstart: function(err) {
+      fxpay.configure({
+        mozApps: null  // no API, like Chrome or whatever.
+      });
+      fxpay.init({
+        onerror: function(err) {
           console.log('GOT error', err);
           assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
           done();
-        },
-        mozApps: null,  // no API, like Chrome or whatever.
-      });
-    });
-
-    it('should support a global startup error handler', function (done) {
-      window._fxpay_onstart = function(err) {
-        console.log('GOT error', err);
-        assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-        done();
-      };
-      fxpay.startup({
-        mozApps: {},  // invalid mozApps.
+        }
       });
     });
 
@@ -125,6 +136,10 @@ describe('fxpay', function () {
     beforeEach(function() {
       mozPay = sinon.spy(mozPayStub);
       appSelf.init();
+      fxpay.configure({
+        appSelf: appSelf,
+        mozPay: mozPay
+      });
     });
 
     afterEach(function() {
@@ -132,45 +147,45 @@ describe('fxpay', function () {
       receiptAdd.reset();
     });
 
-    it('should pass through startup errors', function (done) {
-      // Trigger a startup error:
-      fxpay.startup({
+    it('should pass through setup errors', function (done) {
+      // Trigger a setup error:
+      fxpay.configure({
         mozApps: {},  // invalid mozApps.
       });
+      fxpay.init({
+        onerror: function(err) {
+          console.log('ignoring err', err);
+        }
+      });
+
       // Try to start a purchase.
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-          done();
-        },
-        mozPay: mozPay,
-        appSelf: appSelf,
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        done();
       });
     });
 
     it('should send a JWT to mozPay', function (done) {
       var webpayJWT = '<base64 JWT>';
-      var apiUrl = 'https://not-the-real-marketplace';
-      var versionPrefix = '/api/v1';
+      var productId = '1234';
+      var cfg = {
+        apiUrlBase: 'https://not-the-real-marketplace',
+        apiVersionPrefix: '/api/v1'
+      };
+      fxpay.configure(cfg);
 
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          if (!err) {
-            assert.ok(mozPay.called);
-            assert.ok(mozPay.calledWith([webpayJWT]), mozPay.firstCall);
-          }
-          done(err);
-        },
-        mozPay: mozPay,
-        appSelf: appSelf,
-        apiUrlBase: apiUrl,
-        apiVersionPrefix: versionPrefix
+      fxpay.purchase(productId, function(err, info) {
+        assert.ok(mozPay.called);
+        assert.ok(mozPay.calledWith([webpayJWT]), mozPay.firstCall);
+        assert.equal(info.productId, productId);
+        assert.equal(info.newPurchase, true);
+        done(err);
       });
 
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        apiUrl + versionPrefix + '/webpay/inapp/prepare/',
+        cfg.apiUrlBase + cfg.apiVersionPrefix + '/webpay/inapp/prepare/',
         // TODO: assert somehow that productId is part of post data.
         productData({webpayJWT: webpayJWT}));
       server.respond();
@@ -179,7 +194,7 @@ describe('fxpay', function () {
 
       server.respondWith(
         'GET',
-        apiUrl + '/transaction/XYZ',
+        cfg.apiUrlBase + '/transaction/XYZ',
         transactionData());
       server.respond();
 
@@ -188,14 +203,10 @@ describe('fxpay', function () {
 
     it('should timeout polling the transaction', function (done) {
 
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          console.log('GOT error', err);
-          assert.equal(err, 'TRANSACTION_TIMEOUT');
-          done();
-        },
-        mozPay: mozPay,
-        appSelf: appSelf,
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'TRANSACTION_TIMEOUT');
+        done();
+      }, {
         maxTries: 2,
         pollIntervalMs: 1
       });
@@ -217,48 +228,11 @@ describe('fxpay', function () {
       server.respond();
     });
 
-    it('should call back when mozPay window closes', function (done) {
-
-      fxpay.purchase(123, {
-        oncheckpayment: function() {
-          done();
-        },
-        onpurchase: function(err) {
-          // Make sure we don't have an unexpected error.
-          assert.equal(err, null)
-        },
-        mozPay: mozPay,
-        appSelf: appSelf,
-      });
-
-      // Respond to fetching the JWT.
-      server.respondWith(
-        'POST',
-        /.*webpay\/inapp\/prepare/,
-        productData());
-      server.respond();
-
-      mozPay.returnValues[0].onsuccess();
-
-      // Respond to polling the transaction.
-      server.respondWith(
-        'GET',
-        /.*\/transaction\/XYZ/,
-        transactionData());
-      server.respond();
-
-      receiptAdd.onsuccess();
-    });
-
     it('should call back with mozPay error', function (done) {
 
-      fxpay.purchase(123, {
-        onpurchase: function(err) {
-          assert.equal(err, 'DIALOG_CLOSED_BY_USER');
-          done();
-        },
-        mozPay: mozPay,
-        appSelf: appSelf,
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+        done();
       });
 
       // Respond to fetching the JWT.
@@ -274,15 +248,10 @@ describe('fxpay', function () {
     });
 
     it('should report invalid transaction state', function (done) {
-      var productId = 123;
 
-      fxpay.purchase(productId, {
-        onpurchase: function(err) {
-          assert.equal(err, 'INVALID_TRANSACTION_STATE');
-          done();
-        },
-        mozPay: mozPay,
-        appSelf: appSelf
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'INVALID_TRANSACTION_STATE');
+        done();
       });
 
       // Respond to fetching the JWT.
@@ -305,29 +274,20 @@ describe('fxpay', function () {
     });
 
     it('should error when mozPay is not supported', function (done) {
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          console.log('GOT error', err);
-          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-          done();
-        },
-        mozPay: undefined,
-        appSelf: appSelf,
+      fxpay.configure({mozPay: undefined});
+
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        done();
       });
     });
 
     it('should add a Marketplace receipt to device', function (done) {
       var receipt = '<receipt>';
 
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          if (!err) {
-            assert.equal(receiptAdd._receipt, receipt);
-          }
-          done(err);
-        },
-        mozPay: mozPay,
-        appSelf: appSelf,
+      fxpay.purchase('123', function(err) {
+        assert.equal(receiptAdd._receipt, receipt);
+        done(err);
       });
 
       // Respond to fetching the JWT.
@@ -349,13 +309,10 @@ describe('fxpay', function () {
     });
 
     it('should pass through receipt errors', function (done) {
-      fxpay.purchase('123', {
-        onpurchase: function(err) {
-          assert.equal(err, 'ADD_RECEIPT_ERROR');
-          done();
-        },
-        mozPay: mozPay,
-        appSelf: appSelf,
+
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'ADD_RECEIPT_ERROR');
+        done();
       });
 
       // Respond to fetching the JWT.
@@ -386,7 +343,8 @@ describe('fxpay', function () {
     var versionPrefix = '/api/v1';
 
     beforeEach(function() {
-      api = new fxpay.API(baseUrl, {versionPrefix: versionPrefix});
+      fxpay.configure({apiVersionPrefix: versionPrefix});
+      api = new fxpay.API(baseUrl);
     });
 
     it('should handle POSTs', function (done) {

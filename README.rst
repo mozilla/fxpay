@@ -64,8 +64,8 @@ where you can enter the names and prices for each of your products.
 These docs will be updated with a link when the page is working :)
 
 When you create a product on the Developer Hub you'll get
-unique identifiers for each product, such as ``543123``.
-You'll use these ID numbers to reference the products when
+a unique identifier, such as ``543123``.
+You'll use this ID number to reference the product when
 working with the ``fxpay`` library.
 
 Initialization
@@ -73,14 +73,11 @@ Initialization
 
 When your app starts up, you need to initialize ``fxpay`` so it can
 check for any existing product receipts. This is also your chance to
-register some callbacks for error handling and other events.
+register some callbacks for general error handling and other events.
 
 ::
 
     fxpay.init({
-      onpurchase: function(info) {
-        console.log('product', info.productId, 'purchased and verified!');
-      },
       onerror: function(error) {
         console.error('An error occurred:', error);
       },
@@ -92,33 +89,32 @@ register some callbacks for error handling and other events.
 Capture A Purchase
 ~~~~~~~~~~~~~~~~~~
 
-You can call ``fxpay.purchase(productId)`` to start the buy flow for an
+You can call ``fxpay.purchase()`` to start the buy flow for an
 item.
 First, you'll probably want to make a screen in your app
 where you offer some product for purchase.
-Create a buy button that when tapped, runs this code::
+Create a buy button that when tapped, calls ``fxpay.purchase()`` like this::
 
     var productId = 543123;
-    fxpay.purchase(productId);
+
+    fxpay.purchase(productId, function(error, info) {
+      if (error) {
+        throw error;
+      }
+
+      console.log('product', info.productId, 'was purchased and verified!');
+      // ***************************************************
+      // It is now safe to deliver the product to your user.
+      // ***************************************************
+    });
 
 This ``productId`` is the same one you got from the Developer Hub
 when you set up your products.
 
 When the user completes the buy flow and the Marketplace server has
-verified the receipt, the same callback you registered in ``init()`` will
-be invoked. Here it is again::
-
-    fxpay.init({
-      onpurchase: function(info) {
-        console.log('product', info.productId, 'purchased and verified!');
-        // ***************************************************
-        // It is now safe to deliver the product to your user.
-        // ***************************************************
-      }
-    });
-
-When the ``onpurchase()`` callback is executed, the item has been
-verifiably purchased. It is safe to deliver the item.
+verified the receipt, the callback you provided will be invoked with error
+string (if applicable) and an ``info`` parameter that provides info about
+the purchase. At this time, it is safe to deliver the item.
 
 How does this work? The ``fxpay.purchase()`` function automates
 the process of calling `mozPay()`_ then
@@ -133,7 +129,8 @@ Errors
 ~~~~~~
 
 Errors come back to you as the first argument to the ``onerror(error)`` callback
-that was passed to ``fxpay.init()``.
+that was passed to ``fxpay.init()`` or as the first argument to the
+``fxpay.purchase()`` callback.
 The errors are strings and are
 meant to be treated like readable codes that you can map to localized text, etc.
 A detailed error explanation will be logged; read on for logging details.
@@ -159,6 +156,10 @@ Here are the possible error strings you might receive and what they mean:
     The user closed their payment window before completing the purchase.
     You can probably ignore this error or maybe display a
     cancelled message. This error comes from `mozPay()`_.
+
+**INCORRECT_USAGE**
+    An ``fxpay`` function was used incorrectly. Check the console
+    for details.
 
 **INVALID_TRANSACTION_STATE**
     The transaction was in an invalid state and cannot be processed.
@@ -222,7 +223,7 @@ Possible overrides:
 
 *apiTimeoutMs*
     A length of time in milleseconds until any API request will time out.
-    Default: 5000.
+    Default: 10000.
 
 *apiVersionPrefix*
     A Path that gets appended to ``apiUrlBase`` to access the right API version.

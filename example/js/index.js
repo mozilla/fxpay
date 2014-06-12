@@ -45,7 +45,8 @@ $(function() {
   function addProduct(parent, prodID, prodData, opt) {
     opt = opt || {showBuy: true};
     var li = $('<li></li>', {class: 'product'});
-    li.append($('<img />', {src: prod.icons['64'], height: 64, width: 64}));
+    li.append($('<img />', {src: prodData.icons['64'],
+                            height: 64, width: 64}));
     if (opt.showBuy) {
       li.append($('<button>Buy</button>').data({productId: prodID,
                                                 product: prodData}));
@@ -69,7 +70,17 @@ $(function() {
     var prod = $(this).data('product');
     console.log('purchasing', prod.name, id);
 
-    fxpay.purchase(id);
+    fxpay.purchase(id, function(err, info) {
+      if (err) {
+        return showError(err);
+      }
+      console.log('product:', info.productId,
+                  'purchased for the first time?', info.newPurchase);
+      $('#your-products ul li.placeholder').remove();
+      var prodData = products[info.productId];
+      addProduct($('#your-products ul'), info.productId, prodData,
+                 {showBuy: false});
+    });
 
     // TODO: update the UI here with a spinner or something.
   });
@@ -82,28 +93,21 @@ $(function() {
   // Startup
   //
   console.log('example app startup');
+
+  fxpay.init({
+    onerror: function(err) {
+      showError(err);
+    },
+    oninit: function() {
+      console.log('fxpay initialized successfully');
+    }
+  });
+
   setApiServer();
   var ul = $('#products ul');
 
   for (var prodId in products) {
     addProduct(ul, prodId, products[prodId]);
   }
-
-  fxpay.init({
-    onerror: function(err) {
-      showError(err);
-    },
-    onpurchase: function(info) {
-      console.log('product:', info.productId,
-                  'purchased for the first time?', info.newPurchase);
-      $('#your-products ul li.placeholder').remove();
-      var prodData = products[info.productId];
-      addProduct($('#your-products ul'), info.productId, prodData,
-                 {showBuy: false});
-    },
-    onsetup: function() {
-      console.log('all products were set up successfully');
-    }
-  });
 
 });

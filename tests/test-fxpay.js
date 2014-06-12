@@ -35,6 +35,19 @@ describe('fxpay', function () {
       appSelf.onsuccess();
     });
 
+    it('should error with unknown options', function (done) {
+      fxpay.init({
+        onerror: function(err) {
+          assert.equal(err, 'INCORRECT_USAGE');
+          done();
+        },
+        oninit: function() {
+          done('init should not have been called');
+        },
+        notAvalidOption: false
+      });
+    });
+
     it('should error when addReceipt does not exist', function (done) {
       var appStub = {
         addReceipt: undefined,  // older FxOSs do not have this.
@@ -141,13 +154,15 @@ describe('fxpay', function () {
       });
       fxpay.init({
         onerror: function(err) {
-          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-          done();
+          console.log('ignoring err', err);
         }
       });
 
       // Try to start a purchase.
-      fxpay.purchase('123');
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        done();
+      });
     });
 
     it('should send a JWT to mozPay', function (done) {
@@ -159,20 +174,13 @@ describe('fxpay', function () {
       };
       fxpay.configure(cfg);
 
-      fxpay.init({
-        onerror: function(err) {
-          done(err);
-        },
-        onpurchase: function(info) {
-          assert.ok(mozPay.called);
-          assert.ok(mozPay.calledWith([webpayJWT]), mozPay.firstCall);
-          assert.equal(info.productId, productId);
-          assert.equal(info.newPurchase, true);
-          done();
-        },
+      fxpay.purchase(productId, function(err, info) {
+        assert.ok(mozPay.called);
+        assert.ok(mozPay.calledWith([webpayJWT]), mozPay.firstCall);
+        assert.equal(info.productId, productId);
+        assert.equal(info.newPurchase, true);
+        done(err);
       });
-
-      fxpay.purchase(productId);
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -195,15 +203,10 @@ describe('fxpay', function () {
 
     it('should timeout polling the transaction', function (done) {
 
-      fxpay.init({
-        onerror: function(err) {
-          console.log('GOT error', err);
-          assert.equal(err, 'TRANSACTION_TIMEOUT');
-          done();
-        },
-      });
-
-      fxpay.purchase('123', {
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'TRANSACTION_TIMEOUT');
+        done();
+      }, {
         maxTries: 2,
         pollIntervalMs: 1
       });
@@ -227,14 +230,10 @@ describe('fxpay', function () {
 
     it('should call back with mozPay error', function (done) {
 
-      fxpay.init({
-        onerror: function(err) {
-          assert.equal(err, 'DIALOG_CLOSED_BY_USER');
-          done();
-        }
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+        done();
       });
-
-      fxpay.purchase('123');
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -250,14 +249,10 @@ describe('fxpay', function () {
 
     it('should report invalid transaction state', function (done) {
 
-      fxpay.init({
-        onerror: function(err) {
-          assert.equal(err, 'INVALID_TRANSACTION_STATE');
-          done();
-        }
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'INVALID_TRANSACTION_STATE');
+        done();
       });
-
-      fxpay.purchase('123');
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -281,31 +276,19 @@ describe('fxpay', function () {
     it('should error when mozPay is not supported', function (done) {
       fxpay.configure({mozPay: undefined});
 
-      fxpay.init({
-        onerror: function(err) {
-          console.log('GOT error', err);
-          assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-          done();
-        }
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        done();
       });
-
-      fxpay.purchase('123');
     });
 
     it('should add a Marketplace receipt to device', function (done) {
       var receipt = '<receipt>';
 
-      fxpay.init({
-        onerror: function(err) {
-          done(err);
-        },
-        onpurchase: function() {
-          assert.equal(receiptAdd._receipt, receipt);
-          done();
-        }
+      fxpay.purchase('123', function(err) {
+        assert.equal(receiptAdd._receipt, receipt);
+        done(err);
       });
-
-      fxpay.purchase('123');
 
       // Respond to fetching the JWT.
       server.respondWith(
@@ -327,14 +310,10 @@ describe('fxpay', function () {
 
     it('should pass through receipt errors', function (done) {
 
-      fxpay.init({
-        onerror: function(err) {
-          assert.equal(err, 'ADD_RECEIPT_ERROR');
-          done();
-        }
+      fxpay.purchase('123', function(err) {
+        assert.equal(err, 'ADD_RECEIPT_ERROR');
+        done();
       });
-
-      fxpay.purchase('123');
 
       // Respond to fetching the JWT.
       server.respondWith(

@@ -57,6 +57,12 @@ $(function() {
     parent.append(li);
   }
 
+  function productBought(productId) {
+    $('#your-products ul li.placeholder').remove();
+    addProduct($('#your-products ul'), productId,
+               products[productId], {showBuy: false});
+  }
+
   function showError(msg) {
     console.error(msg);
     $('#error').text(msg);
@@ -66,6 +72,7 @@ $(function() {
   // DOM handling:
   //
   $('ul').on('click', '.product button', function() {
+    $('#error').text('');
     var id = $(this).data('productId');
     var prod = $(this).data('product');
     console.log('purchasing', prod.name, id);
@@ -76,10 +83,7 @@ $(function() {
       }
       console.log('product:', info.productId,
                   'purchased for the first time?', info.newPurchase);
-      $('#your-products ul li.placeholder').remove();
-      var prodData = products[info.productId];
-      addProduct($('#your-products ul'), info.productId, prodData,
-                 {showBuy: false});
+      productBought(info.productId);
     });
 
     // TODO: update the UI here with a spinner or something.
@@ -94,12 +98,29 @@ $(function() {
   //
   console.log('example app startup');
 
+  fxpay.configure({
+    receiptCheckSites: [
+      // Whitelist some test services.
+      'https://receiptcheck.marketplace.firefox.com',
+      'https://receiptcheck-payments-alt.allizom.org',
+    ]
+  });
+
   fxpay.init({
     onerror: function(err) {
       showError(err);
     },
     oninit: function() {
       console.log('fxpay initialized successfully');
+    },
+    onrestore: function(err, info) {
+      if (err) {
+        console.error('error restoring product', info.productId,
+                      'message:', err);
+        return showError(err);
+      }
+      console.log('product', info.productId, 'restored from receipt');
+      productBought(info.productId);
     }
   });
 
@@ -109,5 +130,4 @@ $(function() {
   for (var prodId in products) {
     addProduct(ul, prodId, products[prodId]);
   }
-
 });

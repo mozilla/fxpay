@@ -73,9 +73,10 @@ Initialization
 
 When your app starts up, you need to initialize ``fxpay`` so it can
 check for any existing product receipts. This is also your chance to
-register some callbacks for general error handling and other events.
+register some callbacks for general `error`_
+handling and other events.
 
-::
+Example::
 
     fxpay.init({
       onerror: function(error) {
@@ -83,8 +84,39 @@ register some callbacks for general error handling and other events.
       },
       oninit: function() {
         console.log('fxpay initialized without errors');
+      },
+      onrestore: function(error, info) {
+        // If error is null, info.productId has been restored from receipt.
       }
     });
+
+Restoring Products From Receipt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``fxpay.init()`` will look for any `receipts`_ on
+device and validate them. If a receipt is valid then it means the user
+has already purchased the product so you should restore it.
+
+The ``onrestore`` callback will be invoked for each product restored.
+The first argument is an `error`_ string which may be
+null. The second argument is a `product info`_ object
+which may also be null for certain errors.
+
+You initialize the callback like this::
+
+    fxpay.init({
+      onrestore: function(error, info) {
+        if (error) {
+          console.error('Error', error,
+                        'while restoring receipt for', info.productId);
+        } else {
+          console.log('product', info.productId,
+                      'was restored from receipt');
+        }
+      }
+    });
+
+.. _receipts: https://wiki.mozilla.org/Apps/WebApplicationReceipt
 
 Capture A Purchase
 ~~~~~~~~~~~~~~~~~~
@@ -108,13 +140,11 @@ Create a buy button that when tapped, calls ``fxpay.purchase()`` like this::
       // ***************************************************
     });
 
-This ``productId`` is the same one you got from the Developer Hub
-when you set up your products.
-
-When the user completes the buy flow and the Marketplace server has
-verified the receipt, the callback you provided will be invoked with error
-string (if applicable) and an ``info`` parameter that provides info about
-the purchase. At this time, it is safe to deliver the item.
+The ``purchase`` callback will receive an `error`_ string
+which might be null and a `product info`_ object.
+The callback is invoked after the user completes the buy flow
+and the Marketplace server has verified the receipt so at this time it is
+safe to deliver the item.
 
 How does this work? The ``fxpay.purchase()`` function automates
 the process of calling `mozPay()`_ then
@@ -124,6 +154,20 @@ but that's not mandatory for using the ``fxpay`` library.
 
 .. _`in-app payments guide`: https://developer.mozilla.org/en-US/Marketplace/Monetization/In-app_payments
 .. _`Firefox Marketplace Developer Hub`: https://marketplace.firefox.com/developers/
+
+.. _`product info`:
+
+Product Info Object
+~~~~~~~~~~~~~~~~~~~
+
+The ``purchase`` and ``onrestore`` callbacks receive a product info object.
+This object has the following properties:
+
+*info.productId*
+    The ID number of the product. This corresponds to the ID number you see in
+    the Developer Hub when managing your products.
+
+.. _`error`:
 
 Errors
 ~~~~~~
@@ -232,6 +276,14 @@ Possible overrides:
 *log*
     A log object compatible with `window.console`_ to use internally.
     Default: ``window.console``.
+
+*receiptCheckSites*
+    Array of sites allowed to verify purchase receipts.
+    These values are top level URLs to verifier services;
+    they don't need to include URL paths.
+    You would only need to adjust this if you want to work with something
+    other than the production version of Firefox Marketplace.
+    Default: ``['https://receiptcheck.marketplace.firefox.com']``.
 
 
 Developers

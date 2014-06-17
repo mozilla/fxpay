@@ -79,6 +79,7 @@ handling and other events.
 Example::
 
     fxpay.init({
+      appId: 123,  // your app ID from the Developer Hub.
       onerror: function(error) {
         console.error('An error occurred:', error);
       },
@@ -118,6 +119,23 @@ You initialize the callback like this::
 
 .. _receipts: https://wiki.mozilla.org/Apps/WebApplicationReceipt
 
+Rejecting Foreign Receipts
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Upon initialization you must pass in your
+`Firefox Marketplace Developer Hub`_ application ID like this::
+
+    fxpay.init({
+      appId: 123,
+      // ...
+    });
+
+This allows ``fxpay.init()`` to reject any **valid** receipts belonging
+to other apps, such as one that a user might have copied from another app.
+
+To disable this check and allow any receipt belonging to any app, you can
+use `configuration`_ to set ``allowAnyAppReceipt = true``.
+
 Capture A Purchase
 ~~~~~~~~~~~~~~~~~~
 
@@ -153,7 +171,6 @@ If you want to know the specifics, see the `in-app payments guide`_
 but that's not mandatory for using the ``fxpay`` library.
 
 .. _`in-app payments guide`: https://developer.mozilla.org/en-US/Marketplace/Monetization/In-app_payments
-.. _`Firefox Marketplace Developer Hub`: https://marketplace.firefox.com/developers/
 
 .. _`product info`:
 
@@ -163,9 +180,12 @@ Product Info Object
 The ``purchase`` and ``onrestore`` callbacks receive a product info object.
 This object has the following properties:
 
+*info.appId*
+    The ID of the application that owns this product.
+
 *info.productId*
     The ID number of the product. This corresponds to the ID number you see in
-    the Developer Hub when managing your products.
+    the `Firefox Marketplace Developer Hub`_ when managing your products.
 
 .. _`error`:
 
@@ -248,6 +268,8 @@ that implements the same `window.console`_ methods::
       log: myConsole
     });
 
+.. _configuration:
+
 Configuration
 ~~~~~~~~~~~~~
 
@@ -260,6 +282,13 @@ Example::
     fxpay.configure({log: myCustomLog});
 
 Possible overrides:
+
+*allowAnyAppReceipt*
+    If ``true``, the receipt will not be marked invalid when it's for
+    someone else's app. Default: ``false``.
+
+*appId*
+    Your `Firefox Marketplace Developer Hub`_ application ID.
 
 *apiUrlBase*
     The base URL of the internal ``fxpay`` API.
@@ -328,6 +357,7 @@ To build yourself a compressed version of ``fxpay.js``, run this::
 
 The compressed source file will appear in the ``build`` directory.
 
+.. _`Firefox Marketplace Developer Hub`: https://marketplace.firefox.com/developers/
 .. _`NodeJS`: http://nodejs.org/
 .. _`npm`: https://www.npmjs.org/
 .. _`mozPay()`: https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay

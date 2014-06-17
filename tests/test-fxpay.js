@@ -5,6 +5,8 @@ describe('fxpay', function () {
     console.log('beginEach');
     server = sinon.fakeServer.create();
     fxpay.configure({
+      appId: '55',  // some random value.
+      allowAnyAppReceipt: false,
       apiUrlBase: 'http://tests-should-never-hit-this.com',
       callbacks: {},
       initError: null,
@@ -45,6 +47,21 @@ describe('fxpay', function () {
           done('init should not have been called');
         },
         notAvalidOption: false
+      });
+    });
+
+    it('should error when appId is empty', function (done) {
+      fxpay.configure({
+        appId: null
+      });
+      fxpay.init({
+        onerror: function(err) {
+          assert.equal(err, 'INCORRECT_USAGE');
+          done();
+        },
+        oninit: function() {
+          done('init should not have been called');
+        }
       });
     });
 
@@ -382,6 +399,7 @@ describe('fxpay', function () {
     beforeEach(function() {
       appSelf.init();
       fxpay.configure({
+        appId: 500419,
         receiptCheckSites: ['https://receiptcheck-payments-alt.allizom.org']
       });
     });
@@ -403,7 +421,9 @@ describe('fxpay', function () {
         },
         oninit: function() {},
         onrestore: function(err, info) {
-          assert.equal(info.productId, '1');
+          if (!err) {
+            assert.equal(info.productId, '1');
+          }
           done(err);
         }
       });
@@ -427,7 +447,9 @@ describe('fxpay', function () {
         },
         oninit: function() {},
         onrestore: function(err, info) {
-          assert.equal(err, 'INVALID_RECEIPT');
+          if (!err) {
+            assert.equal(err, 'INVALID_RECEIPT');
+          }
           done();
         }
       });
@@ -441,13 +463,14 @@ describe('fxpay', function () {
 
 
   describe('verifyReceiptData()', function() {
+    var appId = '44';
     var receiptCheckSite = 'https://niceverifier.org';
 
     function receipt(opt) {
       opt = opt || {};
       opt.data = opt.data || {
         product: {
-          storedata: (opt.storedata || 'inapp_id=1')
+          storedata: (opt.storedata || 'id=' + appId + '&inapp_id=1')
         },
         verify: opt.verify || receiptCheckSite + '/verify/'
       };
@@ -456,7 +479,10 @@ describe('fxpay', function () {
     }
 
     beforeEach(function() {
-      fxpay.configure({receiptCheckSites: [receiptCheckSite]});
+      fxpay.configure({
+        appId: appId,
+        receiptCheckSites: [receiptCheckSite]
+      });
     });
 
     it('fails on non-strings', function(done) {
@@ -546,6 +572,26 @@ describe('fxpay', function () {
       });
     });
 
+    it('fails on disallowed app ID', function(done) {
+      fxpay.configure({
+        appId: '22'  // wrong ID.
+      });
+      fxpay.verifyReceiptData(receipt(), function(err) {
+        assert.equal(err, 'INVALID_RECEIPT');
+        done();
+      });
+    });
+
+    it('allows foreign app receipts with a setting', function(done) {
+      fxpay.configure({
+        appId: '22',  // wrong ID which would normally cause an error.
+        allowAnyAppReceipt: true
+      });
+      fxpay.verifyReceiptData(receipt(), function(err) {
+        done(err);
+      });
+    });
+
     it('fails on disallowed receipt check URLs', function(done) {
       fxpay.verifyReceiptData(receipt({verify: 'http://mykracksite.ru'}),
                               function(err) {
@@ -556,13 +602,22 @@ describe('fxpay', function () {
 
     it('passes through receipt data', function(done) {
       var productId = '321';
-      var storedata = 'inapp_id=' + productId;
+      var storedata = 'id=' + appId + '&inapp_id=' + productId;
       fxpay.verifyReceiptData(receipt({storedata: storedata}),
                               function(err, data, info) {
         if (!err) {
           assert.equal(info.productId, productId);
           assert.equal(data.product.storedata, storedata);
         }
+        done(err);
+      });
+    });
+
+    it('converts numeric app IDs to strings', function(done) {
+      fxpay.configure({
+        appId: parseInt(appId, 10)
+      });
+      fxpay.verifyReceiptData(receipt(), function(err, data, info) {
         done(err);
       });
     });

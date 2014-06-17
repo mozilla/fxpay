@@ -107,6 +107,7 @@ $(function() {
   });
 
   fxpay.init({
+    appId: 500419,  // FIXME: this is for payments-alt only.
     onerror: function(err) {
       showError(err);
     },

@@ -6,11 +6,11 @@ describe('fxpay', function () {
     server = sinon.fakeServer.create();
     fxpay.configure({
       appId: '55',  // some random value.
-      allowAnyAppReceipt: false,
       apiUrlBase: 'http://tests-should-never-hit-this.com',
-      callbacks: {},
       initError: null,
       mozApps: mozAppsStub
+    }, {
+      reset: true
     });
   });
 

@@ -37,6 +37,31 @@ to help us iron out bugs and if you don't mind dealing with API changes.
 This tracker bug will keep you up to date on our progress:
 https://bugzilla.mozilla.org/show_bug.cgi?id=944480
 
+Requirements
+============
+
+To use ``fxpay`` to accept in-app payments, the following
+requirements must be met:
+
+* Your application must run in `Firefox OS`_ 1.1 or greater.
+* Your manifest must declare an `origin`_ for receipt validation.
+* You must declare the following permission in your manifest
+  to talk to the Marketplace API::
+
+      "permissions": {
+        "systemXHR": {
+          "description": "Required to access payment API"
+        }
+      }
+
+* Your application must be a `privileged`_ packaged app so it can be signed
+  and granted proper permissions.
+
+The example app, explained below, shows you how to set all this up.
+
+.. _`origin`: https://developer.mozilla.org/en-US/Apps/Build/Manifest#origin
+.. _`privileged`: https://developer.mozilla.org/en-US/Marketplace/Options/Packaged_apps#Privileged_app
+
 Example App
 ===========
 
@@ -44,8 +69,8 @@ If you'd like to see a working example of ``fxpay``, you're in luck.
 We built one here: https://github.com/mozilla/fxpay/tree/master/example
 
 The README on that page has instructions for how to install the
-example app on a Firefox OS device;
-the app can also be used to test ``fxpay``.
+example app on a `Firefox OS`_ device;
+the app can also be used to test ``fxpay`` and associated APIs.
 
 Usage
 =====
@@ -357,6 +382,7 @@ To build yourself a compressed version of ``fxpay.js``, run this::
 
 The compressed source file will appear in the ``build`` directory.
 
+.. _`Firefox OS`: https://developer.mozilla.org/en-US/Firefox_OS
 .. _`Firefox Marketplace Developer Hub`: https://marketplace.firefox.com/developers/
 .. _`NodeJS`: http://nodejs.org/
 .. _`npm`: https://www.npmjs.org/

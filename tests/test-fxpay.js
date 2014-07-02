@@ -1,17 +1,22 @@
 describe('fxpay', function () {
+  var settings;
   var server;
 
   beforeEach(function() {
     console.log('beginEach');
     server = sinon.fakeServer.create();
-    fxpay.configure({
+    settings = fxpay.configure({
       appId: '55',  // some random value.
       apiUrlBase: 'http://tests-should-never-hit-this.com',
+      // Start with this true because init() sets it and it's
+      // cumbersome to re-init some tests.
+      hasAddReceipt: true,
       initError: null,
       mozApps: mozAppsStub
     }, {
       reset: true
     });
+    window.localStorage.clear();
   });
 
   afterEach(function() {
@@ -65,7 +70,7 @@ describe('fxpay', function () {
       });
     });
 
-    it('should error when addReceipt does not exist', function (done) {
+    it('should error when receipt storage does not exist', function (done) {
       var appStub = {
         addReceipt: undefined,  // older FxOSs do not have this.
         onsuccess: function() {},
@@ -74,6 +79,7 @@ describe('fxpay', function () {
       appStub.result = appStub;  // result of DOM request.
 
       fxpay.configure({
+        localStorage: null,  // no fallback.
         mozApps: {
           getSelf: function() {
             return appStub;
@@ -163,6 +169,53 @@ describe('fxpay', function () {
       mozPay.reset();
       receiptAdd.reset();
     });
+
+    function setUpLocStorAddReceipt(done) {
+      // Set up a purchase where mozApps does not support addReceipt().
+      var appStub = {
+        addReceipt: undefined,
+        onsuccess: function() {},
+        onerror: function() {}
+      };
+      appStub.result = appStub;  // result of DOM request.
+
+      fxpay.configure({
+        mozApps: {
+          getSelf: function() {
+            return appStub;
+          }
+        }
+      });
+
+      // Re-initialize to detect lack of addReceipt().
+      fxpay.init({
+        oninit: function() {},
+        onerror: function(err) {
+          done(err);
+        }
+      });
+
+      appStub.onsuccess();
+    }
+
+    function finishPurchaseOk(receipt) {
+      // Respond to fetching the JWT.
+      server.respondWith(
+        'POST',
+        /.*\/webpay\/inapp\/prepare/,
+        productData());
+      server.respond();
+
+      mozPay.returnValues[0].onsuccess();
+
+      server.respondWith(
+        'GET',
+        /.*\/transaction\/XYZ/,
+        transactionData({receipt: receipt}));
+      server.respond();
+
+      receiptAdd.onsuccess();
+    }
 
     it('should pass through setup errors', function (done) {
       // Trigger a setup error:
@@ -299,7 +352,7 @@ describe('fxpay', function () {
       });
     });
 
-    it('should add a Marketplace receipt to device', function (done) {
+    it('should add receipt to device with addReceipt', function (done) {
       var receipt = '<receipt>';
 
       fxpay.purchase('123', function(err) {
@@ -307,22 +360,49 @@ describe('fxpay', function () {
         done(err);
       });
 
-      // Respond to fetching the JWT.
-      server.respondWith(
-        'POST',
-        /.*\/webpay\/inapp\/prepare/,
-        productData());
-      server.respond();
+      finishPurchaseOk(receipt);
+    });
 
-      mozPay.returnValues[0].onsuccess();
+    it('should add receipt to device with localStorage', function (done) {
+      var receipt = '<receipt>';
 
-      server.respondWith(
-        'GET',
-        /.*\/transaction\/XYZ/,
-        transactionData({receipt: receipt}));
-      server.respond();
+      setUpLocStorAddReceipt(done);
 
-      receiptAdd.onsuccess();
+      // Without addReceipt(), receipt should go in localStorage.
+
+      fxpay.purchase('123', function(err) {
+        if (!err) {
+          assert.equal(
+            JSON.parse(
+              window.localStorage.getItem(settings.localStorageKey))[0],
+            receipt);
+        }
+        done(err);
+      });
+
+      finishPurchaseOk(receipt);
+    });
+
+    it('should not add dupes to localStorage', function (done) {
+      var receipt = '<receipt>';
+
+      setUpLocStorAddReceipt(done);
+
+      // Set up an already stored receipt.
+      window.localStorage.setItem(settings.localStorageKey,
+                                  JSON.stringify([receipt]));
+
+      fxpay.purchase('123', function(err) {
+        if (!err) {
+          var addedReceipts = JSON.parse(
+            window.localStorage.getItem(settings.localStorageKey));
+          // Make sure a new receipt wasn't added.
+          assert.equal(addedReceipts.length, 1);
+        }
+        done(err);
+      });
+
+      finishPurchaseOk(receipt);
     });
 
     it('should pass through receipt errors', function (done) {
@@ -404,7 +484,36 @@ describe('fxpay', function () {
       });
     });
 
-    it('posts receipt for validation', function(done) {
+    it('posts native receipt for validation', function(done) {
+      appSelf.receipts = [receipt];
+
+      server.respondWith(
+        'POST', /.*/,
+        function(request) {
+          assert.equal(request.requestBody, receipt);
+          request.respond(200, {"Content-Type": "application/json"},
+                          '{"status": "valid"}');
+        });
+
+      fxpay.init({
+        onerror: function(err) {
+          done(err);
+        },
+        oninit: function() {},
+        onrestore: function(err, info) {
+          if (!err) {
+            assert.equal(info.productId, '1');
+          }
+          done(err);
+        }
+      });
+
+      appSelf.onsuccess();
+      server.respond();
+
+    });
+
+    it('posts local storage receipt for validation', function(done) {
       appSelf.receipts = [receipt];
 
       server.respondWith(
@@ -457,6 +566,63 @@ describe('fxpay', function () {
       appSelf.onsuccess();
       server.respond();
 
+    });
+
+  });
+
+
+  describe('getReceipts', function() {
+
+    it('exposes mozApps receipts', function() {
+      var receipt = '<receipt>';
+      fxpay.configure({
+        appSelf: {
+          receipts: [receipt]
+        }
+      });
+      var fetchedReceipts = fxpay.getReceipts();
+      assert.equal(fetchedReceipts[0], receipt);
+      assert.equal(fetchedReceipts.length, 1);
+    });
+
+    it('ignores missing receipts', function() {
+      fxpay.configure({appSelf: {}});  // no receipts property
+      var fetchedReceipts = fxpay.getReceipts();
+      assert.equal(fetchedReceipts.length, 0);
+    });
+
+    it('gets mozApps receipts and localStorage ones', function() {
+      var receipt1 = '<receipt1>';
+      var receipt2 = '<receipt2>';
+
+      fxpay.configure({
+        appSelf: {
+          receipts: [receipt1]
+        }
+      });
+      window.localStorage.setItem(settings.localStorageKey,
+                                  JSON.stringify([receipt2]));
+
+      var fetchedReceipts = fxpay.getReceipts();
+      assert.equal(fetchedReceipts[0], receipt1);
+      assert.equal(fetchedReceipts[1], receipt2);
+      assert.equal(fetchedReceipts.length, 2);
+    });
+
+    it('filters out dupe receipts', function() {
+      var receipt1 = '<receipt1>';
+
+      fxpay.configure({
+        appSelf: {
+          receipts: [receipt1]
+        }
+      });
+      window.localStorage.setItem(settings.localStorageKey,
+                                  JSON.stringify([receipt1]));
+
+      var fetchedReceipts = fxpay.getReceipts();
+      assert.equal(fetchedReceipts[0], receipt1);
+      assert.equal(fetchedReceipts.length, 1);
     });
 
   });

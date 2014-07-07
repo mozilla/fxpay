@@ -536,9 +536,8 @@ describe('fxpay', function () {
         },
         oninit: function() {},
         onrestore: function(err, info) {
-          if (!err) {
-            assert.equal(err, 'INVALID_RECEIPT');
-          }
+          assert.equal(err, 'INVALID_RECEIPT');
+          assert.equal(info.productId, '1');
           done();
         }
       });
@@ -546,6 +545,24 @@ describe('fxpay', function () {
       appSelf.onsuccess();
       server.respond();
 
+    });
+
+    it('returns info object for receipt errors', function(done) {
+      appSelf.receipts = ['<malformed receipt>'];
+
+      fxpay.init({
+        onerror: function(err) {
+          done(err);
+        },
+        oninit: function() {},
+        onrestore: function(err, info) {
+          assert.equal(err, 'INVALID_RECEIPT');
+          assert.equal(typeof info, 'object');
+          done();
+        }
+      });
+
+      appSelf.onsuccess();
     });
 
   });

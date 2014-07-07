@@ -109,6 +109,7 @@ $(function() {
 
   fxpay.init({
     onerror: function(err) {
+      console.error('error during initialization:', err);
       showError(err);
     },
     oninit: function() {

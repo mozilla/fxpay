@@ -79,10 +79,11 @@ $(function() {
 
     fxpay.purchase(id, function(err, info) {
       if (err) {
+        console.error('error purchasing product', info.productId,
+                      'message:', err);
         return showError(err);
       }
-      console.log('product:', info.productId,
-                  'purchased for the first time?', info.newPurchase);
+      console.log('product:', info.productId, 'purchased');
       productBought(info.productId);
     });
 

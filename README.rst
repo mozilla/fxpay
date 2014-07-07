@@ -104,7 +104,6 @@ handling and other events.
 Example::
 
     fxpay.init({
-      appId: 123,  // your app ID from the Developer Hub.
       onerror: function(error) {
         console.error('An error occurred:', error);
       },
@@ -119,7 +118,7 @@ Example::
 Restoring Products From Receipt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``fxpay.init()`` will look for any `receipts`_ on
+``fxpay.init()`` will discover any `receipts`_ on the user's
 device and validate them. If a receipt is valid then it means the user
 has already purchased the product so you should restore it.
 
@@ -147,19 +146,13 @@ You initialize the callback like this::
 Rejecting Foreign Receipts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Upon initialization you must pass in your
-`Firefox Marketplace Developer Hub`_ application ID like this::
-
-    fxpay.init({
-      appId: 123,
-      // ...
-    });
-
-This allows ``fxpay.init()`` to reject any **valid** receipts belonging
-to other apps, such as one that a user might have copied from another app.
-
-To disable this check and allow any receipt belonging to any app, you can
-use `configuration`_ to set ``allowAnyAppReceipt = true``.
+In addition to rejecting invalid receipts, ``fxpay.init()`` also
+rejects any receipts that belong to foreign apps, i.e. a receipt with a
+product URL that does not match your app's origin.
+This might happen if a user bought a product from another app and copied
+it over to the storage area for your app hoping to get free stuff.
+To disable this check and allow valid receipts belonging to *any* app,
+you can use `configuration`_ to set ``allowAnyAppReceipt = true``.
 
 Capture A Purchase
 ~~~~~~~~~~~~~~~~~~
@@ -205,12 +198,14 @@ Product Info Object
 The ``purchase`` and ``onrestore`` callbacks receive a product info object.
 This object has the following properties:
 
-*info.appId*
-    The ID of the application that owns this product.
-
 *info.productId*
     The ID number of the product. This corresponds to the ID number you see in
     the `Firefox Marketplace Developer Hub`_ when managing your products.
+
+*info.productUrl*
+    The URL of the product as declared in the receipt. This will most likely
+    be a URL to the app, such as ``https://your-hosted-app`` or
+    ``app://your-packaged-app``.
 
 .. _`error`:
 
@@ -311,9 +306,6 @@ Possible overrides:
 *allowAnyAppReceipt*
     If ``true``, the receipt will not be marked invalid when it's for
     someone else's app. Default: ``false``.
-
-*appId*
-    Your `Firefox Marketplace Developer Hub`_ application ID.
 
 *apiUrlBase*
     The base URL of the internal ``fxpay`` API.

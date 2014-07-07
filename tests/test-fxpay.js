@@ -1,12 +1,12 @@
 describe('fxpay', function () {
   var settings;
   var server;
+  var someAppOrigin = 'app://my-app';
 
   beforeEach(function() {
     console.log('beginEach');
     server = sinon.fakeServer.create();
     settings = fxpay.configure({
-      appId: '55',  // some random value.
       apiUrlBase: 'http://tests-should-never-hit-this.com',
       // Start with this true because init() sets it and it's
       // cumbersome to re-init some tests.
@@ -17,6 +17,7 @@ describe('fxpay', function () {
       reset: true
     });
     window.localStorage.clear();
+    appSelf.init();
   });
 
   afterEach(function() {
@@ -24,10 +25,6 @@ describe('fxpay', function () {
   });
 
   describe('init()', function() {
-
-    beforeEach(function() {
-      appSelf.init();
-    });
 
     it('should call back when started', function (done) {
       fxpay.init({
@@ -52,21 +49,6 @@ describe('fxpay', function () {
           done('init should not have been called');
         },
         notAvalidOption: false
-      });
-    });
-
-    it('should error when appId is empty', function (done) {
-      fxpay.configure({
-        appId: null
-      });
-      fxpay.init({
-        onerror: function(err) {
-          assert.equal(err, 'INCORRECT_USAGE');
-          done();
-        },
-        oninit: function() {
-          done('init should not have been called');
-        }
       });
     });
 
@@ -158,7 +140,6 @@ describe('fxpay', function () {
 
     beforeEach(function() {
       mozPay = sinon.spy(mozPayStub);
-      appSelf.init();
       fxpay.configure({
         appSelf: appSelf,
         mozPay: mozPay
@@ -477,9 +458,8 @@ describe('fxpay', function () {
       'TWmm_18PF8UZk-RejKSOP1UP2rpOdlKjdSHS_oSlMso2maa5gJ3S5DXOGvURemPgg';
 
     beforeEach(function() {
-      appSelf.init();
+      appSelf.origin = 'http://boar4485.testmanifest.com';
       fxpay.configure({
-        appId: 500419,
         receiptCheckSites: ['https://receiptcheck-payments-alt.allizom.org']
       });
     });
@@ -629,14 +609,14 @@ describe('fxpay', function () {
 
 
   describe('verifyReceiptData()', function() {
-    var appId = '44';
     var receiptCheckSite = 'https://niceverifier.org';
 
     function receipt(opt) {
       opt = opt || {};
       opt.data = opt.data || {
         product: {
-          storedata: (opt.storedata || 'id=' + appId + '&inapp_id=1')
+          url: opt.productUrl || someAppOrigin,
+          storedata: (opt.storedata || 'inapp_id=1')
         },
         verify: opt.verify || receiptCheckSite + '/verify/'
       };
@@ -646,7 +626,7 @@ describe('fxpay', function () {
 
     beforeEach(function() {
       fxpay.configure({
-        appId: appId,
+        appSelf: appSelf,
         receiptCheckSites: [receiptCheckSite]
       });
     });
@@ -689,7 +669,14 @@ describe('fxpay', function () {
     });
 
     it('fails on missing product', function(done) {
-      fxpay.verifyReceiptData('jwtAlgo.' + btoa(JSON.stringify({})) + '.jwtSig',
+      fxpay.verifyReceiptData({data: {}}, function(err) {
+        assert.equal(err, 'INVALID_RECEIPT');
+        done();
+      });
+    });
+
+    it('fails on missing product URL', function(done) {
+      fxpay.verifyReceiptData({data: {product: {storedata: 'storedata'}}},
                               function(err) {
         assert.equal(err, 'INVALID_RECEIPT');
         done();
@@ -738,22 +725,57 @@ describe('fxpay', function () {
       });
     });
 
-    it('fails on disallowed app ID', function(done) {
-      fxpay.configure({
-        appId: '22'  // wrong ID.
-      });
-      fxpay.verifyReceiptData(receipt(), function(err) {
+    it('fails on foreign product URL', function(done) {
+      var data = receipt({productUrl: 'wrong-app'});
+      fxpay.verifyReceiptData(data, function(err) {
         assert.equal(err, 'INVALID_RECEIPT');
         done();
       });
     });
 
+    it('handles non-prefixed app origins', function(done) {
+      appSelf.origin = 'app://the-origin';
+      // TODO: remove this when fixed in Marketplace. bug 1034264.
+      var data = receipt({productUrl: 'the-origin'});
+
+      fxpay.verifyReceiptData(data, function(err) {
+        done(err);
+      });
+    });
+
+    it('handles properly prefixed app origins', function(done) {
+      appSelf.origin = 'app://the-app';
+      var data = receipt({productUrl: appSelf.origin});
+
+      fxpay.verifyReceiptData(data, function(err) {
+        done(err);
+      });
+    });
+
+    it('handles HTTP hosted app origins', function(done) {
+      appSelf.origin = 'http://hosted-app';
+      var data = receipt({productUrl: appSelf.origin});
+
+      fxpay.verifyReceiptData(data, function(err) {
+        done(err);
+      });
+    });
+
+    it('handles HTTPS hosted app origins', function(done) {
+      appSelf.origin = 'https://hosted-app';
+      var data = receipt({productUrl: appSelf.origin});
+
+      fxpay.verifyReceiptData(data, function(err) {
+        done(err);
+      });
+    });
+
     it('allows foreign app receipts with a setting', function(done) {
       fxpay.configure({
-        appId: '22',  // wrong ID which would normally cause an error.
         allowAnyAppReceipt: true
       });
-      fxpay.verifyReceiptData(receipt(), function(err) {
+      var data = receipt({productUrl: 'wrong-app'});
+      fxpay.verifyReceiptData(data, function(err) {
         done(err);
       });
     });
@@ -768,22 +790,18 @@ describe('fxpay', function () {
 
     it('passes through receipt data', function(done) {
       var productId = '321';
-      var storedata = 'id=' + appId + '&inapp_id=' + productId;
-      fxpay.verifyReceiptData(receipt({storedata: storedata}),
+      var productUrl = 'app://some-packaged-origin';
+      var storedata = 'inapp_id=' + productId;
+      appSelf.origin = productUrl;
+
+      fxpay.verifyReceiptData(receipt({storedata: storedata,
+                                       productUrl: productUrl}),
                               function(err, data, info) {
         if (!err) {
           assert.equal(info.productId, productId);
+          assert.equal(info.productUrl, productUrl);
           assert.equal(data.product.storedata, storedata);
         }
-        done(err);
-      });
-    });
-
-    it('converts numeric app IDs to strings', function(done) {
-      fxpay.configure({
-        appId: parseInt(appId, 10)
-      });
-      fxpay.verifyReceiptData(receipt(), function(err, data, info) {
         done(err);
       });
     });
@@ -1050,95 +1068,95 @@ describe('fxpay', function () {
       done();
     });
   });
-});
 
 
-function dispatchXhrEvent(xhr, eventName, bubbles, cancelable) {
-  xhr.dispatchEvent(new sinon.Event(eventName, bubbles, cancelable, xhr));
-  // Prevent future listening, like, in future tests.
-  // Make this is fixed now?
-  // See https://github.com/cjohansen/Sinon.JS/issues/430
-  xhr.eventListeners = {};
-}
-
-
-function productData(overrides, status) {
-  // Create a JSON server response to a request for product data.
-  overrides = overrides || {};
-  var data = {
-    webpayJWT: '<jwt>',
-    contribStatusURL: '/transaction/XYZ',
-  };
-  for (var k in data) {
-    if (overrides[k]) {
-      data[k] = overrides[k];
-    }
+  function dispatchXhrEvent(xhr, eventName, bubbles, cancelable) {
+    xhr.dispatchEvent(new sinon.Event(eventName, bubbles, cancelable, xhr));
+    // Prevent future listening, like, in future tests.
+    // Maybe this is fixed now?
+    // See https://github.com/cjohansen/Sinon.JS/issues/430
+    xhr.eventListeners = {};
   }
-  return [status || 200, {"Content-Type": "application/json"},
-          JSON.stringify(data)];
-}
 
 
-function transactionData(overrides, status) {
-  // Create a JSON server response to a request for transaction data.
-  overrides = overrides || {};
-  var data = {
-    status: 'complete',
-    // Pretend this is a real Marketplace receipt.
-    receipt: '<keys>~<receipt>'
-  };
-  for (var k in data) {
-    if (overrides[k]) {
-      data[k] = overrides[k];
+  function productData(overrides, status) {
+    // Create a JSON server response to a request for product data.
+    overrides = overrides || {};
+    var data = {
+      webpayJWT: '<jwt>',
+      contribStatusURL: '/transaction/XYZ',
+    };
+    for (var k in data) {
+      if (overrides[k]) {
+        data[k] = overrides[k];
+      }
     }
+    return [status || 200, {"Content-Type": "application/json"},
+            JSON.stringify(data)];
   }
-  return [status || 200, {"Content-Type": "application/json"},
-          JSON.stringify(data)];
-}
 
 
-function mozPayStub() {
-  // https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay
-  return {
+  function transactionData(overrides, status) {
+    // Create a JSON server response to a request for transaction data.
+    overrides = overrides || {};
+    var data = {
+      status: 'complete',
+      // Pretend this is a real Marketplace receipt.
+      receipt: '<keys>~<receipt>'
+    };
+    for (var k in data) {
+      if (overrides[k]) {
+        data[k] = overrides[k];
+      }
+    }
+    return [status || 200, {"Content-Type": "application/json"},
+            JSON.stringify(data)];
+  }
+
+
+  function mozPayStub() {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay
+    return {
+      onsuccess: function() {},
+      onerror: function() {}
+    };
+  }
+
+
+  var receiptAdd = {
+    error: null,
+    _receipt: null,
+    onsuccess: function() {},
+    onerror: function() {},
+    reset: function() {
+      this._receipt = null;
+      this.error = null;
+    }
+  };
+
+
+  var appSelf = {
+    init: function() {
+      this.error = null;
+      this.origin = someAppOrigin;
+      this.receipts = [];
+      // This is the result of getSelf(). Setting it to this makes stubbing easier.
+      this.result = this;
+    },
+    addReceipt: function(receipt) {
+      receiptAdd._receipt = receipt;
+      return receiptAdd;
+    },
     onsuccess: function() {},
     onerror: function() {}
   };
-}
 
 
-var receiptAdd = {
-  error: null,
-  _receipt: null,
-  onsuccess: function() {},
-  onerror: function() {},
-  reset: function() {
-    this._receipt = null;
-    this.error = null;
-  }
-};
+  // https://developer.mozilla.org/en-US/docs/Web/API/Apps.getSelf
+  var mozAppsStub = {
+    getSelf: function() {
+      return appSelf;
+    }
+  };
 
-
-var appSelf = {
-  error: null,
-  receipts: [],
-  addReceipt: function(receipt) {
-    receiptAdd._receipt = receipt;
-    return receiptAdd;
-  },
-  onsuccess: function() {},
-  onerror: function() {},
-  init: function() {
-    this.error = null;
-    this.receipts = [];
-    // This is the result of getSelf(). Setting it to this makes stubbing easier.
-    this.result = this;
-  }
-};
-
-
-// https://developer.mozilla.org/en-US/docs/Web/API/Apps.getSelf
-var mozAppsStub = {
-  getSelf: function() {
-    return appSelf;
-  }
-};
+});

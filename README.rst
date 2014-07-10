@@ -196,7 +196,9 @@ Product Info Object
 ~~~~~~~~~~~~~~~~~~~
 
 The ``purchase`` and ``onrestore`` callbacks receive a product info object.
-This object has the following properties:
+In case of an error, you may receive an object with missing properties
+depending on the error state.
+The product info object has the following properties:
 
 *info.productId*
     The ID number of the product. This corresponds to the ID number you see in

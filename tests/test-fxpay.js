@@ -198,7 +198,7 @@ describe('fxpay', function () {
       receiptAdd.onsuccess();
     }
 
-    it('should pass through setup errors', function (done) {
+    it('should pass through init errors', function (done) {
       // Trigger a setup error:
       fxpay.configure({
         mozApps: {},  // invalid mozApps.
@@ -210,8 +210,9 @@ describe('fxpay', function () {
       });
 
       // Try to start a purchase.
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase('123', function(err, info) {
         assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        assert.equal(typeof info, 'object');
         done();
       });
     });
@@ -229,7 +230,6 @@ describe('fxpay', function () {
         assert.ok(mozPay.called);
         assert.ok(mozPay.calledWith([webpayJWT]), mozPay.firstCall);
         assert.equal(info.productId, productId);
-        assert.equal(info.newPurchase, true);
         done(err);
       });
 
@@ -253,9 +253,11 @@ describe('fxpay', function () {
     });
 
     it('should timeout polling the transaction', function (done) {
+      var productId = '123';
 
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase(productId, function(err, info) {
         assert.equal(err, 'TRANSACTION_TIMEOUT');
+        assert.equal(info.productId, productId);
         done();
       }, {
         maxTries: 2,
@@ -280,9 +282,11 @@ describe('fxpay', function () {
     });
 
     it('should call back with mozPay error', function (done) {
+      var productId = '123';
 
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase(productId, function(err, info) {
         assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+        assert.equal(info.productId, productId);
         done();
       });
 
@@ -327,8 +331,9 @@ describe('fxpay', function () {
     it('should error when mozPay is not supported', function (done) {
       fxpay.configure({mozPay: undefined});
 
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase('123', function(err, info) {
         assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        assert.equal(typeof info, 'object');
         done();
       });
     });

@@ -1,7 +1,7 @@
 {
   "version": "0.0.1",
   "name": "FxPay",
-  "origin": "app://fxpay",
+  "origin": "app://fxpay.allizom.org",
   "description": "Example of a packaged app that can do server-less in-app payments",
   "developer": {
       "name": "Kumar McMillan"

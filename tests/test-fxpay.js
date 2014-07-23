@@ -199,7 +199,7 @@ describe('fxpay', function () {
     }
 
     it('should pass through init errors', function (done) {
-      // Trigger a setup error:
+      // Trigger an init error:
       fxpay.configure({
         mozApps: {},  // invalid mozApps.
       });
@@ -219,7 +219,7 @@ describe('fxpay', function () {
 
     it('should send a JWT to mozPay', function (done) {
       var webpayJWT = '<base64 JWT>';
-      var productId = '1234';
+      var productId = 1234;
       var cfg = {
         apiUrlBase: 'https://not-the-real-marketplace',
         apiVersionPrefix: '/api/v1'
@@ -230,6 +230,7 @@ describe('fxpay', function () {
         assert.ok(mozPay.called);
         assert.ok(mozPay.calledWith([webpayJWT]), mozPay.firstCall);
         assert.equal(info.productId, productId);
+        assert.equal(typeof info.productId, 'number');
         done(err);
       });
 
@@ -253,7 +254,7 @@ describe('fxpay', function () {
     });
 
     it('should timeout polling the transaction', function (done) {
-      var productId = '123';
+      var productId = 123;
 
       fxpay.purchase(productId, function(err, info) {
         assert.equal(err, 'TRANSACTION_TIMEOUT');
@@ -282,7 +283,7 @@ describe('fxpay', function () {
     });
 
     it('should call back with mozPay error', function (done) {
-      var productId = '123';
+      var productId = 123;
 
       fxpay.purchase(productId, function(err, info) {
         assert.equal(err, 'DIALOG_CLOSED_BY_USER');
@@ -304,7 +305,7 @@ describe('fxpay', function () {
 
     it('should report invalid transaction state', function (done) {
 
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase(123, function(err) {
         assert.equal(err, 'INVALID_TRANSACTION_STATE');
         done();
       });
@@ -331,7 +332,7 @@ describe('fxpay', function () {
     it('should error when mozPay is not supported', function (done) {
       fxpay.configure({mozPay: undefined});
 
-      fxpay.purchase('123', function(err, info) {
+      fxpay.purchase(123, function(err, info) {
         assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
         assert.equal(typeof info, 'object');
         done();
@@ -341,7 +342,7 @@ describe('fxpay', function () {
     it('should add receipt to device with addReceipt', function (done) {
       var receipt = '<receipt>';
 
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase(123, function(err) {
         assert.equal(receiptAdd._receipt, receipt);
         done(err);
       });
@@ -356,7 +357,7 @@ describe('fxpay', function () {
 
       // Without addReceipt(), receipt should go in localStorage.
 
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase(123, function(err) {
         if (!err) {
           assert.equal(
             JSON.parse(
@@ -378,7 +379,7 @@ describe('fxpay', function () {
       window.localStorage.setItem(settings.localStorageKey,
                                   JSON.stringify([receipt]));
 
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase(123, function(err) {
         if (!err) {
           var addedReceipts = JSON.parse(
             window.localStorage.getItem(settings.localStorageKey));
@@ -393,7 +394,7 @@ describe('fxpay', function () {
 
     it('should pass through receipt errors', function (done) {
 
-      fxpay.purchase('123', function(err) {
+      fxpay.purchase(123, function(err) {
         assert.equal(err, 'ADD_RECEIPT_ERROR');
         done();
       });
@@ -627,6 +628,14 @@ describe('fxpay', function () {
       assert.equal(fetchedReceipts.length, 1);
     });
 
+    it('handles initialization errors', function() {
+      fxpay.configure({
+        appSelf: null  // default state before initializaion.
+      });
+      var fetchedReceipts = fxpay.getReceipts();
+      assert.equal(fetchedReceipts.length, 0);
+    });
+
   });
 
 
@@ -811,7 +820,7 @@ describe('fxpay', function () {
     });
 
     it('passes through receipt data', function(done) {
-      var productId = '321';
+      var productId = 321;
       var productUrl = 'app://some-packaged-origin';
       var storedata = 'inapp_id=' + productId;
       appSelf.origin = productUrl;
@@ -821,6 +830,7 @@ describe('fxpay', function () {
                               function(err, data, info) {
         if (!err) {
           assert.equal(info.productId, productId);
+          assert.equal(typeof info.productId, 'number');
           assert.equal(info.productUrl, productUrl);
           assert.equal(data.product.storedata, storedata);
         }
@@ -828,6 +838,83 @@ describe('fxpay', function () {
       });
     });
 
+  });
+
+
+  describe('getProducts', function() {
+
+    beforeEach(function() {
+      fxpay.configure({
+        appSelf: appSelf
+      });
+    });
+
+    it('calls back with product info', function(done) {
+
+      var serverObjects = [
+        {"id": 3, "app": "fxpay", "price_id": 237, "name": "Virtual Kiwi",
+         "logo_url": "http://site/image1.png"},
+        {"id": 4, "app": "fxpay", "price_id": 238, "name": "Majestic Cheese",
+         "logo_url": "http://site/image2.png"}
+      ];
+      var url = (settings.apiUrlBase + settings.apiVersionPrefix +
+                 '/payments/' + encodeURIComponent(someAppOrigin) +
+                 '/in-app/');
+
+      server.respondWith(
+        'GET', url,
+        [200, {"Content-Type": "application/json"},
+         JSON.stringify({
+           "meta": {"next": null, "previous": null, "total_count": 2,
+                    "offset": 0, "limit": 25},
+           "objects": serverObjects
+         })]);
+
+      fxpay.getProducts(function(err, products) {
+        assert.equal(products[0].name, serverObjects[0].name);
+        assert.equal(products[0].productId, serverObjects[0].id);
+        assert.equal(typeof products[0].productId, 'number');
+        assert.equal(products[0].smallImageUrl, serverObjects[0].logo_url);
+        assert.equal(products[1].name, serverObjects[1].name);
+        assert.equal(products[1].productId, serverObjects[1].id);
+        assert.equal(products[1].smallImageUrl, serverObjects[1].logo_url);
+        assert.equal(products.length, 2);
+        done(err);
+      });
+
+      server.respond();
+    });
+
+    it('calls back with API errors', function(done) {
+
+      server.respondWith('GET', /.*/, [404, {}, '']);
+
+      fxpay.getProducts(function(err, products) {
+        assert.equal(err, 'BAD_API_RESPONSE');
+        assert.equal(products.length, 0);
+        done();
+      });
+
+      server.respond();
+    });
+
+    it('should pass through init errors', function (done) {
+      // Trigger an init error:
+      fxpay.configure({
+        mozApps: {},  // invalid mozApps.
+      });
+      fxpay.init({
+        onerror: function(err) {
+          console.log('ignoring err', err);
+        }
+      });
+
+      fxpay.getProducts(function(err, products) {
+        assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        assert.equal(products.length, 0);
+        done();
+      });
+    });
   });
 
 

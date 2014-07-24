@@ -115,6 +115,30 @@ Example::
       }
     });
 
+Fetching Products
+~~~~~~~~~~~~~~~~~
+
+To get all of your app's products, call ``fxpay.getProducts()``
+after successful intialization::
+
+    fxpay.init({
+      oninit: function() {
+
+        fxpay.getProducts(function(error, products) {
+          if (error) {
+            return console.error('Error getting products:', error);
+          }
+
+          console.log('first product ID:', products[0].productId);
+          console.log('first product name:', products[0].name);
+        });
+      }
+    });
+
+If no error occurred, your callback will be invoked with an array
+of `product info`_ objects. This method is useful to build an
+interface from which the user can purchase your products.
+
 Restoring Products From Receipt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -160,10 +184,11 @@ Capture A Purchase
 You can call ``fxpay.purchase()`` to start the buy flow for an
 item.
 First, you'll probably want to make a screen in your app
-where you offer some product for purchase.
-Create a buy button that when tapped, calls ``fxpay.purchase()`` like this::
+where you offer some product for purchase using results from
+``fxpay.getProducts()``.
+Create a buy button that when tapped calls ``fxpay.purchase()`` like this::
 
-    var productId = 543123;
+    var productId = 543123;  // from getProducts().
 
     fxpay.purchase(productId, function(error, info) {
       if (error) {
@@ -204,10 +229,16 @@ The product info object has the following properties:
     The ID number of the product. This corresponds to the ID number you see in
     the `Firefox Marketplace Developer Hub`_ when managing your products.
 
+*info.name*
+    The name of the product in the default locale.
+
 *info.productUrl*
     The URL of the product as declared in the receipt. This will most likely
     be a URL to the app, such as ``https://your-hosted-app`` or
     ``app://your-packaged-app``.
+
+*info.smallImageUrl*
+    A 64 pixel square image URL for the product.
 
 .. _`error`:
 

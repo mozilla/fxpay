@@ -1,23 +1,6 @@
 $(function() {
   var apiUrlBase;
-
-  // TODO: get these from the API instead.
-  var products = {
-    '1': {
-      name: 'Virtual Kiwi',
-      description: 'The forbidden fruit',
-      icons: {
-        '64': 'img/kiwi_64.png',
-      }
-    },
-    '2': {
-      name: 'Magic Cheese',
-      description: 'A majestic wedge of swiss cheese',
-      icons: {
-        '64': 'img/cheese_64.png',
-      }
-    }
-  };
+  var catalog = {};
 
   var apiUrls = {
     prod: 'https://marketplace.firefox.com',
@@ -30,37 +13,75 @@ $(function() {
 
   // Helper functions:
   //
-  function setApiServer(env) {
+  function initApi(env) {
+    var productsUl = $('#products ul');
     if (!env) {
       env = $('#api-server option:selected').val();
     }
     apiUrlBase = apiUrls[env];
     if (!apiUrlBase) {
-      throw 'unknown API env: ' + env;
+      throw new Error('unknown API env: ' + env);
     }
     console.log('setting API to', apiUrlBase);
     fxpay.configure({apiUrlBase: apiUrlBase});
+
+    // Reset some state.
+    clearError();
+    clearPurchases();
+    catalog = {};
+    productsUl.empty();
+
+    console.log('getting products from', apiUrlBase);
+
+    fxpay.getProducts(function(err, products) {
+      if (err) {
+        console.error('error getting products:', err);
+        return showError(err);
+      }
+      products.forEach(function(productInfo) {
+        console.info('got product:', productInfo);
+        catalog[productInfo.productId] = productInfo;
+        addProduct(productsUl, productInfo.productId, productInfo);
+      });
+    });
   }
 
   function addProduct(parent, prodID, prodData, opt) {
     opt = opt || {showBuy: true};
     var li = $('<li></li>', {class: 'product'});
-    li.append($('<img />', {src: prodData.icons['64'],
-                            height: 64, width: 64}));
+    if (prodData.smallImageUrl) {
+      li.append($('<img />', {src: prodData.smallImageUrl,
+                              height: 64, width: 64}));
+    }
     if (opt.showBuy) {
       li.append($('<button>Buy</button>').data({productId: prodID,
                                                 product: prodData}));
     }
     li.append($('<h3>' + prodData.name + '</h3>'));
-    li.append($('<p>' + prodData.description + '</p>'));
+    // TODO bug 1042953:
+    //li.append($('<p>' + prodData.description + '</p>'));
     li.append($('<div></div>', {class: 'clear'}));
     parent.append(li);
   }
 
   function productBought(productId) {
-    $('#your-products ul li.placeholder').remove();
+    $('#your-products ul li.placeholder').hide();
+    var productInfo = catalog[productId];
+    if (!productInfo) {
+      console.error('purchased product ID', productId,
+                    'is not a known product. Known:', Object.keys(catalog));
+    }
     addProduct($('#your-products ul'), productId,
-               products[productId], {showBuy: false});
+               productInfo, {showBuy: false});
+  }
+
+  function clearPurchases() {
+    $('#your-products ul li:not(.placeholder)').remove();
+    $('#your-products ul li.placeholder').show();
+  }
+
+  function clearError() {
+    $('#error').text('');
   }
 
   function showError(msg) {
@@ -72,7 +93,7 @@ $(function() {
   // DOM handling:
   //
   $('ul').on('click', '.product button', function() {
-    $('#error').text('');
+    clearError();
     var id = $(this).data('productId');
     var prod = $(this).data('product');
     console.log('purchasing', prod.name, id);
@@ -91,7 +112,7 @@ $(function() {
   });
 
   $('#api-server').change(function(evt) {
-    setApiServer();
+    initApi();
   });
 
 
@@ -114,6 +135,7 @@ $(function() {
     },
     oninit: function() {
       console.log('fxpay initialized successfully');
+      initApi();
     },
     onrestore: function(err, info) {
       if (err) {
@@ -125,11 +147,4 @@ $(function() {
       productBought(info.productId);
     }
   });
-
-  setApiServer();
-  var ul = $('#products ul');
-
-  for (var prodId in products) {
-    addProduct(ul, prodId, products[prodId]);
-  }
 });

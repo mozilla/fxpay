@@ -93,6 +93,13 @@ a unique identifier, such as ``543123``.
 You'll use this ID number to reference the product when
 working with the ``fxpay`` library.
 
+Development
+~~~~~~~~~~~
+
+You can test out the ``fxpay`` library without having to submit your
+app and configure products as described above. Skip to the
+`fake-products`_ section for details.
+
 Initialization
 ~~~~~~~~~~~~~~
 
@@ -139,7 +146,30 @@ If no error occurred, your callback will be invoked with an array
 of `product info`_ objects. This method is useful to build an
 interface from which the user can purchase your products.
 
-Restoring Products From Receipt
+.. _`fake-products`:
+
+Working with Fake Products
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To jump into building an app that supports payments without
+first configuring products on the `Firefox Marketplace Developer Hub`_,
+you can work with a set of fake products.
+Set this somewhere in your app's initialization::
+
+    fxpay.configure({fakeProducts: true});
+
+This changes ``fxpay.getProducts(...)`` to return two pre-defined
+products that can be purchased in `simulation`_ mode.
+The products will have fixed ID numbers, titles, and prices but this
+should help you integrate the purchase and fulfillment callbacks.
+
+When you have submitted your finished app and fully configured your
+products, set ``fakeProducts`` to false and the same call to
+``fxpay.getProducts(...)`` will retrieve your app's real products.
+
+.. _`simulation`: https://developer.mozilla.org/en-US/Marketplace/Monetization/In-app_payments_section/mozPay_iap#Simulating_payments
+
+Restoring Products from Receipt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``fxpay.init()`` will discover any `receipts`_ on the user's
@@ -178,7 +208,7 @@ it over to the storage area for your app hoping to get free stuff.
 To disable this check and allow valid receipts belonging to *any* app,
 you can use `configuration`_ to set ``allowAnyAppReceipt = true``.
 
-Capture A Purchase
+Capture a Purchase
 ~~~~~~~~~~~~~~~~~~
 
 You can call ``fxpay.purchase()`` to start the buy flow for an
@@ -352,6 +382,11 @@ Possible overrides:
     A Path that gets appended to ``apiUrlBase`` to access the right API version.
     Default: ``/api/v1``.
 
+*fakeProducts*
+    If true, ``fxpay.getProducts()`` will return fake products that can be
+    used for testing. See `fake-products`_ for details.
+    Default: ``false``.
+
 *log*
     A log object compatible with `window.console`_ to use internally.
     Default: ``window.console``.
@@ -365,8 +400,8 @@ Possible overrides:
     Default: ``['https://receiptcheck.marketplace.firefox.com']``.
 
 
-Developers
-==========
+FxPay Developers
+================
 
 To hack on this library you need `NodeJS`_ and `npm`_ installed.
 When you clone the source, all other dependencies are included for you.

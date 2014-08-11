@@ -121,6 +121,11 @@ $(function() {
   console.log('example app startup');
 
   fxpay.configure({
+    // When true, this will return fake products for testing purposes.
+    // When false, your app's configured products will be returned.
+    // TODO: add a checkbox to the UI to control this.
+    // See https://bugzilla.mozilla.org/show_bug.cgi?id=1052160
+    fakeProducts: true,
     receiptCheckSites: [
       // Whitelist some test services.
       'https://receiptcheck.marketplace.firefox.com',

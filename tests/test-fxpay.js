@@ -885,6 +885,38 @@ describe('fxpay', function () {
       server.respond();
     });
 
+    it('can retrieve fake products', function(done) {
+
+      fxpay.configure({fakeProducts: true});
+
+      var serverObjects = [
+        {"id": 1, "app": "fxpay", "price_id": 1, "name": "Clown Shoes",
+         "logo_url": "http://site/image1.png"},
+        {"id": 2, "app": "fxpay", "price_id": 2, "name": "Belt and Suspenders",
+         "logo_url": "http://site/image2.png"}
+      ];
+      var url = (settings.apiUrlBase + settings.apiVersionPrefix +
+                 '/payments/stub-in-app-products/');
+
+      server.respondWith(
+        'GET', url,
+        [200, {"Content-Type": "application/json"},
+         JSON.stringify({
+           "meta": {"next": null, "previous": null, "total_count": 2,
+                    "offset": 0, "limit": 25},
+           "objects": serverObjects
+         })]);
+
+      fxpay.getProducts(function(err, products) {
+        assert.equal(products[0].name, serverObjects[0].name);
+        assert.equal(products[1].name, serverObjects[1].name);
+        assert.equal(products.length, 2);
+        done(err);
+      });
+
+      server.respond();
+    });
+
     it('calls back with API errors', function(done) {
 
       server.respondWith('GET', /.*/, [404, {}, '']);

@@ -478,7 +478,7 @@ describe('fxpay', function () {
         function(request) {
           assert.equal(request.requestBody, receipt);
           request.respond(200, {"Content-Type": "application/json"},
-                          '{"status": "valid"}');
+                          '{"status": "ok"}');
         });
 
       fxpay.init({
@@ -507,7 +507,7 @@ describe('fxpay', function () {
         function(request) {
           assert.equal(request.requestBody, receipt);
           request.respond(200, {"Content-Type": "application/json"},
-                          '{"status": "valid"}');
+                          '{"status": "ok"}');
         });
 
       fxpay.init({
@@ -645,6 +645,7 @@ describe('fxpay', function () {
     function receipt(opt) {
       opt = opt || {};
       opt.data = opt.data || {
+        typ: opt.typ || 'purchase-receipt',
         product: {
           url: opt.productUrl || someAppOrigin,
           storedata: (opt.storedata || 'inapp_id=1')
@@ -807,6 +808,16 @@ describe('fxpay', function () {
       });
       var data = receipt({productUrl: 'wrong-app'});
       fxpay.verifyReceiptData(data, function(err) {
+        done(err);
+      });
+    });
+
+    it('allows wrong product URLs for test receipts', function(done) {
+      // Only allow test receipts when fakeProducts is true.
+      fxpay.configure({fakeProducts: true});
+      fxpay.verifyReceiptData(receipt({typ: 'test-receipt',
+                                       productUrl: 'wrong-app'}),
+                              function(err) {
         done(err);
       });
     });

@@ -127,9 +127,17 @@ $(function() {
     // See https://bugzilla.mozilla.org/show_bug.cgi?id=1052160
     fakeProducts: true,
     receiptCheckSites: [
-      // Whitelist some test services.
+      // Whitelist the production service.
       'https://receiptcheck.marketplace.firefox.com',
+
+      // The following would not be needed in a live app.
+      // These our some test services for development of the fxpay library only.
+
+      // Whitelist our test servers.
+      'https://receiptcheck-dev.allizom.org',
       'https://receiptcheck-payments-alt.allizom.org',
+      // Whitelist a local development server I use.
+      'http://fireplace.loc',
     ]
   });
 

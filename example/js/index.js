@@ -129,13 +129,17 @@ $(function() {
     receiptCheckSites: [
       // Whitelist the production service.
       'https://receiptcheck.marketplace.firefox.com',
+      'https://marketplace.firefox.com',
 
       // The following would not be needed in a live app.
       // These our some test services for development of the fxpay library only.
 
       // Whitelist our test servers.
       'https://receiptcheck-dev.allizom.org',
+      'https://marketplace-dev.allizom.org',
       'https://receiptcheck-payments-alt.allizom.org',
+      'https://payments-alt.allizom.org',
+
       // Whitelist a local development server I use.
       'http://fireplace.loc',
     ]
@@ -157,6 +161,7 @@ $(function() {
         return showError(err);
       }
       console.log('product', info.productId, 'restored from receipt');
+      catalog[info.productId] = info;
       productBought(info.productId);
     }
   });

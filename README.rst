@@ -327,6 +327,10 @@ Here are the possible error strings you might receive and what they mean:
     the `navigator.mozApps`_ namespace or the `mozPay()`_ function
     is unavailable or the ``Apps.addReceipt`` method doesn't exist.
 
+**TEST_RECEIPT_NOT_ALLOWED**
+    The user attempted to restore a product using a test receipt and
+    `fake-products`_ were not configured.
+
 **TRANSACTION_TIMEOUT**
     The HTTP request to check the transaction state timed out.
 

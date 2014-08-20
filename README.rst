@@ -218,7 +218,7 @@ where you offer some product for purchase using results from
 ``fxpay.getProducts()``.
 Create a buy button that when tapped calls ``fxpay.purchase()`` like this::
 
-    var productId = 543123;  // from getProducts().
+    var productId = 'a1bcdeffe3';  // from getProducts().
 
     fxpay.purchase(productId, function(error, info) {
       if (error) {
@@ -256,8 +256,9 @@ depending on the error state.
 The product info object has the following properties:
 
 *info.productId*
-    The ID number of the product. This corresponds to the ID number you see in
-    the `Firefox Marketplace Developer Hub`_ when managing your products.
+    A unique string identifier for the product. This corresponds to the
+    identifier you see in the `Firefox Marketplace Developer Hub`_
+    when managing your products.
 
 *info.name*
     The name of the product in the default locale.

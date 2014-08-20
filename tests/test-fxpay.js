@@ -863,10 +863,10 @@ describe('fxpay', function () {
     it('calls back with product info', function(done) {
 
       var serverObjects = [
-        {"id": 3, "app": "fxpay", "price_id": 237, "name": "Virtual Kiwi",
-         "logo_url": "http://site/image1.png"},
-        {"id": 4, "app": "fxpay", "price_id": 238, "name": "Majestic Cheese",
-         "logo_url": "http://site/image2.png"}
+        {"guid": "guid3", "app": "fxpay", "price_id": 237,
+         "name": "Virtual Kiwi", "logo_url": "http://site/image1.png"},
+        {"guid": "guid4", "app": "fxpay", "price_id": 238,
+         "name": "Majestic Cheese", "logo_url": "http://site/image2.png"}
       ];
       var url = (settings.apiUrlBase + settings.apiVersionPrefix +
                  '/payments/' + encodeURIComponent(someAppOrigin) +
@@ -883,11 +883,10 @@ describe('fxpay', function () {
 
       fxpay.getProducts(function(err, products) {
         assert.equal(products[0].name, serverObjects[0].name);
-        assert.equal(products[0].productId, serverObjects[0].id);
-        assert.equal(typeof products[0].productId, 'number');
+        assert.equal(products[0].productId, serverObjects[0].guid);
         assert.equal(products[0].smallImageUrl, serverObjects[0].logo_url);
         assert.equal(products[1].name, serverObjects[1].name);
-        assert.equal(products[1].productId, serverObjects[1].id);
+        assert.equal(products[1].productId, serverObjects[1].guid);
         assert.equal(products[1].smallImageUrl, serverObjects[1].logo_url);
         assert.equal(products.length, 2);
         done(err);
@@ -901,10 +900,10 @@ describe('fxpay', function () {
       fxpay.configure({fakeProducts: true});
 
       var serverObjects = [
-        {"id": 1, "app": "fxpay", "price_id": 1, "name": "Clown Shoes",
-         "logo_url": "http://site/image1.png"},
-        {"id": 2, "app": "fxpay", "price_id": 2, "name": "Belt and Suspenders",
-         "logo_url": "http://site/image2.png"}
+        {"guid": "guid1", "app": "fxpay", "price_id": 1,
+         "name": "Clown Shoes", "logo_url": "http://site/image1.png"},
+        {"guid": "guid2", "app": "fxpay", "price_id": 2,
+         "name": "Belt and Suspenders", "logo_url": "http://site/image2.png"}
       ];
       var url = (settings.apiUrlBase + settings.apiVersionPrefix +
                  '/payments/stub-in-app-products/');

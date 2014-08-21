@@ -423,62 +423,41 @@ describe('fxpay', function () {
 
   describe('init(): receipt validation', function() {
 
-    // This is an encoded JWT receipt for a test in-app purchase.
-    var receipt = 'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCIsICJqa3UiOiAiaH' +
-      'R0cHM6Ly9tYXJrZXRwbGFjZS1kZXYtY2RuLmFsbGl6b20ub3JnL3B1YmxpY19rZXlz' +
-      'L3Rlc3Rfcm9vdF9wdWIuandrIn0.eyJpc3MiOiAiaHR0cHM6Ly9tYXJrZXRwbGFjZS' +
-      '1kZXYtY2RuLmFsbGl6b20ub3JnL3B1YmxpY19rZXlzL3Rlc3Rfcm9vdF9wdWIuandr' +
-      'IiwgInByaWNlX2xpbWl0IjogIjEwMCIsICJqd2siOiBbeyJhbGciOiAiUlNBIiwgIm' +
-      '1vZCI6ICJBTVZnck9VWkIxeXQwMmxld1F4MHJjLTM5dEZkRkVfLW1GX0oxSG1NZ2kt' +
-      'R2xQOEMxTWJqY212WWwwZFZXeHRvNlZPYnBncWo5QVM5NVZJQmdMZ0tmSXVUQkV3S2' +
-      'kzT3FrNEp2aDI5ZjF6VWNYQ3lfeXV5d09WX1gzNWxPaWRRYUdmaU1KaVhXT0FVZngz' +
-      'YnNMZEw4Mk0wRjU0cGRmN2N3bGlQaUFGYkNhM0hMOGNaQ3pIeU9sSmhBY3lWSElOd0' +
-      'xabE02SElad1JLeG1VdzhuRlpJVWREb2VjWUVEREc0SkJqLXN1MmtwVzRYTW15RHNH' +
-      'TGdNZ290Si15Z0lxbnduWFkwcFRVUTVWM245aHE3YzZzSW5TNk51dXZhUWhUX3I1dm' +
-      'FBS3VycHdSOS0zejRpbXNRV2FTVm1tMzZrMnZ3Y1ZEWldHdkR6UG1xdW9lSFZzekE0' +
-      'dXI4IiwgImV4cCI6ICJBUUFCIiwgImtpZCI6ICJzaWduZXIuc3RhZ2UuYWRkb25zLn' +
-      'BoeDEubW96aWxsYS5jb20ifV0sICJleHAiOiAxNDE2MzU4NzY4LCAiaWF0IjogMTM4' +
-      'NDgyMjc2OCwgInR5cCI6ICJjZXJ0aWZpZWQta2V5IiwgIm5iZiI6IDEzODQ4MjI3Nj' +
-      'h9.nJ1qnaEaXhnTevXDC8b1FKQeWU4iQ3Qld44Oohx9IwSr7LkI5uGpAlCilYoumtK' +
-      'f0GiNYHiB_IAXnT_Pez15CtE_tsu9Xy4fl0X5pll5hh9wKo7Dnkxu9uJwNiNE8vuot' +
-      'vKR7SfYukeMEwE3nHfEREFU87Frs8wUgauxWo880G88lkaT20AArebmpg_I_iH8ldl' +
-      'bSj05iAocDbzjKSHsDmryqZzqLFFV5qwXmOCtTRGWNnhug-eiWmZnDqukA41tWF_OD' +
-      '_paP9EM8iP2vmpSNVhavkrQKk2v6-U5VYzueSMXqvk964yHunrwUCktFWIys1ItNpw' +
-      'DE9Fv5_36IPkHAg~eyJqa3UiOiAiaHR0cHM6Ly9tYXJrZXRwbGFjZS1kZXYtY2RuLm' +
-      'FsbGl6b20ub3JnL3B1YmxpY19rZXlzL3Rlc3Rfcm9vdF9wdWIuandrIiwgInR5cCI6' +
-      'ICJKV1QiLCAiYWxnIjogIlJTMjU2In0.eyJwcm9kdWN0IjogeyJ1cmwiOiAiaHR0cD' +
-      'ovL2JvYXI0NDg1LnRlc3RtYW5pZmVzdC5jb20iLCAic3RvcmVkYXRhIjogImNvbnRy' +
-      'aWI9Mjk3JmlkPTUwMDQxOSZpbmFwcF9pZD0xIn0sICJpc3MiOiAiaHR0cHM6Ly9wYX' +
-      'ltZW50cy1hbHQuYWxsaXpvbS5vcmciLCAidmVyaWZ5IjogImh0dHBzOi8vcmVjZWlw' +
-      'dGNoZWNrLXBheW1lbnRzLWFsdC5hbGxpem9tLm9yZy92ZXJpZnkvIiwgImRldGFpbC' +
-      'I6ICJodHRwczovL3BheW1lbnRzLWFsdC5hbGxpem9tLm9yZy9hcGkvdjEvcmVjZWlw' +
-      'dHMvcmVpc3N1ZS8iLCAicmVpc3N1ZSI6ICJodHRwczovL3BheW1lbnRzLWFsdC5hbG' +
-      'xpem9tLm9yZy9hcGkvdjEvcmVjZWlwdHMvcmVpc3N1ZS8iLCAidXNlciI6IHsidHlw' +
-      'ZSI6ICJkaXJlY3RlZC1pZGVudGlmaWVyIiwgInZhbHVlIjogImFub255bW91cy11c2' +
-      'VyIn0sICJleHAiOiAxNDE4NjYwMDM2LCAiaWF0IjogMTQwMjkzNTIzNiwgInR5cCI6' +
-      'ICJwdXJjaGFzZS1yZWNlaXB0IiwgIm5iZiI6IDE0MDI5MzUyMzZ9.BN9NWnGurtMNn' +
-      'CSX8U8c6Eh0YnaYr7EzBmlKaS8OD5EZrZLCxeeUQibstF-A8HKN3sZxxRuXQY_0xJz' +
-      'sCm2P9MCSw21oL3Ag4OJu9oiTNfxr33wIGr3aKfE0w1gN9f0VEGwZLxlutwk7LogIq' +
-      '6jCKirQ999wWQcqrvRYy73wzQRXCmGk15mOcEYkTKxlrLgjKRI_YqP_xiVTj8LjOxN' +
-      'w4TQ5ojIvvgmzvAWR96v0po_ycXRjJ2Zy6sNPiDyKHmMVPuvTYKnwSJ3f-W4wbpRI9' +
-      'TWmm_18PF8UZk-RejKSOP1UP2rpOdlKjdSHS_oSlMso2maa5gJ3S5DXOGvURemPgg';
+    // Product info as returned from a GET request to the API.
+    var apiProduct = {guid: 'server-guid', name: "Name from API",
+                      logo_url: "img.jpg"};
+    var receipt = makeReceipt();
 
     beforeEach(function() {
       appSelf.origin = 'http://boar4485.testmanifest.com';
       fxpay.configure({
-        receiptCheckSites: ['https://receiptcheck-payments-alt.allizom.org']
+        receiptCheckSites: [
+          'https://receiptcheck-payments-alt.allizom.org',
+          'https://payments-alt.allizom.org',
+        ]
       });
     });
 
-    it('posts native receipt for validation', function(done) {
+    it('validates receipt and gets product info', function(done) {
       appSelf.receipts = [receipt];
 
       server.respondWith(
-        'POST', /.*/,
+        'POST', new RegExp(
+          'https://receiptcheck-payments-alt\\.allizom\\.org/verify/'),
         function(request) {
           assert.equal(request.requestBody, receipt);
           request.respond(200, {"Content-Type": "application/json"},
                           '{"status": "ok"}');
+        });
+
+      server.respondWith(
+        'GET', new RegExp(
+          'https://payments-alt\\.allizom\\.org' +
+          '/api/v1/payments/http%3A%2F%2Fboar4485\\.testmanifest\\.com' +
+          '/in-app/1/'),
+        function(request) {
+          request.respond(200, {"Content-Type": "application/json"},
+                          JSON.stringify(apiProduct));
         });
 
       fxpay.init({
@@ -488,13 +467,16 @@ describe('fxpay', function () {
         oninit: function() {},
         onrestore: function(err, info) {
           if (!err) {
-            assert.equal(info.productId, '1');
+            assert.equal(info.productId, apiProduct.guid);
+            assert.equal(info.name, apiProduct.name);
+            assert.equal(info.smallImageUrl, apiProduct.logo_url);
           }
           done(err);
         }
       });
 
       appSelf.onsuccess();
+      server.respond();
       server.respond();
 
     });
@@ -510,6 +492,13 @@ describe('fxpay', function () {
                           '{"status": "ok"}');
         });
 
+      server.respondWith(
+        'GET', /.*/,
+        function(request) {
+          request.respond(200, {"Content-Type": "application/json"},
+                          JSON.stringify(apiProduct));
+        });
+
       fxpay.init({
         onerror: function(err) {
           done(err);
@@ -517,13 +506,14 @@ describe('fxpay', function () {
         oninit: function() {},
         onrestore: function(err, info) {
           if (!err) {
-            assert.equal(info.productId, '1');
+            assert.equal(info.productId, apiProduct.guid);
           }
           done(err);
         }
       });
 
       appSelf.onsuccess();
+      server.respond();
       server.respond();
 
     });
@@ -569,6 +559,54 @@ describe('fxpay', function () {
       });
 
       appSelf.onsuccess();
+    });
+
+    it('validates test receipt and gets stub products', function(done) {
+      var testReceipt = makeReceipt({
+        typ: 'test-receipt',
+        iss: 'https://payments-alt.allizom.org',
+        verify: 'https://payments-alt.allizom.org/developers/test-receipt/',
+      });
+      appSelf.receipts = [testReceipt];
+
+      server.respondWith(
+        'POST', new RegExp(
+          'https://payments-alt\\.allizom\\.org/developers/test-receipt/'),
+        function(request) {
+          assert.equal(request.requestBody, testReceipt);
+          request.respond(200, {"Content-Type": "application/json"},
+                          '{"status": "ok"}');
+        });
+
+      server.respondWith(
+        'GET', new RegExp(
+          'https://payments-alt\\.allizom\\.org' +
+          '/api/v1/payments/stub-in-app-products/1/'),
+        function(request) {
+          request.respond(200, {"Content-Type": "application/json"},
+                          JSON.stringify(apiProduct));
+        });
+
+      fxpay.configure({fakeProducts: true});
+
+      fxpay.init({
+        onerror: function(err) {
+          done(err);
+        },
+        oninit: function() {},
+        onrestore: function(err, info) {
+          if (!err) {
+            assert.equal(info.productId, apiProduct.guid);
+            assert.equal(info.name, apiProduct.name);
+            assert.equal(info.smallImageUrl, apiProduct.logo_url);
+          }
+          done(err);
+        }
+      });
+
+      appSelf.onsuccess();
+      server.respond();
+      server.respond();
     });
 
   });
@@ -642,18 +680,15 @@ describe('fxpay', function () {
   describe('verifyReceiptData()', function() {
     var receiptCheckSite = 'https://niceverifier.org';
 
-    function receipt(opt) {
-      opt = opt || {};
-      opt.data = opt.data || {
-        typ: opt.typ || 'purchase-receipt',
-        product: {
-          url: opt.productUrl || someAppOrigin,
-          storedata: (opt.storedata || 'inapp_id=1')
-        },
-        verify: opt.verify || receiptCheckSite + '/verify/'
-      };
-      opt.content = opt.content || btoa(JSON.stringify(opt.data));
-      return 'jwtAlgo.' + opt.content + '.jwtSig';
+    function receipt(overrides, receiptData) {
+      overrides = overrides || {};
+      receiptData = receiptData || {};
+
+      receiptData.verify = (receiptData.verify ||
+                            receiptCheckSite + '/verify/');
+      overrides.productUrl = overrides.productUrl || someAppOrigin;
+
+      return makeReceipt(receiptData, overrides);
     }
 
     beforeEach(function() {
@@ -685,7 +720,7 @@ describe('fxpay', function () {
     });
 
     it('fails on invalid base64 encoding', function(done) {
-      fxpay.verifyReceiptData(receipt({content: 'not%valid&&base64'}),
+      fxpay.verifyReceiptData(receipt({receipt: 'not%valid&&base64'}),
                               function(err) {
         assert.equal(err, 'INVALID_RECEIPT');
         done();
@@ -701,14 +736,15 @@ describe('fxpay', function () {
     });
 
     it('fails on missing product', function(done) {
-      fxpay.verifyReceiptData({data: {}}, function(err) {
+      fxpay.verifyReceiptData({}, function(err) {
         assert.equal(err, 'INVALID_RECEIPT');
         done();
       });
     });
 
     it('fails on missing product URL', function(done) {
-      fxpay.verifyReceiptData({data: {product: {storedata: 'storedata'}}},
+      fxpay.verifyReceiptData(receipt(null,
+                                      {product: {storedata: 'storedata'}}),
                               function(err) {
         assert.equal(err, 'INVALID_RECEIPT');
         done();
@@ -815,15 +851,16 @@ describe('fxpay', function () {
     it('allows wrong product URLs for test receipts', function(done) {
       // Only allow test receipts when fakeProducts is true.
       fxpay.configure({fakeProducts: true});
-      fxpay.verifyReceiptData(receipt({typ: 'test-receipt',
-                                       productUrl: 'wrong-app'}),
+      fxpay.verifyReceiptData(receipt({productUrl: 'wrong-app'},
+                                      {typ: 'test-receipt'}),
                               function(err) {
         done(err);
       });
     });
 
     it('fails on disallowed receipt check URLs', function(done) {
-      fxpay.verifyReceiptData(receipt({verify: 'http://mykracksite.ru'}),
+      fxpay.verifyReceiptData(receipt(null,
+                                      {verify: 'http://mykracksite.ru'}),
                               function(err) {
         assert.equal(err, 'INVALID_RECEIPT');
         done();
@@ -846,6 +883,15 @@ describe('fxpay', function () {
           assert.equal(data.product.storedata, storedata);
         }
         done(err);
+      });
+    });
+
+    it('disallows test receipts when not testing', function(done) {
+      fxpay.verifyReceiptData(receipt(null, {typ: 'test-receipt'}),
+                              function(err, info) {
+        assert.equal(err, 'TEST_RECEIPT_NOT_ALLOWED');
+        assert.equal(typeof info, 'object');
+        done();
       });
     });
 
@@ -1263,6 +1309,41 @@ describe('fxpay', function () {
     return [status || 200, {"Content-Type": "application/json"},
             JSON.stringify(data)];
   }
+
+
+  function makeReceipt(data, opt) {
+    // Generate a pseudo web application receipt.
+    // https://wiki.mozilla.org/Apps/WebApplicationReceipt
+    data = data || {};
+    opt = opt || {};
+
+    // Fill in some defaults:
+    data.typ = data.typ || 'purchase-receipt';
+    data.iss = data.iss || 'https://payments-alt.allizom.org';
+    data.verify = (data.verify ||
+                   'https://receiptcheck-payments-alt.allizom.org/verify/');
+    data.product = data.product || {
+      url: opt.productUrl || 'http://boar4485.testmanifest.com',
+      storedata: opt.storedata || 'contrib=297&id=500419&inapp_id=1'
+    };
+    data.user = data.user || {
+      type: 'directed-identifier',
+      value: 'anonymous-user'
+    };
+
+    // Make up some fake timestamps.
+    data.iat = data.iat || 1402935236;
+    data.exp = data.exp || 1418660036;
+    data.nbf = data.nbf || 1402935236;
+
+    // Make a URL safe base 64 encoded receipt:
+    var receipt = (btoa(JSON.stringify(data)).replace(/\+/g, '-')
+                   .replace(/\//g, '_').replace(/\=+$/, ''));
+
+    // jwtKey and jwtSig are stubbed out here because they
+    // are not used by the library.
+    return 'jwtKey.' + (opt.receipt || receipt) + '.jwtSig';
+  };
 
 
   function mozPayStub() {

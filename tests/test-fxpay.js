@@ -868,7 +868,7 @@ describe('fxpay', function () {
     });
 
     it('passes through receipt data', function(done) {
-      var productId = 321;
+      var productId = 'some-guid';
       var productUrl = 'app://some-packaged-origin';
       var storedata = 'inapp_id=' + productId;
       appSelf.origin = productUrl;
@@ -878,7 +878,6 @@ describe('fxpay', function () {
                               function(err, data, info) {
         if (!err) {
           assert.equal(info.productId, productId);
-          assert.equal(typeof info.productId, 'number');
           assert.equal(info.productUrl, productUrl);
           assert.equal(data.product.storedata, storedata);
         }

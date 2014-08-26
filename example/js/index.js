@@ -22,7 +22,11 @@ $(function() {
       throw new Error('unknown API env: ' + env);
     }
     console.log('setting API to', apiUrlBase);
-    fxpay.configure({apiUrlBase: apiUrlBase});
+
+    fxpay.configure({
+      fakeProducts: $('#simulate-checkbox').is(':checked'),
+      apiUrlBase: apiUrlBase
+    });
 
     // Reset some state.
     clearError();
@@ -104,6 +108,10 @@ $(function() {
     initApi();
   });
 
+  $('#simulate-checkbox').change(function(evt) {
+    initApi();
+  });
+
 
   // Startup
   //
@@ -114,7 +122,6 @@ $(function() {
     // When false, your app's configured products will be returned.
     // TODO: add a checkbox to the UI to control this.
     // See https://bugzilla.mozilla.org/show_bug.cgi?id=1052160
-    fakeProducts: true,
     receiptCheckSites: [
       // Whitelist the production service.
       'https://receiptcheck.marketplace.firefox.com',

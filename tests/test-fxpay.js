@@ -2,6 +2,9 @@ describe('fxpay', function () {
   var settings;
   var server;
   var someAppOrigin = 'app://my-app';
+  // Product info as returned from a GET request to the API.
+  var apiProduct = {guid: 'server-guid', name: "Name from API",
+                    logo_url: "img.jpg"};
 
   beforeEach(function() {
     console.log('beginEach');
@@ -179,23 +182,29 @@ describe('fxpay', function () {
       appStub.onsuccess();
     }
 
-    function finishPurchaseOk(receipt) {
+    function finishPurchaseOk(receipt, opt) {
+      opt = opt || {};
+      opt.fetchProductsPattern = (opt.fetchProductsPattern ||
+                                  new RegExp('.*/payments/.*/in-app/.*'))
+
       // Respond to fetching the JWT.
-      server.respondWith(
-        'POST',
-        /.*\/webpay\/inapp\/prepare/,
-        productData());
+      server.respondWith('POST', /.*\/webpay\/inapp\/prepare/, productData());
       server.respond();
 
       mozPay.returnValues[0].onsuccess();
 
-      server.respondWith(
-        'GET',
-        /.*\/transaction\/XYZ/,
-        transactionData({receipt: receipt}));
+      // Respond to validating the transaction.
+      server.respondWith('GET', /.*\/transaction\/XYZ/,
+                         transactionData({receipt: receipt}));
       server.respond();
 
+      // Respond to getting product info.
+      server.respondWith('GET', opt.fetchProductsPattern,
+                         [200, {"Content-Type": "application/json"},
+                          JSON.stringify(apiProduct)]);
+
       receiptAdd.onsuccess();
+      server.respond();
     }
 
     it('should pass through init errors', function (done) {
@@ -210,7 +219,7 @@ describe('fxpay', function () {
       });
 
       // Try to start a purchase.
-      fxpay.purchase('123', function(err, info) {
+      fxpay.purchase(apiProduct.guid, function(err, info) {
         assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
         assert.equal(typeof info, 'object');
         done();
@@ -219,7 +228,7 @@ describe('fxpay', function () {
 
     it('should send a JWT to mozPay', function (done) {
       var webpayJWT = '<base64 JWT>';
-      var productId = 1234;
+      var productId = 'some-guid';
       var cfg = {
         apiUrlBase: 'https://not-the-real-marketplace',
         apiVersionPrefix: '/api/v1'
@@ -229,8 +238,7 @@ describe('fxpay', function () {
       fxpay.purchase(productId, function(err, info) {
         assert.ok(mozPay.called);
         assert.ok(mozPay.calledWith([webpayJWT]), mozPay.firstCall);
-        assert.equal(info.productId, productId);
-        assert.equal(typeof info.productId, 'number');
+        assert.equal(info.productId, apiProduct.guid);
         done(err);
       });
 
@@ -244,17 +252,20 @@ describe('fxpay', function () {
 
       mozPay.returnValues[0].onsuccess();
 
-      server.respondWith(
-        'GET',
-        cfg.apiUrlBase + '/transaction/XYZ',
-        transactionData());
+      server.respondWith('GET', cfg.apiUrlBase + '/transaction/XYZ',
+                         transactionData());
       server.respond();
 
+      server.respondWith('GET', new RegExp('.*/payments/.*/in-app/.*'),
+                         [200, {"Content-Type": "application/json"},
+                          JSON.stringify(apiProduct)]);
+
       receiptAdd.onsuccess();
+      server.respond();
     });
 
     it('should timeout polling the transaction', function (done) {
-      var productId = 123;
+      var productId = 'some-guid';
 
       fxpay.purchase(productId, function(err, info) {
         assert.equal(err, 'TRANSACTION_TIMEOUT');
@@ -266,24 +277,20 @@ describe('fxpay', function () {
       });
 
       // Respond to fetching the JWT.
-      server.respondWith(
-        'POST',
-        /http.*\/webpay\/inapp\/prepare/,
-        productData());
+      server.respondWith('POST', /http.*\/webpay\/inapp\/prepare/,
+                         productData());
       server.respond();
 
       mozPay.returnValues[0].onsuccess();
 
       server.autoRespond = true;
-      server.respondWith(
-        'GET',
-        /http.*\/transaction\/XYZ/,
-        transactionData({status: 'incomplete'}));
+      server.respondWith('GET', /http.*\/transaction\/XYZ/,
+                         transactionData({status: 'incomplete'}));
       server.respond();
     });
 
     it('should call back with mozPay error', function (done) {
-      var productId = 123;
+      var productId = 'some-guid';
 
       fxpay.purchase(productId, function(err, info) {
         assert.equal(err, 'DIALOG_CLOSED_BY_USER');
@@ -292,10 +299,7 @@ describe('fxpay', function () {
       });
 
       // Respond to fetching the JWT.
-      server.respondWith(
-        'POST',
-        /.*webpay\/inapp\/prepare/,
-        productData());
+      server.respondWith('POST', /.*webpay\/inapp\/prepare/, productData());
       server.respond();
 
       var domReq = mozPay.returnValues[0];
@@ -305,24 +309,21 @@ describe('fxpay', function () {
 
     it('should report invalid transaction state', function (done) {
 
-      fxpay.purchase(123, function(err) {
+      fxpay.purchase(apiProduct.guid, function(err) {
         assert.equal(err, 'INVALID_TRANSACTION_STATE');
         done();
       });
 
       // Respond to fetching the JWT.
-      server.respondWith(
-        'POST',
-        /http.*\/webpay\/inapp\/prepare/,
-        productData());
+      server.respondWith('POST', /http.*\/webpay\/inapp\/prepare/,
+                         productData());
       server.respond();
 
       mozPay.returnValues[0].onsuccess();
 
       // Respond to polling the transaction.
       server.respondWith(
-        'GET',
-        /http.*\/transaction\/XYZ/,
+        'GET', /http.*\/transaction\/XYZ/,
         transactionData({status: 'THIS_IS_NOT_A_VALID_STATE'}));
       server.respond();
 
@@ -332,7 +333,7 @@ describe('fxpay', function () {
     it('should error when mozPay is not supported', function (done) {
       fxpay.configure({mozPay: undefined});
 
-      fxpay.purchase(123, function(err, info) {
+      fxpay.purchase(apiProduct.guid, function(err, info) {
         assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
         assert.equal(typeof info, 'object');
         done();
@@ -342,12 +343,43 @@ describe('fxpay', function () {
     it('should add receipt to device with addReceipt', function (done) {
       var receipt = '<receipt>';
 
-      fxpay.purchase(123, function(err) {
+      fxpay.purchase(apiProduct.guid, function(err) {
         assert.equal(receiptAdd._receipt, receipt);
         done(err);
       });
 
       finishPurchaseOk(receipt);
+    });
+
+    it('should call back with complete product info', function (done) {
+
+      fxpay.purchase(apiProduct.guid, function(err, info) {
+        if (!err) {
+          assert.equal(info.productId, apiProduct.guid);
+          assert.equal(info.name, apiProduct.name);
+          assert.equal(info.smallImageUrl, apiProduct.logo_url);
+        }
+        done(err);
+      });
+
+      finishPurchaseOk('<receipt>');
+    });
+
+    it('should fetch stub products when using fake products', function (done) {
+      fxpay.configure({fakeProducts: true});
+
+      fxpay.purchase(apiProduct.guid, function(err, info) {
+        if (!err) {
+          assert.equal(info.productId, apiProduct.guid);
+          assert.equal(info.name, apiProduct.name);
+          assert.equal(info.smallImageUrl, apiProduct.logo_url);
+        }
+        done(err);
+      });
+
+      finishPurchaseOk('<receipt>', {
+        fetchProductsPattern: /.*\/stub-in-app-products\/.*/
+      });
     });
 
     it('should add receipt to device with localStorage', function (done) {
@@ -357,7 +389,7 @@ describe('fxpay', function () {
 
       // Without addReceipt(), receipt should go in localStorage.
 
-      fxpay.purchase(123, function(err) {
+      fxpay.purchase(apiProduct.guid, function(err) {
         if (!err) {
           assert.equal(
             JSON.parse(
@@ -379,7 +411,7 @@ describe('fxpay', function () {
       window.localStorage.setItem(settings.localStorageKey,
                                   JSON.stringify([receipt]));
 
-      fxpay.purchase(123, function(err) {
+      fxpay.purchase(apiProduct.guid, function(err) {
         if (!err) {
           var addedReceipts = JSON.parse(
             window.localStorage.getItem(settings.localStorageKey));
@@ -394,24 +426,18 @@ describe('fxpay', function () {
 
     it('should pass through receipt errors', function (done) {
 
-      fxpay.purchase(123, function(err) {
+      fxpay.purchase(apiProduct.guid, function(err) {
         assert.equal(err, 'ADD_RECEIPT_ERROR');
         done();
       });
 
       // Respond to fetching the JWT.
-      server.respondWith(
-        'POST',
-        /.*\/webpay\/inapp\/prepare/,
-        productData());
+      server.respondWith('POST', /.*\/webpay\/inapp\/prepare/, productData());
       server.respond();
 
       mozPay.returnValues[0].onsuccess();
 
-      server.respondWith(
-        'GET',
-        /.*\/transaction\/XYZ/,
-        transactionData());
+      server.respondWith('GET', /.*\/transaction\/XYZ/, transactionData());
       server.respond();
 
       // Simulate a receipt installation error.
@@ -422,10 +448,6 @@ describe('fxpay', function () {
 
 
   describe('init(): receipt validation', function() {
-
-    // Product info as returned from a GET request to the API.
-    var apiProduct = {guid: 'server-guid', name: "Name from API",
-                      logo_url: "img.jpg"};
     var receipt = makeReceipt();
 
     beforeEach(function() {
@@ -601,6 +623,34 @@ describe('fxpay', function () {
             assert.equal(info.smallImageUrl, apiProduct.logo_url);
           }
           done(err);
+        }
+      });
+
+      appSelf.onsuccess();
+      server.respond();
+      server.respond();
+    });
+
+    it('calls back with API error from fetching products', function(done) {
+      appSelf.receipts = [makeReceipt()];
+
+      // Receipt check:
+      server.respondWith(
+        'POST', /.*/,
+        [200, {"Content-Type": "application/json"}, '{"status": "ok"}']);
+
+      // Fetch product info:
+      server.respondWith('GET', new RegExp('.*/payments/.*/in-app/.*'),
+                         [500, {}, 'Internal Error']);
+
+      fxpay.init({
+        onerror: function(err) {
+          done(err);
+        },
+        oninit: function() {},
+        onrestore: function(err, info) {
+          assert.equal(err, 'BAD_API_RESPONSE');
+          done();
         }
       });
 

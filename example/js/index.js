@@ -1,6 +1,5 @@
 $(function() {
   var apiUrlBase;
-  var catalog = {};
 
   var apiUrls = {
     prod: 'https://marketplace.firefox.com',
@@ -28,7 +27,6 @@ $(function() {
     // Reset some state.
     clearError();
     clearPurchases();
-    catalog = {};
     productsUl.empty();
 
     console.log('getting products from', apiUrlBase);
@@ -40,13 +38,12 @@ $(function() {
       }
       products.forEach(function(productInfo) {
         console.info('got product:', productInfo);
-        catalog[productInfo.productId] = productInfo;
-        addProduct(productsUl, productInfo.productId, productInfo);
+        addProduct(productsUl, productInfo);
       });
     });
   }
 
-  function addProduct(parent, prodID, prodData, opt) {
+  function addProduct(parent, prodData, opt) {
     opt = opt || {showBuy: true};
     var li = $('<li></li>', {class: 'product'});
     if (prodData.smallImageUrl) {
@@ -54,8 +51,7 @@ $(function() {
                               height: 64, width: 64}));
     }
     if (opt.showBuy) {
-      li.append($('<button>Buy</button>').data({productId: prodID,
-                                                product: prodData}));
+      li.append($('<button>Buy</button>').data({product: prodData}));
     }
     li.append($('<h3>' + prodData.name + '</h3>'));
     // TODO bug 1042953:
@@ -64,15 +60,9 @@ $(function() {
     parent.append(li);
   }
 
-  function productBought(productId) {
+  function productBought(productInfo) {
     $('#your-products ul li.placeholder').hide();
-    var productInfo = catalog[productId];
-    if (!productInfo) {
-      console.error('purchased product ID', productId,
-                    'is not a known product. Known:', Object.keys(catalog));
-    }
-    addProduct($('#your-products ul'), productId,
-               productInfo, {showBuy: false});
+    addProduct($('#your-products ul'), productInfo, {showBuy: false});
   }
 
   function clearPurchases() {
@@ -94,18 +84,17 @@ $(function() {
   //
   $('ul').on('click', '.product button', function() {
     clearError();
-    var id = $(this).data('productId');
     var prod = $(this).data('product');
-    console.log('purchasing', prod.name, id);
+    console.log('purchasing', prod.name, prod.productId);
 
-    fxpay.purchase(id, function(err, info) {
+    fxpay.purchase(prod.productId, function(err, info) {
       if (err) {
         console.error('error purchasing product', info.productId,
                       'message:', err);
         return showError(err);
       }
-      console.log('product:', info.productId, 'purchased');
-      productBought(info.productId);
+      console.log('product:', info.productId, info, 'purchased');
+      productBought(info);
     });
 
     // TODO: update the UI here with a spinner or something.
@@ -160,9 +149,8 @@ $(function() {
                       'message:', err);
         return showError(err);
       }
-      console.log('product', info.productId, 'restored from receipt');
-      catalog[info.productId] = info;
-      productBought(info.productId);
+      console.log('product', info.productId, info, 'restored from receipt');
+      productBought(info);
     }
   });
 });

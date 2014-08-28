@@ -312,6 +312,10 @@ Here are the possible error strings you might receive and what they mean:
 **INVALID_TRANSACTION_STATE**
     The transaction was in an invalid state and cannot be processed.
 
+**MISSING_XHR_PERMISSION**
+    The web app does not have the ``systemXHR`` `app permission`_.
+    This is required to make API requests.
+
 **NOT_INITIALIZED**
     The library was not initialized correctly; no actions can be
     performed. This might mean you didn't call ``init()`` or it
@@ -344,6 +348,7 @@ such as ``INVALID_MANIFEST``.
 
 .. _`navigator.mozApps`: https://developer.mozilla.org/en-US/docs/Web/API/Apps
 .. _`App error strings`: https://developer.mozilla.org/en-US/Apps/Build/JavaScript_API/Error_object
+.. _`app permission`: https://developer.mozilla.org/en-US/Apps/Build/App_permissions
 
 Logging
 ~~~~~~~

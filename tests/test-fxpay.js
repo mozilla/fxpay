@@ -56,20 +56,10 @@ describe('fxpay', function () {
     });
 
     it('should error when receipt storage does not exist', function (done) {
-      var appStub = {
-        addReceipt: undefined,  // older FxOSs do not have this.
-        onsuccess: function() {},
-        onerror: function() {}
-      };
-      appStub.result = appStub;  // result of DOM request.
+      delete appSelf.addReceipt;  // older FxOSs do not have this.
 
       fxpay.configure({
-        localStorage: null,  // no fallback.
-        mozApps: {
-          getSelf: function() {
-            return appStub;
-          }
-        }
+        localStorage: null  // no fallback.
       });
 
       fxpay.init({
@@ -79,7 +69,7 @@ describe('fxpay', function () {
         }
       });
 
-      appStub.onsuccess();
+      appSelf.onsuccess();
     });
 
     it('should error when not running as app', function (done) {
@@ -93,6 +83,30 @@ describe('fxpay', function () {
       // This happens when you access the app from a browser
       // (i.e. not installed).
       appSelf.result = null;
+      appSelf.onsuccess();
+    });
+
+    it('should error when missing systemXHR permission', function (done) {
+      fxpay.init({
+        onerror: function(err) {
+          assert.equal(err, 'MISSING_XHR_PERMISSION');
+          done();
+        }
+      });
+
+      delete appSelf.manifest.permissions.systemXHR;
+      appSelf.onsuccess();
+    });
+
+    it('should error when app has no permissions', function (done) {
+      fxpay.init({
+        onerror: function(err) {
+          assert.equal(err, 'MISSING_XHR_PERMISSION');
+          done();
+        }
+      });
+
+      delete appSelf.manifest.permissions;
       appSelf.onsuccess();
     });
 
@@ -156,20 +170,7 @@ describe('fxpay', function () {
 
     function setUpLocStorAddReceipt(done) {
       // Set up a purchase where mozApps does not support addReceipt().
-      var appStub = {
-        addReceipt: undefined,
-        onsuccess: function() {},
-        onerror: function() {}
-      };
-      appStub.result = appStub;  // result of DOM request.
-
-      fxpay.configure({
-        mozApps: {
-          getSelf: function() {
-            return appStub;
-          }
-        }
-      });
+      delete appSelf.addReceipt;
 
       // Re-initialize to detect lack of addReceipt().
       fxpay.init({
@@ -179,7 +180,7 @@ describe('fxpay', function () {
         }
       });
 
-      appStub.onsuccess();
+      appSelf.onsuccess();
     }
 
     function finishPurchaseOk(receipt, opt) {
@@ -1420,13 +1421,19 @@ describe('fxpay', function () {
     init: function() {
       this.error = null;
       this.origin = someAppOrigin;
+      this.manifest = {
+        permissions: {
+          systemXHR: {description: "Required to access payment API"}
+        }
+      };
       this.receipts = [];
       // This is the result of getSelf(). Setting it to this makes stubbing easier.
       this.result = this;
-    },
-    addReceipt: function(receipt) {
-      receiptAdd._receipt = receipt;
-      return receiptAdd;
+
+      this.addReceipt = function(receipt) {
+        receiptAdd._receipt = receipt;
+        return receiptAdd;
+      };
     },
     onsuccess: function() {},
     onerror: function() {}

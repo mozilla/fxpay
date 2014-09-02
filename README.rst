@@ -19,10 +19,9 @@ FxPay Developers
 ================
 
 To hack on this library you need `NodeJS`_ and `npm`_ installed.
-When you clone the source, all other dependencies are included for you.
-However, you need to build a few things. Run this::
+After cloning the source, cd to the root and install all dependencies::
 
-    npm rebuild
+    npm install
 
 To execute scripts, you should add the local ``.bin`` directory to
 your ``$PATH``::

@@ -5,7 +5,7 @@
   "homepage": "https://github.com/mozilla/fxpay",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mozilla/fxpay.git"
+    "url": "git://github.com/mozilla/fxpay.git"
   },
   "main": "lib/fxpay.js",
   "ignore": [

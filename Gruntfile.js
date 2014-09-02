@@ -31,12 +31,22 @@ module.exports = function(grunt) {
           'build/fxpay.min.js': ['lib/fxpay.js']
         }
       }
-    }
+    },
+
+    bump: {
+      options: {
+        files: ['bower.json', 'lib/fxpay.js', 'package.json'],
+        commit: false,
+        createTag: false,
+        push: false,
+      }
+    },
   });
 
   // Always show stack traces when Grunt prints out an uncaught exception.
   grunt.option('stack', true);
 
+  grunt.loadNpmTasks('grunt-bump');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-contrib-uglify');

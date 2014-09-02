@@ -1,5 +1,5 @@
 {
-  "name": "FxPay",
+  "name": "fxpay",
   "description": "Adds Firefox Marketplace payments to a web application",
   "version": "0.0.1",
   "homepage": "https://github.com/mozilla/fxpay",

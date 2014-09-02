@@ -75,7 +75,7 @@ the version number and update all files at once, run this::
     grunt bump
 
 Commit the changes, tag, and push. For example, tag a ``0.0.1``
-release like ``git tag v0.0.1``.
+release like ``git tag 0.0.1``.
 
 Changelog
 =========

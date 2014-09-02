@@ -79,9 +79,14 @@ release like ``git tag 0.0.1``.
 Changelog
 =========
 
-*0.0.1* (2014-09-02)
+**0.0.2** (2014-09-02)
 
-* first public release
+* Removed node_modules from the repository so the initial bower download
+  isn't 8MB on installation.
+
+**0.0.1** (2014-09-02)
+
+* First public release.
 
 .. _`Firefox Marketplace`: https://marketplace.firefox.com/
 .. _`Firefox Marketplace Developer Hub`: https://marketplace.firefox.com/developers/

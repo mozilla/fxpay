@@ -1137,6 +1137,22 @@ describe('fxpay', function () {
       server.respond();
     });
 
+    it('should send the library version with each request', function (done) {
+      server.respondWith(
+        'GET', /.*/,
+        function(request) {
+          assert.ok(fxpay.__version__);  // make sure it's defined.
+          assert.equal(request.requestHeaders['x-fxpay-version'], fxpay.__version__);
+          request.respond(200, {"Content-Type": "application/json"}, '{}');
+        });
+
+      api.get('/get', function(err, data) {
+        done(err);
+      });
+
+      server.respond();
+    });
+
     it('should allow custom content-type POSTs', function (done) {
       server.respondWith(
         'POST', /.*\/post/,

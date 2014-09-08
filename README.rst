@@ -31,6 +31,9 @@ your ``$PATH``::
 
 This is pretty standard for any Node project so you you might already have it.
 
+To test that you have your path set up, type ``which grunt`` and make
+sure you see a path to the executable.
+
 Running Tests
 ~~~~~~~~~~~~~
 

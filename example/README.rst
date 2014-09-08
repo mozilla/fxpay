@@ -13,7 +13,8 @@ Installation
 To install a privileged app it must be signed by something like
 `Firefox Marketplace`_. However, you can use the
 `App Manager`_ to install it as well. First, build this example into a
-packaged app. Run this from the root of the `fxpay`_ repository::
+packaged app. Run this from the root of the `fxpay`_ repository
+after you've installed the developer tools listed in the main README::
 
     grunt package
 

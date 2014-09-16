@@ -118,17 +118,13 @@ $(function() {
   console.log('example app startup');
 
   fxpay.configure({
-    // When true, this will return fake products for testing purposes.
-    // When false, your app's configured products will be returned.
-    // TODO: add a checkbox to the UI to control this.
-    // See https://bugzilla.mozilla.org/show_bug.cgi?id=1052160
     receiptCheckSites: [
       // Whitelist the production service.
       'https://receiptcheck.marketplace.firefox.com',
       'https://marketplace.firefox.com',
 
-      // The following would not be needed in a live app.
-      // These our some test services for development of the fxpay library only.
+      // The following would not be needed in a live app. These our some test
+      // services for development of the fxpay library only.
 
       // Whitelist our test servers.
       'https://receiptcheck-dev.allizom.org',
@@ -138,7 +134,11 @@ $(function() {
 
       // Whitelist a local development server I use.
       'http://fireplace.loc',
-    ]
+    ],
+    // Initially, start by allowing fake products so that test
+    // receipts can validate. The checkbox in initApi() will
+    // toggle this setting.
+    fakeProducts: true
   });
 
   fxpay.init({

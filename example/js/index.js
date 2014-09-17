@@ -57,11 +57,17 @@ $(function() {
     if (opt.showBuy) {
       li.append($('<button>Buy</button>').data({product: prodData}));
     }
-    li.append($('<h3>' + prodData.name + '</h3>'));
+    li.append($('<h3>' + encodeHtmlEntities(prodData.name) + '</h3>'));
     // TODO bug 1042953:
-    //li.append($('<p>' + prodData.description + '</p>'));
+    //li.append($('<p>' + encodeHtmlEntities(prodData.description) + '</p>'));
     li.append($('<div></div>', {class: 'clear'}));
     parent.append(li);
+  }
+
+  function encodeHtmlEntities(str) {
+    return str.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+      return '&#' + i.charCodeAt(0) + ';';
+    });
   }
 
   function productBought(productInfo) {
@@ -91,14 +97,15 @@ $(function() {
     var prod = $(this).data('product');
     console.log('purchasing', prod.name, prod.productId);
 
-    fxpay.purchase(prod.productId, function(err, info) {
+    fxpay.purchase(prod.productId, function(err, product) {
       if (err) {
-        console.error('error purchasing product', info.productId,
+        console.error('error purchasing product',
+                      (product && product.productId),
                       'message:', err);
         return showError(err);
       }
-      console.log('product:', info.productId, info, 'purchased');
-      productBought(info);
+      console.log('product:', product.productId, product, 'purchased');
+      productBought(product);
     });
 
     // TODO: update the UI here with a spinner or something.

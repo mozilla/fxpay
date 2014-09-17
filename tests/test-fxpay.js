@@ -966,7 +966,7 @@ describe('fxpay', function () {
       ];
       var url = (settings.apiUrlBase + settings.apiVersionPrefix +
                  '/payments/' + encodeURIComponent(someAppOrigin) +
-                 '/in-app/');
+                 '/in-app/?active=1');
 
       server.respondWith(
         'GET', url,

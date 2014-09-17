@@ -189,13 +189,13 @@ describe('fxpay', function () {
                                   new RegExp('.*/payments/.*/in-app/.*'))
 
       // Respond to fetching the JWT.
-      server.respondWith('POST', /.*\/webpay\/inapp\/prepare/, productData());
+      server.respondWith('POST', /.*\/webpay\/inapp\/prepare.*/, productData());
       server.respond();
 
       mozPay.returnValues[0].onsuccess();
 
       // Respond to validating the transaction.
-      server.respondWith('GET', /.*\/transaction\/XYZ/,
+      server.respondWith('GET', /.*\/transaction\/XYZ.*/,
                          transactionData({receipt: receipt}));
       server.respond();
 
@@ -246,14 +246,16 @@ describe('fxpay', function () {
       // Respond to fetching the JWT.
       server.respondWith(
         'POST',
-        cfg.apiUrlBase + cfg.apiVersionPrefix + '/webpay/inapp/prepare/',
+        new RegExp(cfg.apiUrlBase + cfg.apiVersionPrefix +
+                   '/webpay/inapp/prepare/.*'),
         // TODO: assert somehow that productId is part of post data.
         productData({webpayJWT: webpayJWT}));
       server.respond();
 
       mozPay.returnValues[0].onsuccess();
 
-      server.respondWith('GET', cfg.apiUrlBase + '/transaction/XYZ',
+      server.respondWith('GET',
+                         new RegExp(cfg.apiUrlBase + '/transaction/XYZ.*'),
                          transactionData());
       server.respond();
 
@@ -278,14 +280,14 @@ describe('fxpay', function () {
       });
 
       // Respond to fetching the JWT.
-      server.respondWith('POST', /http.*\/webpay\/inapp\/prepare/,
+      server.respondWith('POST', /http.*\/webpay\/inapp\/prepare.*/,
                          productData());
       server.respond();
 
       mozPay.returnValues[0].onsuccess();
 
       server.autoRespond = true;
-      server.respondWith('GET', /http.*\/transaction\/XYZ/,
+      server.respondWith('GET', /http.*\/transaction\/XYZ.*/,
                          transactionData({status: 'incomplete'}));
       server.respond();
     });
@@ -300,7 +302,7 @@ describe('fxpay', function () {
       });
 
       // Respond to fetching the JWT.
-      server.respondWith('POST', /.*webpay\/inapp\/prepare/, productData());
+      server.respondWith('POST', /.*webpay\/inapp\/prepare.*/, productData());
       server.respond();
 
       var domReq = mozPay.returnValues[0];
@@ -316,7 +318,7 @@ describe('fxpay', function () {
       });
 
       // Respond to fetching the JWT.
-      server.respondWith('POST', /http.*\/webpay\/inapp\/prepare/,
+      server.respondWith('POST', /http.*\/webpay\/inapp\/prepare.*/,
                          productData());
       server.respond();
 
@@ -324,7 +326,7 @@ describe('fxpay', function () {
 
       // Respond to polling the transaction.
       server.respondWith(
-        'GET', /http.*\/transaction\/XYZ/,
+        'GET', /http.*\/transaction\/XYZ.*/,
         transactionData({status: 'THIS_IS_NOT_A_VALID_STATE'}));
       server.respond();
 
@@ -433,12 +435,13 @@ describe('fxpay', function () {
       });
 
       // Respond to fetching the JWT.
-      server.respondWith('POST', /.*\/webpay\/inapp\/prepare/, productData());
+      server.respondWith('POST', /.*\/webpay\/inapp\/prepare.*/,
+                         productData());
       server.respond();
 
       mozPay.returnValues[0].onsuccess();
 
-      server.respondWith('GET', /.*\/transaction\/XYZ/, transactionData());
+      server.respondWith('GET', /.*\/transaction\/XYZ.*/, transactionData());
       server.respond();
 
       // Simulate a receipt installation error.
@@ -466,7 +469,7 @@ describe('fxpay', function () {
 
       server.respondWith(
         'POST', new RegExp(
-          'https://receiptcheck-payments-alt\\.allizom\\.org/verify/'),
+          'https://receiptcheck-payments-alt\\.allizom\\.org/verify/.*'),
         function(request) {
           assert.equal(request.requestBody, receipt);
           request.respond(200, {"Content-Type": "application/json"},
@@ -1133,6 +1136,38 @@ describe('fxpay', function () {
         assert.equal(data.data, 'received');
         done(err);
       });
+
+      server.respond();
+    });
+
+    it('should allow cache busting', function (done) {
+      server.respondWith(
+        'GET', /.*\/get.*/,
+        function(request) {
+          assert.ok(request.url.indexOf('?_=') !== -1,
+                    'Expected cache busting param: ' + request.url);
+          request.respond(200, {"Content-Type": "application/json"}, '{}');
+        });
+
+      api.get('/get', function(err, data) {
+        done(err);
+      }, {allowCaching: false});
+
+      server.respond();
+    });
+
+    it('should preserve the query string when cache busting', function (done) {
+      server.respondWith(
+        'GET', /.*\/get.*/,
+        function(request) {
+          assert.ok(request.url.indexOf('&_=') !== -1,
+                    'Expected cache busting param: ' + request.url);
+          request.respond(200, {"Content-Type": "application/json"}, '{}');
+        });
+
+      api.get('/get?foo=bar&baz=zap', function(err, data) {
+        done(err);
+      }, {allowCaching: false});
 
       server.respond();
     });

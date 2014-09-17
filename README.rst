@@ -82,6 +82,10 @@ release like ``git tag 0.0.1``.
 Changelog
 =========
 
+**0.0.4** (unreleased)
+
+* Prevent caching time sensitive XHR requests to the API.
+
 **0.0.3** (2014-09-03)
 
 * Send library version to API on each request.

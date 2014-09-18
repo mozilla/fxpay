@@ -82,7 +82,7 @@ release like ``git tag 0.0.1``.
 Changelog
 =========
 
-**0.0.4** (unreleased)
+**0.0.4** (2014-09-17)
 
 * Only ask for active products from the marketplace.
 

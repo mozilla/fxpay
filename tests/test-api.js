@@ -1,4 +1,4 @@
-describe('fxpay.API', function () {
+describe('fxpay.API()', function () {
   var api;
   var baseUrl = 'https://not-a-real-api';
   var versionPrefix = '/api/v1';

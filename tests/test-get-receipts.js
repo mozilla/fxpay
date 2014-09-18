@@ -1,4 +1,4 @@
-describe('fxpay.getReceipts', function() {
+describe('fxpay.getReceipts()', function() {
 
   beforeEach(function() {
     helper.setUp();

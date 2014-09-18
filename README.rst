@@ -39,7 +39,7 @@ Running Tests
 
 From a source checkout, run all tests and lint checks like this::
 
-    npm test
+    grunt test
 
 To run the JavaScript unit tests continuously while you are developing, type::
 
@@ -47,10 +47,19 @@ To run the JavaScript unit tests continuously while you are developing, type::
 
 This opens a web browser and will report test results to your console.
 As you edit a code file, it will re-run the tests.
+**NOTE**: this can be buggy sometimes.
 
 To fire off a single test run with a browser and see the results, type::
 
     grunt karma:run
+
+Here's how to run a specific test file::
+
+    grunt karma:run --tests tests/test-get-products.js
+
+You can also use grep patterns::
+
+    grunt karma:run --tests 'tests/test-get-*'
 
 Check For Lint
 ~~~~~~~~~~~~~~

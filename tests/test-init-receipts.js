@@ -1,4 +1,4 @@
-describe('fxpay.init(): receipt validation', function() {
+describe('fxpay.init(): receipts', function() {
   var receipt = helper.makeReceipt();
 
   beforeEach(function() {

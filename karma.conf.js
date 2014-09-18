@@ -12,12 +12,9 @@ module.exports = function(config) {
     frameworks: ['mocha', 'sinon', 'chai'],
 
 
-    // list of files / patterns to load in the browser
-    files: [
-      'lib/*.js',
-      'tests/helper.js',
-      {pattern: 'tests/test*.js', included: true}
-    ],
+    // list of files / patterns to load in the browser.
+    // This is defined in Gruntfile.js
+    files: [],
 
 
     // list of files to exclude
@@ -28,7 +25,7 @@ module.exports = function(config) {
 
     // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['progress'],
+    reporters: ['mocha'],
 
 
     // web server port

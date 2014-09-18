@@ -15,6 +15,15 @@ module.exports = function(grunt) {
     },
 
     karma: {
+      options: {
+        files: [
+          'lib/*.js',
+          'tests/helper.js',
+          // Allow an optional pattern for test files with --tests.
+          {pattern: grunt.option('tests') || 'tests/test*.js',
+           included: true}
+        ]
+      },
       dev: {
         configFile: 'karma.conf.js',
         autoWatch: true

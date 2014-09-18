@@ -1,4 +1,4 @@
-describe('fxpay.getProducts', function() {
+describe('fxpay.getProducts()', function() {
 
   beforeEach(function() {
     helper.setUp();

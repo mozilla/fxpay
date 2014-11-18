@@ -1,4 +1,4 @@
-describe('fxpay.getReceipts()', function() {
+describe('fxpay.receipts.all()', function() {
 
   beforeEach(function() {
     helper.setUp();
@@ -15,14 +15,14 @@ describe('fxpay.getReceipts()', function() {
         receipts: [receipt]
       }
     });
-    var fetchedReceipts = fxpay.getReceipts();
+    var fetchedReceipts = fxpay.receipts.all();
     assert.equal(fetchedReceipts[0], receipt);
     assert.equal(fetchedReceipts.length, 1);
   });
 
   it('ignores missing receipts', function() {
     fxpay.configure({appSelf: {}});  // no receipts property
-    var fetchedReceipts = fxpay.getReceipts();
+    var fetchedReceipts = fxpay.receipts.all();
     assert.equal(fetchedReceipts.length, 0);
   });
 
@@ -38,7 +38,7 @@ describe('fxpay.getReceipts()', function() {
     window.localStorage.setItem(helper.settings.localStorageKey,
                                 JSON.stringify([receipt2]));
 
-    var fetchedReceipts = fxpay.getReceipts();
+    var fetchedReceipts = fxpay.receipts.all();
     assert.equal(fetchedReceipts[0], receipt1);
     assert.equal(fetchedReceipts[1], receipt2);
     assert.equal(fetchedReceipts.length, 2);
@@ -55,7 +55,7 @@ describe('fxpay.getReceipts()', function() {
     window.localStorage.setItem(helper.settings.localStorageKey,
                                 JSON.stringify([receipt1]));
 
-    var fetchedReceipts = fxpay.getReceipts();
+    var fetchedReceipts = fxpay.receipts.all();
     assert.equal(fetchedReceipts[0], receipt1);
     assert.equal(fetchedReceipts.length, 1);
   });
@@ -64,7 +64,7 @@ describe('fxpay.getReceipts()', function() {
     fxpay.configure({
       appSelf: null  // default state before initializaion.
     });
-    var fetchedReceipts = fxpay.getReceipts();
+    var fetchedReceipts = fxpay.receipts.all();
     assert.equal(fetchedReceipts.length, 0);
   });
 

@@ -7,13 +7,25 @@ var shell = require('./shell');
 var grunt;
 
 
-exports.createTask = function(_grunt, siteDir, repoDir, opt) {
+exports.createTask = function(_grunt, projectDir, opt) {
   opt = opt || {};
   opt.copyFiles = opt.copyFiles || undefined;
   opt.removeFiles = opt.removeFiles || undefined;
 
+  var siteDir = projectDir + '/example';
+  var repoDir = projectDir + '/.ghpages';
+
   grunt = _grunt;
   return function() {
+
+    // Compress all modules.
+    grunt.task.run('compress');
+    if (!opt.copyFiles) {
+      opt.copyFiles = {};
+    }
+    // Copy the compressed file into place for use:
+    opt.copyFiles[projectDir + '/dist/fxpay.min.js'] = 'fxpay.min.js';
+
     run(this.async(), siteDir, repoDir, opt);
   };
 };

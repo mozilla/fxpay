@@ -6,7 +6,7 @@ describe('fxpay.API()', function () {
   beforeEach(function() {
     helper.setUp();
     fxpay.configure({apiVersionPrefix: versionPrefix});
-    api = new fxpay.API(baseUrl);
+    api = new fxpay.api.API(baseUrl);
   });
 
   afterEach(function() {
@@ -88,8 +88,9 @@ describe('fxpay.API()', function () {
     helper.server.respondWith(
       'GET', /.*/,
       function(request) {
-        assert.ok(fxpay.__version__);  // make sure it's defined.
-        assert.equal(request.requestHeaders['x-fxpay-version'], fxpay.__version__);
+        assert.ok(fxpay.settings.libVersion);  // make sure it's defined.
+        assert.equal(request.requestHeaders['x-fxpay-version'],
+                     fxpay.settings.libVersion);
         request.respond(200, {"Content-Type": "application/json"}, '{}');
       });
 

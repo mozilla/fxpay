@@ -1,6 +1,18 @@
 var ghdeploy = require('./tasks/ghdeploy');
 var packager = require('./tasks/packager');
 
+
+// List module files in order so that calls to require() work right:
+var libFiles = [
+  __dirname + '/lib/require.js',
+  __dirname + '/lib/fxpay/settings.js',
+  __dirname + '/lib/fxpay/api.js',
+  __dirname + '/lib/fxpay/products.js',
+  __dirname + '/lib/fxpay/receipts.js',
+  __dirname + '/lib/fxpay/index.js',
+];
+
+
 module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -10,19 +22,19 @@ module.exports = function(grunt) {
       files: [
         'Gruntfile.js',
         'lib/*.js',
+        'lib/*/*.js',
         'test/*.js',
       ],
     },
 
     karma: {
       options: {
-        files: [
-          'lib/*.js',
+        files: libFiles.slice(0).concat([
           'tests/helper.js',
           // Allow an optional pattern for test files with --tests.
           {pattern: grunt.option('tests') || 'tests/test*.js',
            included: true}
-        ]
+        ])
       },
       dev: {
         configFile: 'karma.conf.js',
@@ -37,14 +49,15 @@ module.exports = function(grunt) {
     uglify: {
       my_target: {
         files: {
-          'build/fxpay.min.js': ['lib/fxpay.js']
+          'build/fxpay.min.js': libFiles,
         }
       }
     },
 
     bump: {
       options: {
-        files: ['bower.json', 'lib/fxpay.js', 'package.json'],
+        // The pattern 'version': '..' will be updated in all these files.
+        files: ['bower.json', 'lib/fxpay/settings.js', 'package.json'],
         commit: false,
         createTag: false,
         push: false,
@@ -60,21 +73,17 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-contrib-uglify');
 
-  var siteDir = __dirname + '/example';
-  var repoDir = __dirname + '/.ghpages';
-  var copyFiles = {};
-  copyFiles[__dirname + '/lib/fxpay.js'] = 'fxpay.js';
   grunt.registerTask('ghdeploy',
                      'publish example site to github pages',
-                     ghdeploy.createTask(grunt, siteDir, repoDir,
-                                         {copyFiles: copyFiles,
-                                          removeFiles: ['node_modules']}));
+                     ghdeploy.createTask(grunt, __dirname,
+                                         {removeFiles: ['node_modules']}));
 
+  var siteDir = __dirname + '/example';
   grunt.registerTask('package',
                      'create a packaged example app',
                      packager.createTask(grunt, siteDir));
 
   grunt.registerTask('compress', 'uglify');
-  grunt.registerTask('test', ['jshint', 'karma:run']);
+  grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
   grunt.registerTask('default', 'test');
 };

@@ -24,7 +24,7 @@ exports.createTask = function(_grunt, projectDir, opt) {
       opt.copyFiles = {};
     }
     // Copy the compressed file into place for use:
-    opt.copyFiles[projectDir + '/dist/fxpay.min.js'] = 'fxpay.min.js';
+    opt.copyFiles[projectDir + '/build/fxpay.min.js'] = 'fxpay.min.js';
 
     run(this.async(), siteDir, repoDir, opt);
   };

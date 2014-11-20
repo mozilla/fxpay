@@ -6,7 +6,7 @@ $(function() {
     dev: 'https://marketplace-dev.allizom.org',
     stage: 'https://marketplace.allizom.org',
     alt: 'https://payments-alt.allizom.org',
-    local: 'http://fireplace.loc',
+    local: 'http://mp.dev',
   };
 
 

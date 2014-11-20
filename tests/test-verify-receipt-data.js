@@ -1,4 +1,4 @@
-describe('fxpay.verifyReceiptData()', function() {
+describe('fxpay.receipts.verifyData()', function() {
   var receiptCheckSite = 'https://niceverifier.org';
 
   beforeEach(function() {
@@ -14,95 +14,93 @@ describe('fxpay.verifyReceiptData()', function() {
   });
 
   it('fails on non-strings', function(done) {
-    fxpay.verifyReceiptData({not: 'a receipt'}, function(err) {
+    fxpay.receipts.verifyData({not: 'a receipt'}, function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on too many key segments', function(done) {
-    fxpay.verifyReceiptData('one~too~many', function(err) {
+    fxpay.receipts.verifyData('one~too~many', function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on not enough JWT segments', function(done) {
-    fxpay.verifyReceiptData('one.two', function(err) {
+    fxpay.receipts.verifyData('one.two', function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on invalid base64 encoding', function(done) {
-    fxpay.verifyReceiptData(receipt({receipt: 'not%valid&&base64'}),
-                            function(err) {
+    fxpay.receipts.verifyData(receipt({receipt: 'not%valid&&base64'}),
+                              function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on invalid JSON', function(done) {
-    fxpay.verifyReceiptData('jwtAlgo.' + btoa('^not valid JSON') + '.jwtSig',
-                            function(err) {
+    fxpay.receipts.verifyData('jwtAlgo.' + btoa('^not valid JSON') + '.jwtSig',
+                              function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on missing product', function(done) {
-    fxpay.verifyReceiptData({}, function(err) {
+    fxpay.receipts.verifyData({}, function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on missing product URL', function(done) {
-    fxpay.verifyReceiptData(receipt(null,
-                                    {product: {storedata: 'storedata'}}),
-                            function(err) {
+    fxpay.receipts.verifyData(receipt(null, {product: {storedata: 'storedata'}}),
+                              function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on missing storedata', function(done) {
-    fxpay.verifyReceiptData('jwtAlgo.' + btoa(JSON.stringify({
-                              product: {}
-                            })) + '.jwtSig',
-                            function(err) {
+    fxpay.receipts.verifyData(
+        'jwtAlgo.' + btoa(JSON.stringify({product: {}})) + '.jwtSig',
+        function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on non-string storedata', function(done) {
-    fxpay.verifyReceiptData(receipt({storedata: {}}),
-                            function(err) {
+    fxpay.receipts.verifyData(receipt({storedata: {}}),
+                              function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on corrupted storedata', function(done) {
-    fxpay.verifyReceiptData(receipt({storedata: 'not%a!valid(string'}),
-                            function(err) {
+    fxpay.receipts.verifyData(receipt({storedata: 'not%a!valid(string'}),
+                              function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('handles malformed storedata', function(done) {
-    fxpay.verifyReceiptData(receipt({storedata: '&&&'}),
-                            function(err) {
+    fxpay.receipts.verifyData(receipt({storedata: '&&&'}),
+                              function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
   });
 
   it('fails on missing storedata', function(done) {
-    fxpay.verifyReceiptData(receipt({storedata: 'foo=baz&barz=zonk'}),
-                            function(err) {
+    fxpay.receipts.verifyData(receipt({storedata: 'foo=baz&barz=zonk'}),
+                              function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
@@ -110,7 +108,7 @@ describe('fxpay.verifyReceiptData()', function() {
 
   it('fails on foreign product URL', function(done) {
     var data = receipt({productUrl: 'wrong-app'});
-    fxpay.verifyReceiptData(data, function(err) {
+    fxpay.receipts.verifyData(data, function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
@@ -121,7 +119,7 @@ describe('fxpay.verifyReceiptData()', function() {
     // TODO: remove this when fixed in Marketplace. bug 1034264.
     var data = receipt({productUrl: 'the-origin'});
 
-    fxpay.verifyReceiptData(data, function(err) {
+    fxpay.receipts.verifyData(data, function(err) {
       done(err);
     });
   });
@@ -130,7 +128,7 @@ describe('fxpay.verifyReceiptData()', function() {
     helper.appSelf.origin = 'app://the-app';
     var data = receipt({productUrl: helper.appSelf.origin});
 
-    fxpay.verifyReceiptData(data, function(err) {
+    fxpay.receipts.verifyData(data, function(err) {
       done(err);
     });
   });
@@ -139,7 +137,7 @@ describe('fxpay.verifyReceiptData()', function() {
     helper.appSelf.origin = 'http://hosted-app';
     var data = receipt({productUrl: helper.appSelf.origin});
 
-    fxpay.verifyReceiptData(data, function(err) {
+    fxpay.receipts.verifyData(data, function(err) {
       done(err);
     });
   });
@@ -148,7 +146,7 @@ describe('fxpay.verifyReceiptData()', function() {
     helper.appSelf.origin = 'https://hosted-app';
     var data = receipt({productUrl: helper.appSelf.origin});
 
-    fxpay.verifyReceiptData(data, function(err) {
+    fxpay.receipts.verifyData(data, function(err) {
       done(err);
     });
   });
@@ -158,7 +156,7 @@ describe('fxpay.verifyReceiptData()', function() {
       allowAnyAppReceipt: true
     });
     var data = receipt({productUrl: 'wrong-app'});
-    fxpay.verifyReceiptData(data, function(err) {
+    fxpay.receipts.verifyData(data, function(err) {
       done(err);
     });
   });
@@ -166,17 +164,17 @@ describe('fxpay.verifyReceiptData()', function() {
   it('allows wrong product URLs for test receipts', function(done) {
     // Only allow test receipts when fakeProducts is true.
     fxpay.configure({fakeProducts: true});
-    fxpay.verifyReceiptData(receipt({productUrl: 'wrong-app'},
-                                    {typ: 'test-receipt'}),
-                            function(err) {
+    fxpay.receipts.verifyData(receipt({productUrl: 'wrong-app'},
+                                      {typ: 'test-receipt'}),
+                              function(err) {
       done(err);
     });
   });
 
   it('fails on disallowed receipt check URLs', function(done) {
-    fxpay.verifyReceiptData(receipt(null,
-                                    {verify: 'http://mykracksite.ru'}),
-                            function(err) {
+    fxpay.receipts.verifyData(receipt(null,
+                                      {verify: 'http://mykracksite.ru'}),
+                              function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });
@@ -188,9 +186,9 @@ describe('fxpay.verifyReceiptData()', function() {
     var storedata = 'inapp_id=' + productId;
     helper.appSelf.origin = productUrl;
 
-    fxpay.verifyReceiptData(receipt({storedata: storedata,
-                                     productUrl: productUrl}),
-                            function(err, data, info) {
+    fxpay.receipts.verifyData(receipt({storedata: storedata,
+                                       productUrl: productUrl}),
+                              function(err, data, info) {
       if (!err) {
         assert.equal(info.productId, productId);
         assert.equal(info.productUrl, productUrl);
@@ -201,8 +199,8 @@ describe('fxpay.verifyReceiptData()', function() {
   });
 
   it('disallows test receipts when not testing', function(done) {
-    fxpay.verifyReceiptData(receipt(null, {typ: 'test-receipt'}),
-                            function(err, info) {
+    fxpay.receipts.verifyData(receipt(null, {typ: 'test-receipt'}),
+                              function(err, info) {
       assert.equal(err, 'TEST_RECEIPT_NOT_ALLOWED');
       assert.equal(typeof info, 'object');
       done();

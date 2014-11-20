@@ -1,25 +1,22 @@
 {
   "name": "fxpay",
   "description": "Adds Firefox Marketplace payments to a web application",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "homepage": "https://github.com/mozilla/fxpay",
   "repository": {
     "type": "git",
     "url": "git://github.com/mozilla/fxpay.git"
   },
-  "main": "lib/fxpay.js",
+  "main": "dist/fxpay.min.js",
   "ignore": [
     ".bowerrc",
     ".gitignore",
     ".jshintrc",
     ".travis.yml",
-    "bower.json",
     "build",
     "example",
     "node_modules",
-    "Gruntfile.js",
     "karma.conf.js",
-    "package.json",
     "tasks",
     "tests"
   ],

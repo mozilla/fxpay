@@ -10,7 +10,7 @@ exports.apiProduct = {guid: 'server-guid', name: "Name from API",
 
 exports.setUp = function setUp() {
   exports.server = sinon.fakeServer.create();
-  exports.settings = fxpay.configure({
+  exports.settings = fxpay.settings.configure({
     apiUrlBase: 'http://tests-should-never-hit-this.com',
     // Start with this true because init() sets it and it's
     // cumbersome to re-init some tests.

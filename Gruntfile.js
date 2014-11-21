@@ -5,6 +5,7 @@ var packager = require('./tasks/packager');
 // List module files in order so that calls to require() work right:
 var libFiles = [
   __dirname + '/lib/require.js',
+  __dirname + '/lib/fxpay/utils.js',
   __dirname + '/lib/fxpay/settings.js',
   __dirname + '/lib/fxpay/api.js',
   __dirname + '/lib/fxpay/products.js',

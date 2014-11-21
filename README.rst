@@ -108,6 +108,8 @@ Changelog
 
 **0.0.5** (unreleased)
 
+* Added experimental support for payments on desktop Firefox. This is
+  not yet stable.
 * Split fxpay.js into smaller modules. This means you *must* minify the
   source before you can use it. That is, unless you install the library
   with Bower.

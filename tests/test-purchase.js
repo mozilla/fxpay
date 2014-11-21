@@ -139,16 +139,6 @@ describe('fxpay.purchase()', function () {
     helper.receiptAdd.onsuccess();
   });
 
-  it('should error when mozPay is not supported', function (done) {
-    fxpay.configure({mozPay: undefined});
-
-    fxpay.purchase(helper.apiProduct.guid, function(err, info) {
-      assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
-      assert.equal(typeof info, 'object');
-      done();
-    });
-  });
-
   it('should add receipt to device with addReceipt', function (done) {
     var receipt = '<receipt>';
 

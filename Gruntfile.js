@@ -80,10 +80,10 @@ module.exports = function(grunt) {
                      ghdeploy.createTask(grunt, __dirname,
                                          {removeFiles: ['node_modules']}));
 
-  var siteDir = __dirname + '/example';
-  grunt.registerTask('package',
+  grunt.registerTask('createpackage',
                      'create a packaged example app',
-                     packager.createTask(grunt, siteDir));
+                     packager.createTask(grunt, __dirname));
+  grunt.registerTask('package', ['compress', 'createpackage']);
 
   grunt.registerTask('compress', 'uglify');
   grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);

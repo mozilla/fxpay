@@ -65,30 +65,6 @@ describe('fxpay.init()', function() {
     helper.appSelf.onsuccess();
   });
 
-  it('should error when missing systemXHR permission', function (done) {
-    fxpay.init({
-      onerror: function(err) {
-        assert.equal(err, 'MISSING_XHR_PERMISSION');
-        done();
-      }
-    });
-
-    delete helper.appSelf.manifest.permissions.systemXHR;
-    helper.appSelf.onsuccess();
-  });
-
-  it('should error when app has no permissions', function (done) {
-    fxpay.init({
-      onerror: function(err) {
-        assert.equal(err, 'MISSING_XHR_PERMISSION');
-        done();
-      }
-    });
-
-    delete helper.appSelf.manifest.permissions;
-    helper.appSelf.onsuccess();
-  });
-
   it('should pass through apps platform errors', function (done) {
     fxpay.init({
       onerror: function(err) {

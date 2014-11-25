@@ -122,6 +122,7 @@ Changelog
 * Split fxpay.js into smaller modules. This means you *must* minify the
   source before you can use it. That is, unless you install the library
   with Bower.
+* Added a source map alongside minified source file.
 
 **0.0.4** (2014-09-17)
 

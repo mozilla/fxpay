@@ -23,9 +23,9 @@ function run(done, workDir) {
     shell('cp', ['-R', pkgSrc + '/', pkgDir + '/'], function() {
       shell('cp', ['-R', workDir + '/example/shared/*',
                    pkgDir + '/'], function() {
-        // Copy minified fxpay.js into the package root.
-        shell('cp', [workDir + '/build/fxpay.min.js',
-                     pkgDir + '/fxpay.min.js'], function() {
+        // Copy minified fxpay.js and source map into the package root.
+        shell('cp', [workDir + '/build/fxpay.min.js*',
+                     pkgDir + '/'], function() {
           process.chdir(pkgDir);
           shell('zip', ['-Xr', pkgFile, './*'], function() {
             grunt.log.writeln('Package folder: ' + pkgDir);

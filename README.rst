@@ -48,12 +48,15 @@ To build yourself a compressed version of ``fxpay.js``, run this::
     grunt compress
 
 The compressed source file will appear in the ``build`` directory
-as ``fxpay.min.js``.
+as ``fxpay.min.js``. You'll also get a `source map`_ file in
+the same directory as ``fxpay.min.js.map``.
 
 **IMPORTANT**: To use this library in a web page you have to
 compress it first because the source code spans multiple files.
 The usage instructions above explain how to install public releases from
 Bower which is of course easier.
+
+.. _`source map`: http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
 
 Running Tests
 ~~~~~~~~~~~~~

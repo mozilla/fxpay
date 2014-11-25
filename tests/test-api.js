@@ -17,7 +17,7 @@ describe('fxpay.API()', function () {
     helper.server.respondWith(
       'POST', /.*\/post/,
       function(request) {
-        assert.equal(request.requestHeaders['Accept'], 'application/json');
+        assert.equal(request.requestHeaders.Accept, 'application/json');
         assert.equal(request.requestHeaders['Content-Type'],
                      'application/x-www-form-urlencoded;charset=utf-8');
         assert.equal(request.requestBody, 'foo=bar&baz=zop');
@@ -37,7 +37,7 @@ describe('fxpay.API()', function () {
     helper.server.respondWith(
       'GET', /.*\/get/,
       function(request) {
-        assert.equal(request.requestHeaders['Accept'], 'application/json');
+        assert.equal(request.requestHeaders.Accept, 'application/json');
         assert.equal(request.requestHeaders['Content-Type'], undefined);
         request.respond(200, {"Content-Type": "application/json"},
                         '{"data": "received"}');
@@ -55,7 +55,7 @@ describe('fxpay.API()', function () {
     helper.server.respondWith(
       'PUT', /.*\/put/,
       function(request) {
-        assert.equal(request.requestHeaders['Accept'], 'application/json');
+        assert.equal(request.requestHeaders.Accept, 'application/json');
         assert.equal(request.requestHeaders['Content-Type'],
                      'application/x-www-form-urlencoded;charset=utf-8');
         request.respond(200, {"Content-Type": "application/json"},
@@ -94,7 +94,7 @@ describe('fxpay.API()', function () {
         request.respond(200, {"Content-Type": "application/json"}, '{}');
       });
 
-    api.get('/get', function(err, data) {
+    api.get('/get', function(err) {
       done(err);
     });
 
@@ -112,7 +112,7 @@ describe('fxpay.API()', function () {
                         '{"data": "received"}');
       });
 
-    api.post('/post', 'custom-data', function(err, data) {
+    api.post('/post', 'custom-data', function(err) {
       done(err);
     }, {contentType: 'text/plain'});
 
@@ -123,13 +123,13 @@ describe('fxpay.API()', function () {
     helper.server.respondWith(
       'GET', /.*\/get/,
       function(request) {
-        assert.equal(request.requestHeaders['Foobar'], 'bazba');
-        assert.equal(request.requestHeaders['Zoopa'], 'wonza');
+        assert.equal(request.requestHeaders.Foobar, 'bazba');
+        assert.equal(request.requestHeaders.Zoopa, 'wonza');
         request.respond(200, {"Content-Type": "application/json"},
                         '{"data": "received"}');
       });
 
-    api.get('/get', function(err, data) {
+    api.get('/get', function(err) {
       done(err);
     }, {headers: {Foobar: 'bazba', Zoopa: 'wonza'}});
 
@@ -137,7 +137,7 @@ describe('fxpay.API()', function () {
   });
 
   it('should report XHR abort', function (done) {
-    helper.server.respondWith(function(xhr, id) {
+    helper.server.respondWith(function(xhr) {
       // We use a custom event because xhr.abort() triggers load first
       // https://github.com/cjohansen/Sinon.JS/issues/432
       dispatchXhrEvent(xhr, 'abort');
@@ -152,7 +152,7 @@ describe('fxpay.API()', function () {
   });
 
   it('should report XHR errors', function (done) {
-    helper.server.respondWith(function(xhr, id) {
+    helper.server.respondWith(function(xhr) {
       dispatchXhrEvent(xhr, 'error');
     });
 
@@ -182,8 +182,10 @@ describe('fxpay.API()', function () {
   it('should report unparsable JSON', function (done) {
     helper.server.respondWith(
       'POST', /.*\/some\/path/,
+      /* jshint -W044 */
       [200, {"Content-Type": "application/json"},
        "{this\is not; valid JSON'"]);
+      /* jshint +W044 */
 
     api.post('/some/path', null, function(err) {
       assert.equal(err, 'BAD_JSON_RESPONSE');
@@ -252,7 +254,7 @@ describe('fxpay.API()', function () {
   });
 
   it('should timeout', function (done) {
-    helper.server.respondWith(function(xhr, id) {
+    helper.server.respondWith(function(xhr) {
       // We simulate a timeout event here because Sinon
       // doesn't seem to support the XHR.timeout property.
       // https://github.com/cjohansen/Sinon.JS/issues/431

@@ -58,8 +58,11 @@ describe('fxpay.receipts.verifyData()', function() {
   });
 
   it('fails on missing product URL', function(done) {
-    fxpay.receipts.verifyData(receipt(null, {product: {storedata: 'storedata'}}),
-                              function(err) {
+    fxpay.receipts.verifyData(receipt(null, {
+      product: {
+        storedata: 'storedata'
+      }
+    }), function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
     });

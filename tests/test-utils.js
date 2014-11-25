@@ -91,12 +91,12 @@ describe('fxpay.utils.defaults()', function() {
 describe('fxpay.utils.openWindow()', function() {
 
   beforeEach(function(){
-    window._oldOpen = window.open;
+    this._oldOpen = window.open;
     window.open = sinon.spy();
   });
 
   afterEach(function(){
-    window.open = window._oldOpen;
+    window.open = this._oldOpen;
   });
 
   it('should be called with props', function() {

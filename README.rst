@@ -14,6 +14,12 @@ Usage
 This is a complete guide to usage:
 https://developer.mozilla.org/en-US/Marketplace/Monetization/In-app_payments_section/fxPay_iap
 
+Examples
+========
+
+You can find working code in the
+`example <https://github.com/mozilla/fxpay/tree/master/example/>`_
+directory of this repository.
 
 FxPay Developers
 ================

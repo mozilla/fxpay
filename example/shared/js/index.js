@@ -111,6 +111,26 @@ $(function() {
     // TODO: update the UI here with a spinner or something.
   });
 
+  $('button.install').click(function(evt) {
+    var a = document.createElement('a');
+    a.href = '/manifest.webapp';
+    var fullManifest = (
+      a.protocol + '//' + a.hostname + (a.port ? ':' + a.port: '') +
+      a.pathname);
+
+    var req = window.navigator.mozApps.install(fullManifest);
+
+    req.onsuccess = function() {
+      var app = this.result;
+      app.launch();
+    };
+
+    req.onerror = function() {
+      console.error('Error installing app:', this.error.name);
+    };
+
+  });
+
   $('#api-server').change(function(evt) {
     initApi();
   });
@@ -150,6 +170,10 @@ $(function() {
 
   fxpay.init({
     onerror: function(err) {
+      if (err === 'NOT_INSTALLED_AS_APP') {
+        $('#app-banner').show();
+        return;
+      }
       console.error('error during initialization:', err);
       showError(err);
     },

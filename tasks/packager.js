@@ -5,31 +5,33 @@ var shell = require('./shell');
 var grunt;
 
 
-exports.createTask = function(_grunt, siteDir) {
+exports.createTask = function(_grunt, workDir) {
   grunt = _grunt;
   return function() {
-    grunt.task.run('compress');
-    run(this.async(), siteDir);
+    run(this.async(), workDir);
   };
 };
 
 
-function run(done, siteDir) {
-  var workDir = process.cwd();
+function run(done, workDir) {
+  var pkgSrc = workDir + '/example/packaged';
   var buildDir = workDir + '/build';
   var pkgDir = buildDir + '/application';
   var pkgFile = pkgDir + '.zip';
 
   shell('rm', ['-fr', (pkgDir || '/__thank-me-later__') + '*'], function() {
-    shell('cp', ['-R', siteDir + '/', pkgDir], function() {
-      // Copy minified fxpay.js into the package root.
-      shell('cp', [workDir + '/build/fxpay.min.js',
-                   pkgDir + '/fxpay.min.js'], function() {
-        process.chdir(pkgDir);
-        shell('zip', ['-Xr', pkgFile, './*'], function() {
-          grunt.log.writeln('Package folder: ' + pkgDir);
-          grunt.log.writeln('Package: ' + pkgFile);
-          done();
+    shell('cp', ['-R', pkgSrc + '/', pkgDir + '/'], function() {
+      shell('cp', ['-R', workDir + '/example/shared/*',
+                   pkgDir + '/'], function() {
+        // Copy minified fxpay.js into the package root.
+        shell('cp', [workDir + '/build/fxpay.min.js',
+                     pkgDir + '/fxpay.min.js'], function() {
+          process.chdir(pkgDir);
+          shell('zip', ['-Xr', pkgFile, './*'], function() {
+            grunt.log.writeln('Package folder: ' + pkgDir);
+            grunt.log.writeln('Package: ' + pkgFile);
+            done();
+          });
         });
       });
     });

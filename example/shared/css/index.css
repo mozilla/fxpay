@@ -43,6 +43,9 @@ h3 {
 
 a, button {
     color: #121007;
+}
+
+button {
     text-decoration: none;
 }
 
@@ -120,6 +123,22 @@ ul li:nth-last-child(1) {
 
 #your-products {
     margin-top: 3em;
+}
+
+#app-banner {
+    display: none;
+    padding: 1em;
+    background: #777;
+    border-bottom: 2px solid #000;
+}
+
+#app-banner p {
+    font-size: 1.2em;
+}
+
+#app-banner button {
+    margin: 1em;
+    padding: 0.3em;
 }
 
 #error {

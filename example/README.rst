@@ -1,14 +1,17 @@
-===========
-Example App
-===========
+============
+Example Apps
+============
 
-This is an example `Firefox OS`_ web app that can do in-app payments
-without hosting its own server. Since it needs to do cross-origin API
-requests, the app must be `privileged`_ which makes it a type of
-packaged app.
+These are some examples of `Firefox OS`_ web apps that can do in-app payments
+using the fxpay library.
+
+As a packaged app
+-----------------
+
+Since fxpay requires an app to define an origin, the app must be `privileged`_.
 
 Installation
-------------
+~~~~~~~~~~~~
 
 To install a privileged app it must be signed by something like
 `Firefox Marketplace`_. However, you can use the
@@ -20,6 +23,32 @@ after you've installed the developer tools listed in the main README::
 
 This will create ``build/application`` and ``build/application.zip``.
 You can install the app from that directory using the App Manager.
+
+As a hosted app
+---------------
+
+**IMPORTANT**: using fxpay with hosted apps is currently experimental and may
+not be fully implemented.
+
+To run the hosted example app, you'll need to first compress a minified
+fxpay library, install some node modules, and start a web server.
+Run these commands from the root of the repository::
+
+    grunt compress
+    cd example/hosted
+    npm install
+    npm start
+
+You can now open http://localhost:3000 to see the example app.
+You then need to click the Install button to install it as a web app.
+
+The easiest way to debug the app (on Mac OS X) is to run it from the
+shell after installation like this::
+
+    /Applications/FxPay.app/Contents/MacOS/webapprt -jsconsole
+
+Using A Custom Webpay
+---------------------
 
 If you want to test payments against your local `Webpay`_ server
 then you'll also need to `build a custom profile`_ with payments

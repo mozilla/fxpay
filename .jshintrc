@@ -20,9 +20,16 @@
   "noarg": true,
   "passfail": false,
   "predef": [
+    "assert",
+    "beforeEach",
+    "afterEach",
+    "describe",
     "exports",
+    "fxpay",
+    "it",
+    "process",
     "require",
-    "process"
+    "sinon"
   ],
   "shadow": false,
   "strict": false,

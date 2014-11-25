@@ -5,7 +5,7 @@ fxpay
 JavaScript library to support `Firefox Marketplace`_ payments in
 a web application.
 
-.. image:: https://travis-ci.org/mozilla/fxpay.png?branch=master
+.. image:: https://travis-ci.org/mozilla/fxpay.svg?branch=master
     :target: https://travis-ci.org/mozilla/fxpay
 
 Usage

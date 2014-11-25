@@ -27,6 +27,7 @@
     "exports",
     "fxpay",
     "it",
+    "helper",
     "process",
     "require",
     "sinon"

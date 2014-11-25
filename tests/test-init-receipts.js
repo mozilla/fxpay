@@ -204,7 +204,7 @@ describe('fxpay.init(): receipts', function() {
         done(err);
       },
       oninit: function() {},
-      onrestore: function(err, info) {
+      onrestore: function(err) {
         assert.equal(err, 'BAD_API_RESPONSE');
         done();
       }

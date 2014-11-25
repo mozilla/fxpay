@@ -26,11 +26,11 @@ describe('fxpay.getProducts()', function() {
     helper.server.respondWith(
       'GET', url,
       [200, {"Content-Type": "application/json"},
-       JSON.stringify({
-         "meta": {"next": null, "previous": null, "total_count": 2,
-                  "offset": 0, "limit": 25},
-         "objects": serverObjects
-       })]);
+      JSON.stringify({
+        "meta": {"next": null, "previous": null, "total_count": 2,
+                 "offset": 0, "limit": 25},
+        "objects": serverObjects
+      })]);
 
     fxpay.getProducts(function(err, products) {
       assert.equal(products[0].name, serverObjects[0].name);
@@ -62,11 +62,11 @@ describe('fxpay.getProducts()', function() {
     helper.server.respondWith(
       'GET', url,
       [200, {"Content-Type": "application/json"},
-       JSON.stringify({
-         "meta": {"next": null, "previous": null, "total_count": 2,
-                  "offset": 0, "limit": 25},
-         "objects": serverObjects
-       })]);
+      JSON.stringify({
+        "meta": {"next": null, "previous": null, "total_count": 2,
+                 "offset": 0, "limit": 25},
+        "objects": serverObjects
+      })]);
 
     fxpay.getProducts(function(err, products) {
       assert.equal(products[0].name, serverObjects[0].name);

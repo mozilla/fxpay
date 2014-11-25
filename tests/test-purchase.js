@@ -108,7 +108,8 @@ describe('fxpay.purchase()', function () {
     });
 
     // Respond to fetching the JWT.
-    helper.server.respondWith('POST', /.*webpay\/inapp\/prepare/, productData());
+    helper.server.respondWith('POST', /.*webpay\/inapp\/prepare/,
+                              productData());
     helper.server.respond();
 
     var domReq = mozPay.returnValues[0];
@@ -231,7 +232,8 @@ describe('fxpay.purchase()', function () {
     });
 
     // Respond to fetching the JWT.
-    helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/, productData());
+    helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/,
+                              productData());
     helper.server.respond();
 
     mozPay.returnValues[0].onsuccess();
@@ -264,10 +266,11 @@ describe('fxpay.purchase()', function () {
   function finishPurchaseOk(receipt, opt) {
     opt = opt || {};
     opt.fetchProductsPattern = (opt.fetchProductsPattern ||
-                                new RegExp('.*/payments/.*/in-app/.*'))
+                                new RegExp('.*/payments/.*/in-app/.*'));
 
     // Respond to fetching the JWT.
-    helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/, productData());
+    helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/,
+                              productData());
     helper.server.respond();
 
     mozPay.returnValues[0].onsuccess();

@@ -49,6 +49,9 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      options: {
+        sourceMap: true
+      },
       my_target: {
         files: {
           'build/fxpay.min.js': libFiles,

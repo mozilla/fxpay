@@ -18,8 +18,15 @@ if (!fs.existsSync(projectDir + '/' + fxPayRelPath)) {
 
 router.use(morgan('dev'))  // logging
 
-router.get('/fxpay.min.js', function (req, res) {
-  res.sendFile(fxPayRelPath, {root: projectDir});
+router.get('/fxpay.min.js:suffix?', function (req, res) {
+  res.sendFile(fxPayRelPath + (req.params.suffix || ''),
+               {root: projectDir});
+});
+
+router.get('/lib/fxpay/:sourceFile', function (req, res) {
+  // Load uncompressed files when debugging with a source map.
+  res.sendFile('lib/fxpay/' + req.params.sourceFile,
+               {root: projectDir});
 });
 
 router.get('/manifest.webapp', function (req, res) {

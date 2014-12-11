@@ -87,7 +87,6 @@ describe('fxpay.utils.defaults()', function() {
 });
 
 
-
 describe('fxpay.utils.openWindow()', function() {
 
   beforeEach(function(){
@@ -121,5 +120,30 @@ describe('fxpay.utils.openWindow()', function() {
   it('should be passed a features string with no whitespace', function() {
     fxpay.utils.openWindow();
     assert.notInclude(window.open.args[0][2], ' ');
+  });
+});
+
+
+describe('fxpay.utils.getSelfOrigin', function() {
+
+  it('should return the app origin', function() {
+    assert.equal(
+      fxpay.utils.getSelfOrigin({appSelf: {origin: 'app://origin'}}),
+      'app://origin');
+  });
+
+  it('should fall back to location origin', function() {
+    var stubLocation = {origin: 'http://foo.com:3000'};
+    assert.equal(
+      fxpay.utils.getSelfOrigin({window: {location: stubLocation}}),
+      'http://foo.com:3000');
+  });
+
+  it('should fall back to a derived origin', function() {
+    var stubLocation = {protocol: 'http:',
+                        hostname: 'foo.com:3000'};
+    assert.equal(
+      fxpay.utils.getSelfOrigin({window: {location: stubLocation}}),
+      'http://foo.com:3000');
   });
 });

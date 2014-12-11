@@ -18,18 +18,19 @@ describe('fxpay.purchase()', function () {
 
   it('should pass through init errors', function (done) {
     // Trigger an init error:
-    fxpay.configure({
-      mozApps: {},  // invalid mozApps.
-    });
+    helper.appSelf.error = {name: 'INVALID_MANIFEST'};
+
     fxpay.init({
       onerror: function(err) {
         console.log('ignoring err', err);
       }
     });
 
+    helper.appSelf.onerror();
+
     // Try to start a purchase.
     fxpay.purchase(helper.apiProduct.guid, function(err, info) {
-      assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+      assert.equal(err, 'INVALID_MANIFEST');
       assert.equal(typeof info, 'object');
       done();
     });
@@ -70,6 +71,32 @@ describe('fxpay.purchase()', function () {
                                JSON.stringify(helper.apiProduct)]);
 
     helper.receiptAdd.onsuccess();
+    helper.server.respond();
+  });
+
+  it('should open a payment window on the web', function (done) {
+    var webpayJWT = '<someJWT>';
+    var productId = 'some-uuid';
+    var cfg = {
+      apiUrlBase: 'https://not-the-real-marketplace',
+      apiVersionPrefix: '/api/v1',
+      appSelf: null,
+      mozPay: null
+    };
+    fxpay.configure(cfg);
+
+    fxpay.purchase(productId, function(err) {
+      // TODO: replace this with a window opener test!
+      assert.equal(err, 'WEB_FLOW_NOT_IMPLEMENTED');
+      done();
+    });
+
+    // Respond to fetching the JWT.
+    helper.server.respondWith(
+      'POST',
+      cfg.apiUrlBase + cfg.apiVersionPrefix + '/webpay/inapp/prepare/',
+      productData({webpayJWT: webpayJWT}));
+
     helper.server.respond();
   });
 

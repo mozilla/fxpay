@@ -93,17 +93,18 @@ describe('fxpay.getProducts()', function() {
 
   it('should pass through init errors', function (done) {
     // Trigger an init error:
-    fxpay.configure({
-      mozApps: {},  // invalid mozApps.
-    });
+    helper.appSelf.error = {name: 'INVALID_MANIFEST'};
+
     fxpay.init({
       onerror: function(err) {
         console.log('ignoring err', err);
       }
     });
 
+    helper.appSelf.onerror();
+
     fxpay.getProducts(function(err, products) {
-      assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+      assert.equal(err, 'INVALID_MANIFEST');
       assert.equal(products.length, 0);
       done();
     });

@@ -170,8 +170,7 @@ $(function() {
 
   fxpay.init({
     onerror: function(err) {
-      if (err === 'NOT_INSTALLED_AS_APP' ||
-          err === 'PAY_PLATFORM_UNAVAILABLE') {
+      if (err === 'PAY_PLATFORM_UNAVAILABLE') {
         $('#app-banner').show();
         return;
       }

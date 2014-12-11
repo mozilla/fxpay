@@ -65,6 +65,74 @@
   };
 
 
+  exports.finishPurchaseOk = function(receipt, opt) {
+    var helper = exports;
+    opt = fxpay.utils.defaults(opt, {
+      mozPay: null,
+      productData: null
+    });
+    opt.fetchProductsPattern = (opt.fetchProductsPattern ||
+                                new RegExp('.*/payments/.*/in-app/.*'));
+
+    // Respond to fetching the JWT.
+    helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/,
+                              helper.productData(opt.productData));
+    helper.server.respond();
+
+    if (opt.mozPay) {
+      opt.mozPay.returnValues[0].onsuccess();
+    }
+
+    // Respond to validating the transaction.
+    helper.server.respondWith('GET', /.*\/transaction\/XYZ/,
+                              helper.transactionData({receipt: receipt}));
+    helper.server.respond();
+
+    // Respond to getting product info.
+    helper.server.respondWith('GET', opt.fetchProductsPattern,
+                              [200, {"Content-Type": "application/json"},
+                               JSON.stringify(helper.apiProduct)]);
+
+    helper.receiptAdd.onsuccess();
+    helper.server.respond();
+  };
+
+
+  exports.productData = function(overrides, status) {
+    // Create a JSON helper.server response to a request for product data.
+    overrides = overrides || {};
+    var data = {
+      webpayJWT: '<jwt>',
+      contribStatusURL: '/transaction/XYZ',
+    };
+    for (var k in data) {
+      if (overrides[k]) {
+        data[k] = overrides[k];
+      }
+    }
+    return [status || 200, {"Content-Type": "application/json"},
+            JSON.stringify(data)];
+  };
+
+
+  exports.transactionData = function(overrides, status) {
+    // Create a JSON helper.server response to a request for transaction data.
+    overrides = overrides || {};
+    var data = {
+      status: 'complete',
+      // Pretend this is a real Marketplace receipt.
+      receipt: '<keys>~<receipt>'
+    };
+    for (var k in data) {
+      if (overrides[k]) {
+        data[k] = overrides[k];
+      }
+    }
+    return [status || 200, {"Content-Type": "application/json"},
+            JSON.stringify(data)];
+  };
+
+
   exports.receiptAdd = {
     error: null,
     _receipt: null,

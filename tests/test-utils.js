@@ -90,12 +90,8 @@ describe('fxpay.utils.defaults()', function() {
 describe('fxpay.utils.openWindow()', function() {
 
   beforeEach(function(){
-    this._oldOpen = window.open;
-    window.open = sinon.spy();
-  });
-
-  afterEach(function(){
-    window.open = this._oldOpen;
+    this.openWindowSpy = sinon.spy();
+    fxpay.configure({openWindow: this.openWindowSpy});
   });
 
   it('should be called with props', function() {
@@ -105,21 +101,21 @@ describe('fxpay.utils.openWindow()', function() {
       w: 200,
       h: 400
     });
-    assert(window.open.calledWithMatch('http://blah.com', 'whatever'));
-    assert.include(window.open.args[0][2], 'width=200');
-    assert.include(window.open.args[0][2], 'height=400');
+    assert(this.openWindowSpy.calledWithMatch('http://blah.com', 'whatever'));
+    assert.include(this.openWindowSpy.args[0][2], 'width=200');
+    assert.include(this.openWindowSpy.args[0][2], 'height=400');
   });
 
   it('should be called with defaults', function() {
     fxpay.utils.openWindow();
-    assert(window.open.calledWithMatch('about:blank', 'FxPay'));
-    assert.include(window.open.args[0][2], 'width=276');
-    assert.include(window.open.args[0][2], 'height=384');
+    assert(this.openWindowSpy.calledWithMatch('about:blank', 'FxPay'));
+    assert.include(this.openWindowSpy.args[0][2], 'width=276');
+    assert.include(this.openWindowSpy.args[0][2], 'height=384');
   });
 
   it('should be passed a features string with no whitespace', function() {
     fxpay.utils.openWindow();
-    assert.notInclude(window.open.args[0][2], ' ');
+    assert.notInclude(this.openWindowSpy.args[0][2], ' ');
   });
 });
 

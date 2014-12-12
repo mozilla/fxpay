@@ -81,9 +81,21 @@ Here's how to run a specific test file::
 
     grunt karma:run --tests tests/test-get-products.js
 
-You can also use grep patterns::
+You can also use grep patterns to match files::
 
     grunt karma:run --tests 'tests/test-get-*'
+
+If you want to run a specific test function, you can use
+a grep pattern to match the name in the ``describe()`` or ``it()``
+definition. For example, run all tests under
+``describe('fxpay.purchase()')`` like this::
+
+    grunt karma:run --grep='fxpay.purchase()'
+
+or run a test defined as ``it('should open a payment window on the web')``
+like this::
+
+    grunt karma:run --grep='should open a payment window on the web'
 
 Check For Lint
 ~~~~~~~~~~~~~~

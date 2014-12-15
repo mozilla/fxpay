@@ -92,7 +92,8 @@ $(function() {
 
   // DOM handling:
   //
-  $('ul').on('click', '.product button', function() {
+  $('ul').on('click', '.product button', function(evt) {
+    evt.preventDefault();
     clearError();
     var prod = $(this).data('product');
     console.log('purchasing', prod.name, prod.productId);
@@ -146,22 +147,38 @@ $(function() {
 
   fxpay.configure({
     receiptCheckSites: [
-      // Whitelist the production service.
+      // Allow the production service.
       'https://receiptcheck.marketplace.firefox.com',
       'https://marketplace.firefox.com',
 
       // The following would not be needed in a live app. These our some test
       // services for development of the fxpay library only.
 
-      // Whitelist our test servers.
+      // Allow our test servers.
       'https://receiptcheck-dev.allizom.org',
       'https://marketplace-dev.allizom.org',
       'https://receiptcheck-payments-alt.allizom.org',
       'https://payments-alt.allizom.org',
 
-      // Whitelist a local development server I use.
+      // Allow some common local servers..
+      'http://mp.dev',
       'http://fireplace.loc',
     ],
+    payProviderUrls: {
+      // Map the production site.
+      'mozilla/payments/pay/v1':
+          'https://marketplace.firefox.com/mozpay/?req={jwt}',
+
+      // Map some development sites.
+      'mozilla-dev/payments/pay/v1':
+          'https://marketplace-dev.allizom.org/mozpay/?req={jwt}',
+      'mozilla-stage/payments/pay/v1':
+          'https://marketplace.allizom.org/mozpay/?req={jwt}',
+      'mozilla-alt/payments/pay/v1':
+          'https://payments-alt.allizom.org/mozpay/?req={jwt}',
+      'mozilla-local/payments/pay/v1':
+          'http://fireplace.loc/mozpay/?req={jwt}',
+    },
     // Initially, start by allowing fake products so that test
     // receipts can validate. The checkbox in initApi() will
     // toggle this setting.

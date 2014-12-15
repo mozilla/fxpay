@@ -1,4 +1,4 @@
-describe('fxpay.purchase()', function () {
+describe('fxpay.purchase() on B2G', function () {
   var mozPay;
 
   beforeEach(function() {
@@ -6,7 +6,7 @@ describe('fxpay.purchase()', function () {
     mozPay = sinon.spy(mozPayStub);
     fxpay.configure({
       appSelf: helper.appSelf,
-      mozPay: mozPay
+      mozPay: mozPay,
     });
   });
 
@@ -57,13 +57,13 @@ describe('fxpay.purchase()', function () {
       'POST',
       cfg.apiUrlBase + cfg.apiVersionPrefix + '/webpay/inapp/prepare/',
       // TODO: assert somehow that productId is part of post data.
-      productData({webpayJWT: webpayJWT}));
+      helper.productData({webpayJWT: webpayJWT}));
     helper.server.respond();
 
     mozPay.returnValues[0].onsuccess();
 
     helper.server.respondWith('GET', cfg.apiUrlBase + '/transaction/XYZ',
-                              transactionData());
+                              helper.transactionData());
     helper.server.respond();
 
     helper.server.respondWith('GET', new RegExp('.*/payments/.*/in-app/.*'),
@@ -71,32 +71,6 @@ describe('fxpay.purchase()', function () {
                                JSON.stringify(helper.apiProduct)]);
 
     helper.receiptAdd.onsuccess();
-    helper.server.respond();
-  });
-
-  it('should open a payment window on the web', function (done) {
-    var webpayJWT = '<someJWT>';
-    var productId = 'some-uuid';
-    var cfg = {
-      apiUrlBase: 'https://not-the-real-marketplace',
-      apiVersionPrefix: '/api/v1',
-      appSelf: null,
-      mozPay: null
-    };
-    fxpay.configure(cfg);
-
-    fxpay.purchase(productId, function(err) {
-      // TODO: replace this with a window opener test!
-      assert.equal(err, 'WEB_FLOW_NOT_IMPLEMENTED');
-      done();
-    });
-
-    // Respond to fetching the JWT.
-    helper.server.respondWith(
-      'POST',
-      cfg.apiUrlBase + cfg.apiVersionPrefix + '/webpay/inapp/prepare/',
-      productData({webpayJWT: webpayJWT}));
-
     helper.server.respond();
   });
 
@@ -114,14 +88,14 @@ describe('fxpay.purchase()', function () {
 
     // Respond to fetching the JWT.
     helper.server.respondWith('POST', /http.*\/webpay\/inapp\/prepare/,
-                              productData());
+                              helper.productData());
     helper.server.respond();
 
     mozPay.returnValues[0].onsuccess();
 
     helper.server.autoRespond = true;
     helper.server.respondWith('GET', /http.*\/transaction\/XYZ/,
-                              transactionData({status: 'incomplete'}));
+                              helper.transactionData({status: 'incomplete'}));
     helper.server.respond();
   });
 
@@ -136,7 +110,7 @@ describe('fxpay.purchase()', function () {
 
     // Respond to fetching the JWT.
     helper.server.respondWith('POST', /.*webpay\/inapp\/prepare/,
-                              productData());
+                              helper.productData());
     helper.server.respond();
 
     var domReq = mozPay.returnValues[0];
@@ -153,7 +127,7 @@ describe('fxpay.purchase()', function () {
 
     // Respond to fetching the JWT.
     helper.server.respondWith('POST', /http.*\/webpay\/inapp\/prepare/,
-                              productData());
+                              helper.productData());
     helper.server.respond();
 
     mozPay.returnValues[0].onsuccess();
@@ -161,7 +135,7 @@ describe('fxpay.purchase()', function () {
     // Respond to polling the transaction.
     helper.server.respondWith(
       'GET', /http.*\/transaction\/XYZ/,
-      transactionData({status: 'THIS_IS_NOT_A_VALID_STATE'}));
+      helper.transactionData({status: 'THIS_IS_NOT_A_VALID_STATE'}));
     helper.server.respond();
 
     helper.receiptAdd.onsuccess();
@@ -175,7 +149,7 @@ describe('fxpay.purchase()', function () {
       done(err);
     });
 
-    finishPurchaseOk(receipt);
+    helper.finishPurchaseOk(receipt, {mozPay: mozPay});
   });
 
   it('should call back with complete product info', function (done) {
@@ -189,7 +163,7 @@ describe('fxpay.purchase()', function () {
       done(err);
     });
 
-    finishPurchaseOk('<receipt>');
+    helper.finishPurchaseOk('<receipt>', {mozPay: mozPay});
   });
 
   it('should fetch stub products when using fake products', function (done) {
@@ -204,8 +178,9 @@ describe('fxpay.purchase()', function () {
       done(err);
     });
 
-    finishPurchaseOk('<receipt>', {
-      fetchProductsPattern: /.*\/stub-in-app-products\/.*/
+    helper.finishPurchaseOk('<receipt>', {
+      fetchProductsPattern: /.*\/stub-in-app-products\/.*/,
+      mozPay: mozPay
     });
   });
 
@@ -226,7 +201,7 @@ describe('fxpay.purchase()', function () {
       done(err);
     });
 
-    finishPurchaseOk(receipt);
+    helper.finishPurchaseOk(receipt, {mozPay: mozPay});
   });
 
   it('should not add dupes to localStorage', function (done) {
@@ -248,7 +223,7 @@ describe('fxpay.purchase()', function () {
       done(err);
     });
 
-    finishPurchaseOk(receipt);
+    helper.finishPurchaseOk(receipt, {mozPay: mozPay});
   });
 
   it('should pass through receipt errors', function (done) {
@@ -260,12 +235,13 @@ describe('fxpay.purchase()', function () {
 
     // Respond to fetching the JWT.
     helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/,
-                              productData());
+                              helper.productData());
     helper.server.respond();
 
     mozPay.returnValues[0].onsuccess();
 
-    helper.server.respondWith('GET', /.*\/transaction\/XYZ/, transactionData());
+    helper.server.respondWith('GET', /.*\/transaction\/XYZ/,
+                              helper.transactionData());
     helper.server.respond();
 
     // Simulate a receipt installation error.
@@ -290,74 +266,12 @@ describe('fxpay.purchase()', function () {
   }
 
 
-  function finishPurchaseOk(receipt, opt) {
-    opt = opt || {};
-    opt.fetchProductsPattern = (opt.fetchProductsPattern ||
-                                new RegExp('.*/payments/.*/in-app/.*'));
-
-    // Respond to fetching the JWT.
-    helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/,
-                              productData());
-    helper.server.respond();
-
-    mozPay.returnValues[0].onsuccess();
-
-    // Respond to validating the transaction.
-    helper.server.respondWith('GET', /.*\/transaction\/XYZ/,
-                              transactionData({receipt: receipt}));
-    helper.server.respond();
-
-    // Respond to getting product info.
-    helper.server.respondWith('GET', opt.fetchProductsPattern,
-                              [200, {"Content-Type": "application/json"},
-                               JSON.stringify(helper.apiProduct)]);
-
-    helper.receiptAdd.onsuccess();
-    helper.server.respond();
-  }
-
-
   function mozPayStub() {
     // https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay
     return {
       onsuccess: function() {},
       onerror: function() {}
     };
-  }
-
-
-  function productData(overrides, status) {
-    // Create a JSON helper.server response to a request for product data.
-    overrides = overrides || {};
-    var data = {
-      webpayJWT: '<jwt>',
-      contribStatusURL: '/transaction/XYZ',
-    };
-    for (var k in data) {
-      if (overrides[k]) {
-        data[k] = overrides[k];
-      }
-    }
-    return [status || 200, {"Content-Type": "application/json"},
-            JSON.stringify(data)];
-  }
-
-
-  function transactionData(overrides, status) {
-    // Create a JSON helper.server response to a request for transaction data.
-    overrides = overrides || {};
-    var data = {
-      status: 'complete',
-      // Pretend this is a real Marketplace receipt.
-      receipt: '<keys>~<receipt>'
-    };
-    for (var k in data) {
-      if (overrides[k]) {
-        data[k] = overrides[k];
-      }
-    }
-    return [status || 200, {"Content-Type": "application/json"},
-            JSON.stringify(data)];
   }
 
 });

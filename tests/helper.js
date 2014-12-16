@@ -69,7 +69,8 @@
     var helper = exports;
     opt = fxpay.utils.defaults(opt, {
       mozPay: null,
-      productData: null
+      productData: null,
+      payCompleter: null,
     });
     opt.fetchProductsPattern = (opt.fetchProductsPattern ||
                                 new RegExp('.*/payments/.*/in-app/.*'));
@@ -80,7 +81,11 @@
     helper.server.respond();
 
     if (opt.mozPay) {
+      console.log('Simulate a payment completion with mozPay');
       opt.mozPay.returnValues[0].onsuccess();
+    } else if (opt.payCompleter) {
+      console.log('Simulate a payment completion with custom function');
+      opt.payCompleter();
     }
 
     // Respond to validating the transaction.

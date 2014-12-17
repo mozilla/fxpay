@@ -143,3 +143,18 @@ describe('fxpay.utils.getSelfOrigin', function() {
       'http://foo.com:3000');
   });
 });
+
+
+describe('fxpay.utils.getUrlOrigin()', function() {
+
+  it('returns location from URL', function() {
+    assert.equal(fxpay.utils.getUrlOrigin('http://foo.com/somewhere.html'),
+                 'http://foo.com');
+  });
+
+  it('returns location with port', function() {
+    assert.equal(fxpay.utils.getUrlOrigin('http://foo.com:3000/somewhere.html'),
+                 'http://foo.com:3000');
+  });
+
+});

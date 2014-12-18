@@ -1,6 +1,6 @@
 {
   "version": "0.0.1",
-  "name": "FxPay",
+  "name": "FxPay Hosted",
   "description": "Example of a hosted app that can do server-less in-app payments",
   "developer": {
       "name": "Kumar McMillan"

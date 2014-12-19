@@ -1,0 +1,16 @@
+name: fxpay-hosted
+instances: 1
+framework:
+  type: node
+  runtime: node010
+  document-root: example/hosted
+hooks:
+  pre-staging:
+    - cd example/hosted && npm install
+ignores: [
+    '.git',
+    'node_modules',
+    'package.json',
+    'example/hosted/node_modules'
+]
+mem: 128

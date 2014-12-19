@@ -3,7 +3,8 @@ Example Apps
 ============
 
 These are some examples of `Firefox OS`_ web apps that can do in-app payments
-using the fxpay library.
+using the fxpay library. You can install the examples as a `packaged app`_,
+a `hosted app`_, or you can simply load the URL in a web browser.
 
 As a packaged app
 -----------------
@@ -13,9 +14,9 @@ Since fxpay requires an app to define an origin, the app must be `privileged`_.
 Installation
 ~~~~~~~~~~~~
 
-To install a privileged app it must be signed by something like
+To install a `privileged`_ app it must be signed by something like
 `Firefox Marketplace`_. However, you can use the
-`App Manager`_ to install it as well. First, build this example into a
+`WebIDE`_ to install it as well. First, build this example into a
 packaged app. Run this from the root of the `fxpay`_ repository
 after you've installed the developer tools listed in the main README::
 
@@ -27,11 +28,8 @@ You can install the app from that directory using the App Manager.
 As a hosted app
 ---------------
 
-**IMPORTANT**: using fxpay with hosted apps is currently experimental and may
-not be fully implemented.
-
-To run the hosted example app, you'll need to first compress a minified
-fxpay library, install some node modules, and start a web server.
+To run the example as a `hosted app`_, you'll need to first compress a
+minified fxpay library, install some node modules, and start a web server.
 Run these commands from the root of the repository::
 
     grunt compress
@@ -40,12 +38,26 @@ Run these commands from the root of the repository::
     npm start
 
 You can now open http://localhost:3000 to see the example app.
-You then need to click the Install button to install it as a web app.
+All features should be working in any standard web browser.
 
-The easiest way to debug the app (on Mac OS X) is to run it from the
+If you install the app as a desktop web app,
+the easiest way to debug it (on Mac OS X) is to launch it from the
 shell after installation like this::
 
     /Applications/FxPay.app/Contents/MacOS/webapprt -jsconsole
+
+On Mozilla's PAAS
+-----------------
+
+The example app is hosted on Mozilla's
+`PAAS <https://api.paas.mozilla.org/console/login/>`_ for convenience.
+You can access it at http://fxpay-hosted.paas.allizom.org/ and you can
+submit it as an app to your local Firefox Marketplace by uploading the
+manifest at http://fxpay-hosted.paas.allizom.org/manifest.webapp .
+
+To push changes to the app, run this from the fxpay repository root::
+
+    stackato push -n
 
 Using A Custom Webpay
 ---------------------
@@ -57,7 +69,9 @@ about:addons, click on Preferences for the
 Firefox OS Simulator addon, and set the Gaia path to your custom built
 profile.
 
-.. _`App Manager`: https://developer.mozilla.org/en-US/Firefox_OS/Using_the_App_Manager
+.. _`WebIDE`: https://developer.mozilla.org/en-US/docs/Tools/WebIDE
+.. _`packaged app`: https://developer.mozilla.org/en-US/Marketplace/Options/Packaged_apps
+.. _`hosted app`: https://developer.mozilla.org/en-US/Marketplace/Options/Hosted_apps
 .. _`privileged`: https://developer.mozilla.org/en-US/Marketplace/Options/Packaged_apps#Privileged_app
 .. _`Firefox OS`: https://developer.mozilla.org/en-US/Firefox_OS
 .. _`fxpay`: https://github.com/mozilla/fxpay

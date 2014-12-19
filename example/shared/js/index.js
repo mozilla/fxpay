@@ -187,16 +187,17 @@ $(function() {
 
   fxpay.init({
     onerror: function(err) {
-      if (err === 'PAY_PLATFORM_UNAVAILABLE') {
-        $('#app-banner').show();
-        return;
-      }
       console.error('error during initialization:', err);
       showError(err);
     },
     oninit: function() {
       console.log('fxpay initialized successfully');
       initApi();
+      if (navigator.mozApps && !fxpay.settings.appSelf) {
+        // We're running on Firefox web so provide an option
+        // to install as an app.
+        $('#install-banner').show();
+      }
     },
     onrestore: function(err, info) {
       if (err) {

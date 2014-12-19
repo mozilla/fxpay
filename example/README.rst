@@ -44,7 +44,7 @@ If you install the app as a desktop web app,
 the easiest way to debug it (on Mac OS X) is to launch it from the
 shell after installation like this::
 
-    /Applications/FxPay.app/Contents/MacOS/webapprt -jsconsole
+    /Applications/FxPayHosted.app/Contents/MacOS/webapprt -jsconsole
 
 On Mozilla's PAAS
 -----------------

@@ -91,7 +91,7 @@ describe('fxpay.utils.openWindow()', function() {
 
   beforeEach(function(){
     this.openWindowSpy = sinon.spy();
-    fxpay.configure({openWindow: this.openWindowSpy});
+    fxpay.configure({window: {open: this.openWindowSpy}});
   });
 
   it('should be called with props', function() {

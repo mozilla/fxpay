@@ -109,11 +109,40 @@ describe('fxpay.receipts.verifyData()', function() {
     });
   });
 
-  it('fails on foreign product URL', function(done) {
+  it('fails on foreign product URL for packaged app', function(done) {
     var data = receipt({productUrl: 'wrong-app'});
     fxpay.receipts.verifyData(data, function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
+    });
+  });
+
+  it('fails on foreign product URL for hosted app', function(done) {
+    var webOrigin = 'http://some-site.com';
+
+    fxpay.configure({
+      window: {location: {origin: webOrigin}},
+      appSelf: null,
+    });
+
+    var data = receipt({productUrl: 'http://wrong-site.com'});
+    fxpay.receipts.verifyData(data, function(err) {
+      assert.equal(err, 'INVALID_RECEIPT');
+      done();
+    });
+  });
+
+  it('knows how to validate hosted app product URLs', function(done) {
+    var webOrigin = 'http://some-site.com';
+
+    fxpay.configure({
+      window: {location: {origin: webOrigin}},
+      appSelf: null,
+    });
+
+    var data = receipt({productUrl: webOrigin});
+    fxpay.receipts.verifyData(data, function(err) {
+      done(err);
     });
   });
 

@@ -6,20 +6,19 @@ describe('fxpay.purchase() on the web', function() {
   var productId = 'some-uuid';
 
   var providerUrlTemplate;
-  var fakeWindow;
+  var fakePayWindow;
   var windowSpy;
   var handlers;
 
   beforeEach(function(done) {
     helper.setUp();
     handlers = {};
-    fakeWindow = {
-      location: '',
+    fakePayWindow = {
       close: function() {
       },
     };
     windowSpy = {
-      close: sinon.spy(fakeWindow, 'close'),
+      close: sinon.spy(fakePayWindow, 'close'),
     };
     providerUrlTemplate = helper.settings.payProviderUrls[payReq.typ];
 
@@ -29,13 +28,16 @@ describe('fxpay.purchase() on the web', function() {
       mozPay: null,
       apiUrlBase: 'https://not-the-real-marketplace',
       apiVersionPrefix: '/api/v1',
-      openWindow: function() {
-        return fakeWindow;
+      window: {
+        location: '',
+        open: function() {
+          return fakePayWindow;
+        },
+        addEventListener: function(type, handler) {
+          handlers[type] = handler;
+        },
+        removeEventListener: function() {},
       },
-      addEventListener: function(type, handler) {
-        handlers[type] = handler;
-      },
-      removeEventListener: function() {},
     });
 
     fxpay.init({
@@ -57,7 +59,7 @@ describe('fxpay.purchase() on the web', function() {
 
     fxpay.purchase(productId, function(err) {
       assert.equal(
-        fakeWindow.location, providerUrlTemplate.replace('{jwt}', fakeJwt));
+        fakePayWindow.location, providerUrlTemplate.replace('{jwt}', fakeJwt));
       assert(windowSpy.close.called);
       done(err);
     });

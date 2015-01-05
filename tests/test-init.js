@@ -22,8 +22,11 @@ describe('fxpay.init()', function() {
   });
 
   it('should start up without mozApps', function (done) {
+    var fakeWindow = {location: {href: 'http://some-site.com'}};
+
     fxpay.configure({
-      mozApps: null
+      mozApps: null,
+      window: fakeWindow,
     });
     fxpay.init({
       onerror: function(err) {
@@ -77,6 +80,44 @@ describe('fxpay.init()', function() {
     // Simulate an apps platform error.
     helper.appSelf.error = {name: 'INVALID_MANIFEST'};
     helper.appSelf.onerror();
+  });
+
+  it('should error for undefined origin', function (done) {
+    var fakeWindow = {location: {href: 'app://xxxxxx'}};
+
+    fxpay.configure({
+      window: fakeWindow,
+    });
+
+    fxpay.init({
+      onerror: function(err) {
+        assert.equal(err, 'UNDEFINED_APP_ORIGIN');
+        done();
+      },
+    });
+
+    helper.appSelf.manifest = {};  // undefined origin
+    helper.appSelf.onsuccess();
+  });
+
+  it('should allow packaged apps with an origin', function (done) {
+    var fakeWindow = {location: {href: 'app://some-origin'}};
+
+    fxpay.configure({
+      window: fakeWindow,
+    });
+
+    fxpay.init({
+      onerror: function(err) {
+        done(err);
+      },
+      oninit: function() {
+        done();
+      },
+    });
+
+    helper.appSelf.manifest = {origin: 'app://some-origin'};
+    helper.appSelf.onsuccess();
   });
 
 });

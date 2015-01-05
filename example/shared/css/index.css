@@ -125,18 +125,18 @@ ul li:nth-last-child(1) {
     margin-top: 3em;
 }
 
-#app-banner {
+#install-banner {
     display: none;
     padding: 1em;
     background: #777;
     border-bottom: 2px solid #000;
 }
 
-#app-banner p {
+#install-banner p {
     font-size: 1.2em;
 }
 
-#app-banner button {
+#install-banner button {
     margin: 1em;
     padding: 0.3em;
 }

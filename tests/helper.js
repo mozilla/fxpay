@@ -146,6 +146,8 @@
     reset: function() {
       this._receipt = null;
       this.error = null;
+      this.onsuccess = function() {};
+      this.onerror = function() {};
     }
   };
 

@@ -73,6 +73,7 @@ $(function() {
   function productBought(productInfo) {
     $('#your-products ul li.placeholder').hide();
     addProduct($('#your-products ul'), productInfo, {showBuy: false});
+    $('#delete-purchases').show();
   }
 
   function clearPurchases() {
@@ -110,6 +111,14 @@ $(function() {
     });
 
     // TODO: update the UI here with a spinner or something.
+  });
+
+  $('#delete-purchases').click(function(evt) {
+    clearPurchases();
+    console.log('clearing all of local storage to remove receipts');
+    // I guess this is kind of brutal but it's just a demo app :)
+    window.localStorage.clear();
+    $('#delete-purchases').hide();
   });
 
   $('button.install').click(function(evt) {

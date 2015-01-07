@@ -147,6 +147,11 @@ ul li:nth-last-child(1) {
     color: red;
 }
 
+#delete-purchases {
+    display: none;
+    margin-top: 1em;
+}
+
 /* portrait tablet */
 @media (max-width: 768px) {
     h2 {

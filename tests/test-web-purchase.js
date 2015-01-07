@@ -101,17 +101,31 @@ describe('fxpay.purchase() on the web', function() {
 describe('fxpay.pay.acceptPayMessage()', function() {
   var utils = require('fxpay/utils');
   var defaultOrigin = 'http://marketplace.firefox.com';
+  var fakeWindow;
+  var clock;
+
+  beforeEach(function() {
+    fakeWindow = {};
+    clock = sinon.useFakeTimers();
+  });
+
+  afterEach(function() {
+    clock.restore();
+  });
 
   it('calls back on success', function(done) {
-    fxpay.pay.acceptPayMessage(makeEvent(), defaultOrigin, function(err) {
-      done(err);
-    });
+    fxpay.pay.acceptPayMessage(
+      makeEvent(), defaultOrigin,
+      fakeWindow, function(err) {
+        done(err);
+      }
+    );
   });
 
   it('calls back with error code on failure', function(done) {
     fxpay.pay.acceptPayMessage(
       makeEvent({status: 'failed', errorCode: 'EXTERNAL_CODE'}),
-      defaultOrigin, function(err) {
+      defaultOrigin, fakeWindow, function(err) {
         assert.equal(err, 'EXTERNAL_CODE');
         done();
       }
@@ -121,7 +135,7 @@ describe('fxpay.pay.acceptPayMessage()', function() {
   it('calls back with generic error code', function(done) {
     fxpay.pay.acceptPayMessage(
       makeEvent({status: 'failed', errorCode: null}),
-      defaultOrigin, function(err) {
+      defaultOrigin, fakeWindow, function(err) {
         assert.equal(err, 'PAY_WINDOW_FAIL_MESSAGE');
         done();
       }
@@ -131,7 +145,7 @@ describe('fxpay.pay.acceptPayMessage()', function() {
   it('rejects unknown statuses', function(done) {
     fxpay.pay.acceptPayMessage(
       makeEvent({status: 'cheezborger'}),
-      defaultOrigin, function(err) {
+      defaultOrigin, fakeWindow, function(err) {
         assert.equal(err, 'UNKNOWN_MESSAGE_STATUS');
         done();
       }
@@ -141,7 +155,7 @@ describe('fxpay.pay.acceptPayMessage()', function() {
   it('rejects undefined data', function(done) {
     fxpay.pay.acceptPayMessage(
       makeEvent({data: null}), defaultOrigin,
-      function(err) {
+      fakeWindow, function(err) {
         assert.equal(err, 'UNKNOWN_MESSAGE_STATUS');
         done();
       }
@@ -151,13 +165,24 @@ describe('fxpay.pay.acceptPayMessage()', function() {
   it('rejects foreign messages', function(done) {
     fxpay.pay.acceptPayMessage(
       makeEvent({origin: 'http://bar.com'}),
-      'http://foo.com', function(err) {
+      'http://foo.com', fakeWindow, function(err) {
         assert.equal(err, 'UNKNOWN_MESSAGE_ORIGIN');
         done();
       }
     );
   });
 
+  it('had window closed by user', function(done) {
+    fakeWindow.closed = true;
+    fxpay.pay.acceptPayMessage(
+      makeEvent({status: 'unloaded'}),
+      defaultOrigin, fakeWindow, function(err) {
+        assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+        done();
+      }
+    );
+    clock.tick(300);
+  });
 
   function makeEvent(param) {
     param = utils.defaults(param, {

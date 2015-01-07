@@ -25,7 +25,8 @@ $(function() {
 
     fxpay.configure({
       fakeProducts: $('#simulate-checkbox').is(':checked'),
-      apiUrlBase: apiUrlBase
+      apiUrlBase: apiUrlBase,
+      adapter: null,  // force re-creation of the adapter.
     });
 
     // Reset some state.

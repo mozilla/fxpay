@@ -116,9 +116,20 @@ $(function() {
 
   $('#delete-purchases').click(function(evt) {
     clearPurchases();
-    console.log('clearing all of local storage to remove receipts');
-    // I guess this is kind of brutal but it's just a demo app :)
-    window.localStorage.clear();
+    console.log('clearing all receipts');
+    if (fxpay.settings.appSelf) {
+      console.log('removing receipts from mozApps');
+      var num = 0;
+      fxpay.settings.appSelf.receipts.forEach(function(receipt) {
+        fxpay.settings.appSelf.removeReceipt(receipt);
+        num++;
+      });
+      console.log('number of receipts removed:', num);
+    } else {
+      console.log('removing receipts from local storage');
+      // I guess this is kind of brutal but it's just a demo app :)
+      window.localStorage.clear();
+    }
     $('#delete-purchases').hide();
   });
 

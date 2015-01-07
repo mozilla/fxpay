@@ -57,6 +57,7 @@ manifest at http://fxpay-hosted.paas.allizom.org/manifest.webapp .
 
 To push changes to the app, run this from the fxpay repository root::
 
+    grunt compress
     stackato push -n
 
 Using A Custom Webpay

@@ -41,7 +41,8 @@ describe('fxpay.purchase() on B2G', function () {
     var productId = 'some-guid';
     var cfg = {
       apiUrlBase: 'https://not-the-real-marketplace',
-      apiVersionPrefix: '/api/v1'
+      apiVersionPrefix: '/api/v1',
+      adapter: null,
     };
     fxpay.configure(cfg);
 

@@ -135,6 +135,7 @@ Changelog
   source before you can use it. That is, unless you install the library
   with Bower.
 * Added a source map alongside minified source file.
+* Added adapter class for swappable fxpay API backends.
 
 **0.0.4** (2014-09-17)
 

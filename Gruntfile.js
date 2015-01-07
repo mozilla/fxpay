@@ -12,6 +12,7 @@ var libFiles = [
   __dirname + '/lib/fxpay/pay.js',
   __dirname + '/lib/fxpay/products.js',
   __dirname + '/lib/fxpay/receipts.js',
+  __dirname + '/lib/fxpay/adapter.js',
   __dirname + '/lib/fxpay/index.js',
 ];
 

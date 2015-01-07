@@ -28,6 +28,7 @@ describe('fxpay.purchase() on the web', function() {
       mozPay: null,
       apiUrlBase: 'https://not-the-real-marketplace',
       apiVersionPrefix: '/api/v1',
+      adapter: null,
       window: {
         location: '',
         open: function() {

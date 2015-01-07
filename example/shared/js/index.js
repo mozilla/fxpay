@@ -165,6 +165,7 @@ $(function() {
 
       // Allow our test servers.
       'https://receiptcheck-dev.allizom.org',
+      'https://receiptcheck-marketplace-dev.allizom.org',
       'https://marketplace-dev.allizom.org',
       'https://receiptcheck-payments-alt.allizom.org',
       'https://payments-alt.allizom.org',

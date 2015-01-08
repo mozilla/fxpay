@@ -121,8 +121,14 @@ $(function() {
       console.log('removing receipts from mozApps');
       var num = 0;
       fxpay.settings.appSelf.receipts.forEach(function(receipt) {
-        fxpay.settings.appSelf.removeReceipt(receipt);
+        var req = fxpay.settings.appSelf.removeReceipt(receipt);
         num++;
+        req.onsuccess = function() {
+          console.log('receipt successfully removed');
+        };
+        req.onerror = function() {
+          console.error('could not remove receipt:', this.error.name);
+        };
       });
       console.log('number of receipts removed:', num);
     } else {

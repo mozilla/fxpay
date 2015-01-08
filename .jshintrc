@@ -29,7 +29,6 @@
     "it",
     "helper",
     "process",
-    "require",
     "sinon"
   ],
   "shadow": false,

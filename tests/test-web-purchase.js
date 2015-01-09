@@ -1,5 +1,5 @@
 describe('fxpay.purchase() on the web', function() {
-  var utils = require('fxpay/utils');
+  var utils = fxpay.getattr('utils');
 
   var payReq = {typ: 'mozilla/payments/pay/v1'};
   var fakeJwt = '<algo>.' + btoa(JSON.stringify(payReq)) + '.<sig>';
@@ -100,7 +100,7 @@ describe('fxpay.purchase() on the web', function() {
 
 
 describe('fxpay.pay.acceptPayMessage()', function() {
-  var utils = require('fxpay/utils');
+  var utils = fxpay.getattr('utils');
   var defaultOrigin = 'http://marketplace.firefox.com';
   var fakeWindow;
   var clock;

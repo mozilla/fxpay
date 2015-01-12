@@ -192,11 +192,7 @@ $(function() {
       'http://mp.dev',
       'http://fireplace.loc',
     ],
-    payProviderUrls: {
-      // Map the production site.
-      'mozilla/payments/pay/v1':
-          'https://marketplace.firefox.com/mozpay/?req={jwt}',
-
+    extraProviderUrls: {
       // Map some development sites.
       'mozilla-dev/payments/pay/v1':
           'https://marketplace-dev.allizom.org/mozpay/?req={jwt}',

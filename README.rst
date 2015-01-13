@@ -127,6 +127,8 @@ You have to do a couple things to create a release:
 Changelog
 =========
 
+**0.0.6** (unreleased)
+
 **0.0.5** (2015-01-13)
 
 * Added experimental support for payments on desktop Firefox.

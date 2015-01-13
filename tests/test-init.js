@@ -120,4 +120,42 @@ describe('fxpay.init()', function() {
     helper.appSelf.onsuccess();
   });
 
+  it('should let you append extra provider URLs', function (done) {
+    fxpay.init({
+      onerror: function(err) {
+        done(err);
+      },
+      oninit: function() {
+        assert.equal(fxpay.settings.payProviderUrls['random/value'],
+                     'http://somewhere.net/?req={jwt}');
+        done();
+      },
+      extraProviderUrls: {
+        'random/value': 'http://somewhere.net/?req={jwt}',
+      },
+    });
+
+    helper.appSelf.onsuccess();
+  });
+
+  it('should let you overwrite provider URLs', function (done) {
+    fxpay.init({
+      onerror: function(err) {
+        done(err);
+      },
+      oninit: function() {
+        assert.equal(
+          fxpay.settings.payProviderUrls['mozilla/payments/pay/v1'],
+          'http://somewhere.net/?req={jwt}');
+        done();
+      },
+      extraProviderUrls: {
+        // Overwrite the production URL.
+        'mozilla/payments/pay/v1': 'http://somewhere.net/?req={jwt}',
+      },
+    });
+
+    helper.appSelf.onsuccess();
+  });
+
 });

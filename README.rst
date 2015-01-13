@@ -136,6 +136,8 @@ Changelog
   with Bower.
 * Added a source map alongside minified source file.
 * Added adapter class for swappable fxpay API backends.
+* Added ``extraProviderUrls`` configuration parameter which is more
+  convenient than ``payProviderUrls``.
 
 **0.0.4** (2014-09-17)
 

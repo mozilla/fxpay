@@ -127,10 +127,9 @@ You have to do a couple things to create a release:
 Changelog
 =========
 
-**0.0.5** (unreleased)
+**0.0.5** (2015-01-13)
 
-* Added experimental support for payments on desktop Firefox. This is
-  not yet stable.
+* Added experimental support for payments on desktop Firefox.
 * Split fxpay.js into smaller modules. This means you *must* minify the
   source before you can use it. That is, unless you install the library
   with Bower.

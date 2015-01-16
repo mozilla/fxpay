@@ -108,7 +108,7 @@ describe('fxpay.utils.openWindow()', function() {
 
   it('should be called with defaults', function() {
     fxpay.utils.openWindow();
-    assert(this.openWindowSpy.calledWithMatch('about:blank', 'FxPay'));
+    assert(this.openWindowSpy.calledWithMatch('', 'FxPay'));
     assert.include(this.openWindowSpy.args[0][2], 'width=276');
     assert.include(this.openWindowSpy.args[0][2], 'height=384');
   });

@@ -127,10 +127,11 @@ You have to do a couple things to create a release:
 Changelog
 =========
 
-**0.0.6** (unreleased)
+**0.0.6** (2015-01-20)
 
 * Added ``paymentWindow`` and ``managePaymentWindow`` options to
   ``fxpay.purchase()`` so client can control the payment window.
+* Fixed payment window centering (applicable only to desktop payments).
 
 **0.0.5** (2015-01-13)
 

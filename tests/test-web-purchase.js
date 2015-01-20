@@ -8,17 +8,24 @@ describe('fxpay.purchase() on the web', function() {
   var providerUrlTemplate;
   var fakePayWindow;
   var windowSpy;
+  var customPayWindow;
+  var customWindowSpy;
   var handlers;
 
   beforeEach(function(done) {
     helper.setUp();
     handlers = {};
     fakePayWindow = {
-      close: function() {
-      },
+      close: function() {},
     };
     windowSpy = {
       close: sinon.spy(fakePayWindow, 'close'),
+    };
+    customPayWindow = {
+      close: function() {},
+    };
+    customWindowSpy = {
+      close: sinon.spy(customPayWindow, 'close'),
     };
     providerUrlTemplate = helper.settings.payProviderUrls[payReq.typ];
 
@@ -90,11 +97,65 @@ describe('fxpay.purchase() on the web', function() {
     });
   });
 
+  it('should allow client to specify a custom window', function (done) {
+
+    fxpay.purchase(productId, function(err) {
+      assert.equal(
+        customPayWindow.location,
+        providerUrlTemplate.replace('{jwt}', fakeJwt));
+      assert(customWindowSpy.close.called);
+      done(err);
+    }, {
+      paymentWindow: customPayWindow,
+      managePaymentWindow: true,
+    });
+
+    helper.finishPurchaseOk('<receipt>', {
+      productData: {webpayJWT: fakeJwt},
+      payCompleter: function() {
+        simulatePostMessage({status: 'ok'});
+      }
+    });
+  });
+
+  it('should not manage custom pay windows by default', function (done) {
+
+    fxpay.purchase(productId, function(err) {
+      assert.equal(
+        customPayWindow.location,
+        providerUrlTemplate.replace('{jwt}', fakeJwt));
+      assert(!customWindowSpy.close.called);
+      done(err);
+    }, {
+      paymentWindow: customPayWindow,
+    });
+
+    helper.finishPurchaseOk('<receipt>', {
+      productData: {webpayJWT: fakeJwt},
+      payCompleter: function() {
+        simulatePostMessage({status: 'ok'});
+      }
+    });
+  });
+
 
   function simulatePostMessage(data) {
     handlers.message({data: data,
                       origin: utils.getUrlOrigin(providerUrlTemplate)});
   }
+
+});
+
+
+describe('fxpay.pay.processPayment()', function() {
+
+  it('should reject calls without a paymentWindow', function(done) {
+    fxpay.configure({mozPay: false});
+    fxpay.pay.processPayment('<jwt>', function(error) {
+      assert.equal(error, 'MISSING_PAYMENT_WINDOW');
+      done();
+    });
+  });
 
 });
 

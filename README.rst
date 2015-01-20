@@ -129,6 +129,9 @@ Changelog
 
 **0.0.6** (unreleased)
 
+* Added ``paymentWindow`` and ``managePaymentWindow`` options to
+  ``fxpay.purchase()`` so client can control the payment window.
+
 **0.0.5** (2015-01-13)
 
 * Added experimental support for payments on desktop Firefox.

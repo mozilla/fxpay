@@ -127,6 +127,8 @@ You have to do a couple things to create a release:
 Changelog
 =========
 
+**0.0.7** (unreleased)
+
 **0.0.6** (2015-01-20)
 
 * Added ``paymentWindow`` and ``managePaymentWindow`` options to

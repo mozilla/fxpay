@@ -127,6 +127,8 @@ You have to do a couple things to create a release:
 Changelog
 =========
 
+**0.0.8** (unreleased)
+
 **0.0.7** (2015-01-21)
 
 * Fixed popup issues in desktop payment flow.

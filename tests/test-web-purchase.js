@@ -23,9 +23,13 @@ describe('fxpay.purchase() on the web', function() {
     };
     customPayWindow = {
       close: function() {},
+      resizeTo: function() {},
+      moveTo: function() {},
     };
     customWindowSpy = {
       close: sinon.spy(customPayWindow, 'close'),
+      resizeTo: sinon.spy(customPayWindow, 'resizeTo'),
+      moveTo: sinon.spy(customPayWindow, 'moveTo'),
     };
     providerUrlTemplate = helper.settings.payProviderUrls[payReq.typ];
 
@@ -103,6 +107,8 @@ describe('fxpay.purchase() on the web', function() {
       assert.equal(
         customPayWindow.location,
         providerUrlTemplate.replace('{jwt}', fakeJwt));
+      assert(customWindowSpy.resizeTo.called);
+      assert(customWindowSpy.moveTo.called);
       assert(customWindowSpy.close.called);
       done(err);
     }, {

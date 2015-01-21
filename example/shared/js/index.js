@@ -6,8 +6,10 @@ $(function() {
     dev: 'https://marketplace-dev.allizom.org',
     stage: 'https://marketplace.allizom.org',
     alt: 'https://payments-alt.allizom.org',
-    local: 'http://mp.dev',
+    local: queryParam('local_api') || 'http://mp.dev',
   };
+
+  console.log('local API configured as:', apiUrls.local);
 
 
   // Helper functions:
@@ -89,6 +91,26 @@ $(function() {
   function showError(msg) {
     console.error(msg);
     $('#error').text(msg);
+  }
+
+  function queryParam(name) {
+    // Returns a query string parameter value by `name` or null.
+    var urlParts = window.location.href.split('?');
+    var query;
+    var value = null;
+
+    if (urlParts.length > 1) {
+      query = urlParts[1].split('&');
+
+      query.forEach(function(nameVal) {
+        var parts = nameVal.split('=');
+        if (parts[0] === name) {
+          value = decodeURIComponent(parts[1]);
+        }
+      });
+    }
+
+    return value;
   }
 
 

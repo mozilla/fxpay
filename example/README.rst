@@ -60,6 +60,18 @@ To push changes to the app, run this from the fxpay repository root::
     grunt compress
     stackato push -n
 
+Accessing Your Local API
+------------------------
+
+By default, the example app offers ``http://mp.dev`` as the local
+Firefox Marketplace API option.
+If you'd like to specify a different local URL, you can do so by
+passing it as a query string parameter. For example, to set your
+local API URL to ``http://fireplace.local``, load the example app
+from this URL:
+
+http://localhost:3000/?local_api=http%3A%2F%2Ffireplace.local
+
 Using A Custom Webpay
 ---------------------
 

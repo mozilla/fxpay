@@ -16,6 +16,7 @@ describe('fxpay.purchase() on the web', function() {
     helper.setUp();
     handlers = {};
     fakePayWindow = {
+      closed: false,
       close: function() {},
     };
     windowSpy = {
@@ -141,6 +142,50 @@ describe('fxpay.purchase() on the web', function() {
       payCompleter: function() {
         simulatePostMessage({status: 'ok'});
       }
+    });
+  });
+
+  it('should close payment window on adapter errors', function (done) {
+    fxpay.settings.adapter.startTransaction = function(opt, callback) {
+      callback('SOME_EARLY_ERROR');
+    };
+
+    fxpay.purchase(productId, function(err) {
+      assert.equal(err, 'SOME_EARLY_ERROR');
+      assert(windowSpy.close.called);
+      done();
+    });
+  });
+
+  it('should not close managed window on adapter errors', function (done) {
+    fxpay.settings.adapter.startTransaction = function(opt, callback) {
+      callback('SOME_EARLY_ERROR');
+    };
+
+    fxpay.purchase(productId, function(err) {
+      assert.equal(err, 'SOME_EARLY_ERROR');
+      assert(!customWindowSpy.close.called);
+      done();
+    }, {
+      paymentWindow: customPayWindow,
+    });
+  });
+
+  it('should close payment window on pay module errors', function (done) {
+
+    fxpay.purchase(productId, function(err) {
+      assert.equal(err, 'UNEXPECTED_JWT_TYPE');
+      assert(windowSpy.close.called);
+      done();
+    });
+
+    // Force an UNEXPECTED_JWT_TYPE error.
+    var req = {typ: 'unknown/provider/id'};
+    var badJwt = '<algo>.' + btoa(JSON.stringify(req)) + '.<sig>';
+
+    helper.finishPurchaseOk('<receipt>', {
+      productData: {webpayJWT: badJwt},
+      payCompleter: function() {},
     });
   });
 

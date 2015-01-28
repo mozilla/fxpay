@@ -129,6 +129,8 @@ Changelog
 
 **0.0.9** (unreleased)
 
+* Fix orphaned payment window (during desktop flow) in some error conditions.
+
 **0.0.8** (2015-01-22)
 
 * Allow scrollbars in popups.

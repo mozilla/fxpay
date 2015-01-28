@@ -127,7 +127,7 @@ You have to do a couple things to create a release:
 Changelog
 =========
 
-**0.0.9** (unreleased)
+**0.0.9** (2015-01-28)
 
 * Fix orphaned payment window (during desktop flow) in some error conditions.
 

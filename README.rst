@@ -127,7 +127,11 @@ You have to do a couple things to create a release:
 Changelog
 =========
 
-**0.0.10** (unreleased)
+**0.0.11** (Unreleased)
+
+**0.0.10** (2015-01-29)
+
+* Poll for window closure on 3rd party domains.
 
 **0.0.9** (2015-01-28)
 

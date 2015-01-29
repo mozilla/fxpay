@@ -11,6 +11,7 @@ describe('fxpay.purchase() on the web', function() {
   var customPayWindow;
   var customWindowSpy;
   var handlers;
+  var clock;
 
   beforeEach(function(done) {
     helper.setUp();
@@ -33,6 +34,7 @@ describe('fxpay.purchase() on the web', function() {
       moveTo: sinon.spy(customPayWindow, 'moveTo'),
     };
     providerUrlTemplate = helper.settings.payProviderUrls[payReq.typ];
+
 
     fxpay.configure({
       appSelf: null,
@@ -61,11 +63,18 @@ describe('fxpay.purchase() on the web', function() {
         done(err);
       },
     });
+
+    clock = sinon.useFakeTimers();
+    // Must be after fakeTimers are setup.
+    sinon.spy(window, 'clearInterval');
   });
 
   afterEach(function() {
     helper.tearDown();
     helper.receiptAdd.reset();
+    // Must be before clock.restare().
+    window.clearInterval.restore();
+    clock.restore();
   });
 
   it('should open a payment window and call back', function (done) {
@@ -189,6 +198,24 @@ describe('fxpay.purchase() on the web', function() {
     });
   });
 
+  it('should respond to user closed window', function (done) {
+
+    fxpay.purchase(productId, function(err) {
+      assert(window.clearInterval.called, 'clearInterval should be called');
+      assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+      done();
+    });
+
+    // Respond to fetching the JWT.
+    helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/,
+                              helper.productData({webpayJWT: fakeJwt}));
+    helper.server.respond();
+
+    fakePayWindow.closed = true;
+    clock.tick(600);
+
+  });
+
 
   function simulatePostMessage(data) {
     handlers.message({data: data,
@@ -285,7 +312,7 @@ describe('fxpay.pay.acceptPayMessage()', function() {
     );
   });
 
-  it('had window closed by user', function(done) {
+  it('had window closed by user via an unload event', function(done) {
     fakeWindow.closed = true;
     fxpay.pay.acceptPayMessage(
       makeEvent({status: 'unloaded'}),

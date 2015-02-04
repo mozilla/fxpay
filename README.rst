@@ -110,74 +110,23 @@ Create A Release
 You have to do a couple things to create a release:
 
 * Run ``grunt compress`` and add ``build/fxpay.min.js`` to ``dist``
-* Make sure the Changelog is up to date.
-  You'll probably just need to replace *unreleased* with the current date
-  for the current version.
 * Commit and push your changes.
 * Add and push a git tag corresponding to the version number so that bower
-  picks up the file. For example, tag a ``0.0.1`` release like ``git tag 0.0.1``
+  picks up the file. For example, tag a ``0.0.1`` release like 
+  ``git tag 0.0.1 && git push upstream 0.0.1``
+* Add a release here: https://github.com/mozilla/fxpay/releases 
+  (leave the title blank or just use the version number).
 * Bump the version for the next release. Library version numbers are
   managed in multiple files.
   To increment the version number and update all files at once,
-  run ``grunt bump``. In the Changelog, mark this new release number
-  as *unreleased*.
+  run ``grunt bump``.
 * Commit and push your changes.
 
 
 Changelog
 =========
 
-**0.0.11** (Unreleased)
-
-**0.0.10** (2015-01-29)
-
-* Poll for window closure on 3rd party domains.
-
-**0.0.9** (2015-01-28)
-
-* Fix orphaned payment window (during desktop flow) in some error conditions.
-
-**0.0.8** (2015-01-22)
-
-* Allow scrollbars in popups.
-
-**0.0.7** (2015-01-21)
-
-* Fixed popup issues in desktop payment flow.
-
-**0.0.6** (2015-01-20)
-
-* Added ``paymentWindow`` and ``managePaymentWindow`` options to
-  ``fxpay.purchase()`` so client can control the payment window.
-* Fixed payment window centering (applicable only to desktop payments).
-
-**0.0.5** (2015-01-13)
-
-* Added experimental support for payments on desktop Firefox.
-* Split fxpay.js into smaller modules. This means you *must* minify the
-  source before you can use it. That is, unless you install the library
-  with Bower.
-* Added a source map alongside minified source file.
-* Added adapter class for swappable fxpay API backends.
-* Added ``extraProviderUrls`` configuration parameter which is more
-  convenient than ``payProviderUrls``.
-
-**0.0.4** (2014-09-17)
-
-* Only ask for active products from the marketplace.
-
-**0.0.3** (2014-09-03)
-
-* Send library version to API on each request.
-
-**0.0.2** (2014-09-02)
-
-* Removed node_modules from the repository so the initial bower download
-  isn't 8MB on installation.
-
-**0.0.1** (2014-09-02)
-
-* First public release.
+See https://github.com/mozilla/fxpay/releases
 
 .. _`Firefox Marketplace`: https://marketplace.firefox.com/
 .. _`Firefox Marketplace Developer Hub`: https://marketplace.firefox.com/developers/

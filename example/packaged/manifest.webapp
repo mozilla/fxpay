@@ -14,10 +14,5 @@
   },
   "launch_path": "/index.html",
   "installs_allowed_from": ["*"],
-  "permissions": {
-    "systemXHR": {
-      "description": "Required to access payment API"
-    }
-  },
   "type": "privileged"
 }

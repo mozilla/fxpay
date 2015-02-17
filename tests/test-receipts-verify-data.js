@@ -50,13 +50,6 @@ describe('fxpay.receipts.verifyData()', function() {
     });
   });
 
-  it('fails on missing product', function(done) {
-    fxpay.receipts.verifyData({}, function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
-      done();
-    });
-  });
-
   it('fails on missing product URL', function(done) {
     fxpay.receipts.verifyData(receipt(null, {
       product: {
@@ -79,30 +72,6 @@ describe('fxpay.receipts.verifyData()', function() {
 
   it('fails on non-string storedata', function(done) {
     fxpay.receipts.verifyData(receipt({storedata: {}}),
-                              function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
-      done();
-    });
-  });
-
-  it('fails on corrupted storedata', function(done) {
-    fxpay.receipts.verifyData(receipt({storedata: 'not%a!valid(string'}),
-                              function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
-      done();
-    });
-  });
-
-  it('handles malformed storedata', function(done) {
-    fxpay.receipts.verifyData(receipt({storedata: '&&&'}),
-                              function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
-      done();
-    });
-  });
-
-  it('fails on missing storedata', function(done) {
-    fxpay.receipts.verifyData(receipt({storedata: 'foo=baz&barz=zonk'}),
                               function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
@@ -209,24 +178,6 @@ describe('fxpay.receipts.verifyData()', function() {
                               function(err) {
       assert.equal(err, 'INVALID_RECEIPT');
       done();
-    });
-  });
-
-  it('passes through receipt data', function(done) {
-    var productId = 'some-guid';
-    var productUrl = 'app://some-packaged-origin';
-    var storedata = 'inapp_id=' + productId;
-    helper.appSelf.origin = productUrl;
-
-    fxpay.receipts.verifyData(receipt({storedata: storedata,
-                                       productUrl: productUrl}),
-                              function(err, data, info) {
-      if (!err) {
-        assert.equal(info.productId, productId);
-        assert.equal(info.productUrl, productUrl);
-        assert.equal(data.product.storedata, storedata);
-      }
-      done(err);
     });
   });
 

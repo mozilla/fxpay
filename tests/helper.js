@@ -1,4 +1,5 @@
 (function(exports) {
+  var utils = fxpay.getattr('utils');
 
   exports.server = null;
   exports.settings = null;
@@ -42,7 +43,7 @@
     data.verify = (data.verify ||
                    'https://receiptcheck-payments-alt.allizom.org/verify/');
     data.product = data.product || {
-      url: opt.productUrl || 'http://boar4485.testmanifest.com',
+      url: opt.productUrl || helper.someAppOrigin,
       storedata: opt.storedata || 'contrib=297&id=500419&inapp_id=1'
     };
     data.user = data.user || {
@@ -181,6 +182,30 @@
     getSelf: function() {
       return exports.appSelf;
     }
+  };
+
+
+  exports.ReceiptValidator = function ReceiptValidator(opt) {
+    opt = utils.defaults(opt, {
+      response: {status: 'ok'},
+      onRequest: function() {},
+      verifyUrl: 'https://receiptcheck-payments-alt.allizom.org/verify/',
+    });
+
+    helper.server.respondWith(
+      'POST', opt.verifyUrl,
+      function(request) {
+        opt.onRequest(request.requestBody);
+        request.respond(200, {"Content-Type": "application/json"},
+                        JSON.stringify(opt.response));
+      });
+  };
+
+  exports.ReceiptValidator.prototype.finish = function() {
+    // Resolve mozApps.getSelf():
+    helper.appSelf.onsuccess();
+    // Send the receipt validation response:
+    helper.server.respond();
   };
 
 

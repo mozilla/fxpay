@@ -41,10 +41,15 @@ You can now open http://localhost:3000 to see the example app.
 All features should be working in any standard web browser.
 
 If you install the app as a desktop web app,
-the easiest way to debug it (on Mac OS X) is to launch it from the
+the easiest way to debug it is to launch it from the
 shell after installation like this::
 
-    /Applications/FxPayHosted.app/Contents/MacOS/webapprt -jsconsole
+    /Applications/FxPayHosted.app/Contents/MacOS/webapprt -debug 6000
+
+Then fire up the WebIDE and hook it up as a
+`remote runtime <https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_Firefox_Desktop>`_.
+You'll need to accept a prompt and then you'll be able to use
+the debugging tools.
 
 On Mozilla's PAAS
 -----------------

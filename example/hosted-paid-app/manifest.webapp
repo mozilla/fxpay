@@ -1,0 +1,22 @@
+{
+  "version": "0.0.1",
+  "name": "FxPayHostedPaidApp",
+  "description": "Example of a hosted paid app that does receipt validation",
+  "developer": {
+      "name": "Kumar McMillan"
+   },
+  "icons": {
+    "128": "/shared/img/kiwi_128.png",
+    "64": "/shared/img/kiwi_64.png",
+    "48": "/shared/img/kiwi_48.png",
+    "32": "/shared/img/kiwi_32.png"
+  },
+  "launch_path": "/index.html",
+  "installs_allowed_from": [
+    "https://marketplace.firefox.com",
+    "https://marketplace-dev.allizom.org",
+    "https://marketplace.allizom.org",
+    "https://payments-alt.allizom.org"
+  ],
+  "type": "web"
+}

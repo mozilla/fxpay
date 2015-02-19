@@ -1,9 +1,11 @@
 describe('fxpay.init(): receipts', function() {
-  var receipt = helper.makeReceipt();
+  var utils = fxpay.getattr('utils');
+  var defaultProductUrl = 'http://boar4485.testmanifest.com';
+  var receipt = makeReceipt();
 
   beforeEach(function() {
     helper.setUp();
-    helper.appSelf.origin = 'http://boar4485.testmanifest.com';
+    helper.appSelf.origin = defaultProductUrl;
     fxpay.configure({
       receiptCheckSites: [
         'https://receiptcheck-payments-alt.allizom.org',
@@ -19,20 +21,15 @@ describe('fxpay.init(): receipts', function() {
   it('validates receipt and gets product info', function(done) {
     helper.appSelf.receipts = [receipt];
 
-    helper.server.respondWith(
-      'POST', new RegExp(
-        'https://receiptcheck-payments-alt\\.allizom\\.org/verify/'),
-      function(request) {
-        assert.equal(request.requestBody, receipt);
-        request.respond(200, {"Content-Type": "application/json"},
-                        '{"status": "ok"}');
-      });
+    var validator = new helper.ReceiptValidator({
+      onRequest: function(requestBody) {
+        assert.equal(requestBody, receipt);
+      },
+    });
 
     helper.server.respondWith(
-      'GET', new RegExp(
-        'https://payments-alt\\.allizom\\.org' +
-        '/api/v1/payments/http%3A%2F%2Fboar4485\\.testmanifest\\.com' +
-        '/in-app/1/'),
+      'GET', 'https://payments-alt.allizom.org' +
+          '/api/v1/payments/http%3A%2F%2Fboar4485.testmanifest.com/in-app/1/',
       function(request) {
         request.respond(200, {"Content-Type": "application/json"},
                         JSON.stringify(helper.apiProduct));
@@ -48,13 +45,13 @@ describe('fxpay.init(): receipts', function() {
           assert.equal(info.productId, helper.apiProduct.guid);
           assert.equal(info.name, helper.apiProduct.name);
           assert.equal(info.smallImageUrl, helper.apiProduct.logo_url);
+          assert.equal(info.receiptInfo.status, 'ok');
         }
         done(err);
       }
     });
 
-    helper.appSelf.onsuccess();
-    helper.server.respond();
+    validator.finish();
     helper.server.respond();
 
   });
@@ -62,13 +59,7 @@ describe('fxpay.init(): receipts', function() {
   it('posts local storage receipt for validation', function(done) {
     helper.appSelf.receipts = [receipt];
 
-    helper.server.respondWith(
-      'POST', /.*/,
-      function(request) {
-        assert.equal(request.requestBody, receipt);
-        request.respond(200, {"Content-Type": "application/json"},
-                        '{"status": "ok"}');
-      });
+    var validator = new helper.ReceiptValidator();
 
     helper.server.respondWith(
       'GET', /.*/,
@@ -90,19 +81,18 @@ describe('fxpay.init(): receipts', function() {
       }
     });
 
-    helper.appSelf.onsuccess();
-    helper.server.respond();
+    validator.finish();
     helper.server.respond();
 
   });
 
   it('calls back with validation error', function(done) {
     helper.appSelf.receipts = [receipt];
+    var receiptResponse = {status: "invalid", reason: "ERROR_DECODING"};
 
-    helper.server.respondWith(
-      'POST', /.*/,
-      [200, {"Content-Type": "application/json"},
-       '{"status": "invalid", "reason": "ERROR_DECODING"}']);
+    var validator = new helper.ReceiptValidator({
+      response: receiptResponse,
+    });
 
     fxpay.init({
       onerror: function(err) {
@@ -112,12 +102,13 @@ describe('fxpay.init(): receipts', function() {
       onrestore: function(err, info) {
         assert.equal(err, 'INVALID_RECEIPT');
         assert.equal(info.productId, '1');
+        assert.equal(info.receiptInfo.status, receiptResponse.status);
+        assert.equal(info.receiptInfo.reason, receiptResponse.reason);
         done();
       }
     });
 
-    helper.appSelf.onsuccess();
-    helper.server.respond();
+    validator.finish();
 
   });
 
@@ -147,14 +138,13 @@ describe('fxpay.init(): receipts', function() {
     });
     helper.appSelf.receipts = [testReceipt];
 
-    helper.server.respondWith(
-      'POST', new RegExp(
+    var validator = new helper.ReceiptValidator({
+      verifyUrl: new RegExp(
         'https://payments-alt\\.allizom\\.org/developers/test-receipt/'),
-      function(request) {
-        assert.equal(request.requestBody, testReceipt);
-        request.respond(200, {"Content-Type": "application/json"},
-                        '{"status": "ok"}');
-      });
+      onRequest: function(requestBody) {
+        assert.equal(requestBody, testReceipt);
+      },
+    });
 
     helper.server.respondWith(
       'GET', new RegExp(
@@ -182,18 +172,14 @@ describe('fxpay.init(): receipts', function() {
       }
     });
 
-    helper.appSelf.onsuccess();
-    helper.server.respond();
+    validator.finish();
     helper.server.respond();
   });
 
   it('calls back with API error from fetching products', function(done) {
-    helper.appSelf.receipts = [helper.makeReceipt()];
+    helper.appSelf.receipts = [makeReceipt()];
 
-    // Receipt check:
-    helper.server.respondWith(
-      'POST', /.*/,
-      [200, {"Content-Type": "application/json"}, '{"status": "ok"}']);
+    var validator = new helper.ReceiptValidator();
 
     // Fetch product info:
     helper.server.respondWith('GET', new RegExp('.*/payments/.*/in-app/.*'),
@@ -210,9 +196,16 @@ describe('fxpay.init(): receipts', function() {
       }
     });
 
-    helper.appSelf.onsuccess();
-    helper.server.respond();
+    validator.finish();
     helper.server.respond();
   });
+
+
+  function makeReceipt(overrides, receiptData) {
+    overrides = utils.defaults(overrides, {
+      productUrl: defaultProductUrl,
+    });
+    return helper.makeReceipt(receiptData, overrides);
+  }
 
 });

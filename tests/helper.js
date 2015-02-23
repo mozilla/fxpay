@@ -13,10 +13,6 @@
     exports.server = sinon.fakeServer.create();
     exports.settings = fxpay.settings.configure({
       apiUrlBase: 'http://tests-should-never-hit-this.com',
-      // Start with this true because init() sets it and it's
-      // cumbersome to re-init some tests.
-      hasAddReceipt: true,
-      initError: null,
       mozApps: exports.mozAppsStub
     }, {
       reset: true
@@ -203,8 +199,6 @@
   };
 
   exports.ReceiptValidator.prototype.finish = function() {
-    // Resolve mozApps.getSelf():
-    helper.appSelf.onsuccess();
     // Send the receipt validation response:
     helper.server.respond();
   };

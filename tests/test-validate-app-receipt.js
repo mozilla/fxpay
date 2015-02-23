@@ -8,6 +8,7 @@ describe('fxpay.validateAppReceipt()', function() {
     helper.appSelf.origin = defaultProductUrl;
     helper.appSelf.receipts = [receipt];
     fxpay.configure({
+      appSelf: helper.appSelf,
       receiptCheckSites: [
         'https://receiptcheck-payments-alt.allizom.org',
         'https://payments-alt.allizom.org',
@@ -143,8 +144,6 @@ describe('fxpay.validateAppReceipt()', function() {
       assert.equal(typeof productInfo, 'object');
       done();
     });
-
-    helper.appSelf.onsuccess();
   });
 
   it('accepts test receipts', function(done) {
@@ -187,7 +186,7 @@ describe('fxpay.validateAppReceipt()', function() {
   });
 
   it('fails when mozApps is null', function(done) {
-    fxpay.configure({mozApps: null});
+    fxpay.configure({mozApps: null, appSelf: null});
 
     fxpay.validateAppReceipt(function(error, productInfo) {
       assert.equal(error, 'PAY_PLATFORM_UNAVAILABLE');
@@ -198,6 +197,7 @@ describe('fxpay.validateAppReceipt()', function() {
   });
 
   it('fails when appSelf is null', function(done) {
+    fxpay.configure({appSelf: null});
     helper.appSelf.result = null;
 
     fxpay.validateAppReceipt(function(error, productInfo) {
@@ -217,8 +217,6 @@ describe('fxpay.validateAppReceipt()', function() {
       assert.equal(typeof productInfo, 'object');
       done();
     });
-
-    helper.appSelf.onsuccess();
   });
 
   it('fails when receipt is malformed', function(done) {

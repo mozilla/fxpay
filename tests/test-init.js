@@ -2,6 +2,7 @@ describe('fxpay.init()', function() {
 
   beforeEach(function() {
     helper.setUp();
+    fxpay.configure({appSelf: helper.appSelf});
   });
 
   afterEach(function() {
@@ -9,6 +10,10 @@ describe('fxpay.init()', function() {
   });
 
   it('should call back when started', function (done) {
+    fxpay.configure({
+      appSelf: null,
+    });
+
     fxpay.init({
       onerror: function(err) {
         done(err);
@@ -26,6 +31,7 @@ describe('fxpay.init()', function() {
 
     fxpay.configure({
       mozApps: null,
+      appSelf: null,
       window: fakeWindow,
     });
     fxpay.init({
@@ -64,11 +70,11 @@ describe('fxpay.init()', function() {
         done();
       }
     });
-
-    helper.appSelf.onsuccess();
   });
 
   it('should pass through apps platform errors', function (done) {
+    fxpay.configure({appSelf: null});
+
     fxpay.init({
       onerror: function(err) {
         console.log('GOT error', err);
@@ -83,6 +89,7 @@ describe('fxpay.init()', function() {
   });
 
   it('should error for undefined origin', function (done) {
+    helper.appSelf.manifest = {};  // undefined origin
     var fakeWindow = {location: {href: 'app://xxxxxx'}};
 
     fxpay.configure({
@@ -95,12 +102,10 @@ describe('fxpay.init()', function() {
         done();
       },
     });
-
-    helper.appSelf.manifest = {};  // undefined origin
-    helper.appSelf.onsuccess();
   });
 
   it('should allow packaged apps with an origin', function (done) {
+    helper.appSelf.manifest = {origin: 'app://some-origin'};
     var fakeWindow = {location: {href: 'app://some-origin'}};
 
     fxpay.configure({
@@ -115,9 +120,6 @@ describe('fxpay.init()', function() {
         done();
       },
     });
-
-    helper.appSelf.manifest = {origin: 'app://some-origin'};
-    helper.appSelf.onsuccess();
   });
 
   it('should let you append extra provider URLs', function (done) {
@@ -134,8 +136,6 @@ describe('fxpay.init()', function() {
         'random/value': 'http://somewhere.net/?req={jwt}',
       },
     });
-
-    helper.appSelf.onsuccess();
   });
 
   it('should let you overwrite provider URLs', function (done) {
@@ -154,8 +154,6 @@ describe('fxpay.init()', function() {
         'mozilla/payments/pay/v1': 'http://somewhere.net/?req={jwt}',
       },
     });
-
-    helper.appSelf.onsuccess();
   });
 
 });

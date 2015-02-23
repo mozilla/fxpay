@@ -158,6 +158,7 @@
       this.error = null;
       this.origin = exports.someAppOrigin;
       this.manifest = {
+        installs_allowed_from: ['*'],
         permissions: {
           systemXHR: {description: "Required to access payment API"}
         }

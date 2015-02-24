@@ -109,12 +109,12 @@ Create A Release
 
 You have to do a couple things to create a release:
 
-* Run ``grunt compress`` and add ``build/fxpay.min.js`` to ``dist``
+* Run ``grunt release``. (This compresses the files and copies them to the dist dir).
 * Commit and push your changes.
 * Add and push a git tag corresponding to the version number so that bower
-  picks up the file. For example, tag a ``0.0.1`` release like 
+  picks up the file. For example, to tag a ``0.0.1`` release run
   ``git tag 0.0.1 && git push upstream 0.0.1``
-* Add a release here: https://github.com/mozilla/fxpay/releases 
+* Add a release here: https://github.com/mozilla/fxpay/releases
   (leave the title blank or just use the version number).
 * Bump the version for the next release. Library version numbers are
   managed in multiple files.

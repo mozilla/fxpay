@@ -158,3 +158,72 @@ describe('fxpay.utils.getUrlOrigin()', function() {
   });
 
 });
+
+
+describe('fxpay.utils.getAppSelf()', function() {
+
+  beforeEach(function() {
+    helper.setUp();
+  });
+
+  afterEach(function() {
+    helper.tearDown();
+  });
+
+  it('returns mozApps self', function(done) {
+    fxpay.utils.getAppSelf(function(error, appSelf) {
+      assert.equal(appSelf, helper.appSelf);
+      done(error);
+    });
+
+    helper.appSelf.onsuccess();
+  });
+
+  it('caches and returns mozApps self', function(done) {
+    fxpay.utils.getAppSelf(function() {
+      // Now get the cached version:
+      fxpay.utils.getAppSelf(function(error, appSelf) {
+        assert.equal(appSelf, helper.appSelf);
+        done(error);
+      });
+    });
+
+    helper.appSelf.onsuccess();
+  });
+
+  it('returns mozApps errors', function(done) {
+    fxpay.utils.getAppSelf(function(error, appSelf) {
+      assert.equal(error, 'SOME_ERROR');
+      assert.strictEqual(appSelf, null);
+      done();
+    });
+
+    helper.appSelf.error = {name: 'SOME_ERROR'};
+    helper.appSelf.onerror();
+  });
+
+  it('returns false when mozApps is falsey', function(done) {
+    // This is what happens when we're running on a non-apps platform.
+    fxpay.configure({mozApps: null});
+    fxpay.utils.getAppSelf(function(error, appSelf) {
+      assert.strictEqual(appSelf, false);
+      done(error);
+    });
+  });
+
+  it('returns pre-fetched appSelf', function(done) {
+    fxpay.configure({appSelf: 'some-cached-value'});
+    fxpay.utils.getAppSelf(function(error, appSelf) {
+      assert.equal(appSelf, 'some-cached-value');
+      done(error);
+    });
+  });
+
+  it('returns any non-null appSelf', function(done) {
+    fxpay.configure({appSelf: false});
+    fxpay.utils.getAppSelf(function(error, appSelf) {
+      assert.strictEqual(appSelf, false);
+      done(error);
+    });
+  });
+});

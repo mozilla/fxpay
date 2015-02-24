@@ -7,6 +7,7 @@ describe('fxpay.init(): receipts', function() {
     helper.setUp();
     helper.appSelf.origin = defaultProductUrl;
     fxpay.configure({
+      appSelf: helper.appSelf,
       receiptCheckSites: [
         'https://receiptcheck-payments-alt.allizom.org',
         'https://payments-alt.allizom.org',

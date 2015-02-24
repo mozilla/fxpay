@@ -8,6 +8,7 @@ describe('fxpay.validateAppReceipt()', function() {
     helper.appSelf.origin = defaultProductUrl;
     helper.appSelf.receipts = [receipt];
     fxpay.configure({
+      appSelf: helper.appSelf,
       receiptCheckSites: [
         'https://receiptcheck-payments-alt.allizom.org',
         'https://payments-alt.allizom.org',
@@ -75,6 +76,63 @@ describe('fxpay.validateAppReceipt()', function() {
     validator.finish();
   });
 
+  it('fails when receipt was issued by a disallowed store', function(done) {
+    // Disallow all other stores:
+    helper.appSelf.manifest.installs_allowed_from = [
+      'https://my-benevolent-app-store.net',
+    ];
+
+    var validator = new helper.ReceiptValidator();
+
+    fxpay.validateAppReceipt(function(error, productInfo) {
+      assert.equal(error, 'INVALID_RECEIPT');
+      assert.equal(typeof productInfo, 'object');
+      done();
+    });
+
+    validator.finish();
+  });
+
+  it('fails when no stores are allowed', function(done) {
+    // This is an unlikely case but we should honor it I suppose.
+    helper.appSelf.manifest.installs_allowed_from = [];
+
+    var validator = new helper.ReceiptValidator();
+
+    fxpay.validateAppReceipt(function(error, productInfo) {
+      assert.equal(error, 'INVALID_RECEIPT');
+      assert.equal(typeof productInfo, 'object');
+      done();
+    });
+
+    validator.finish();
+  });
+
+  it('allows any receipt with splat', function(done) {
+    helper.appSelf.manifest.installs_allowed_from = ['*'];
+
+    var validator = new helper.ReceiptValidator();
+
+    fxpay.validateAppReceipt(function(error) {
+      done(error);
+    });
+
+    validator.finish();
+  });
+
+  it('converts empty installs_allowed_from to splat', function(done) {
+    // Make this imply installs_allowed_from = ['*'].
+    delete helper.appSelf.manifest.installs_allowed_from;
+
+    var validator = new helper.ReceiptValidator();
+
+    fxpay.validateAppReceipt(function(error) {
+      done(error);
+    });
+
+    validator.finish();
+  });
+
   it('fails when test receipts are not allowed', function(done) {
     var testReceipt = makeReceipt(null, {
       typ: 'test-receipt',
@@ -86,8 +144,6 @@ describe('fxpay.validateAppReceipt()', function() {
       assert.equal(typeof productInfo, 'object');
       done();
     });
-
-    helper.appSelf.onsuccess();
   });
 
   it('accepts test receipts', function(done) {
@@ -130,7 +186,7 @@ describe('fxpay.validateAppReceipt()', function() {
   });
 
   it('fails when mozApps is null', function(done) {
-    fxpay.configure({mozApps: null});
+    fxpay.configure({mozApps: null, appSelf: null});
 
     fxpay.validateAppReceipt(function(error, productInfo) {
       assert.equal(error, 'PAY_PLATFORM_UNAVAILABLE');
@@ -141,6 +197,7 @@ describe('fxpay.validateAppReceipt()', function() {
   });
 
   it('fails when appSelf is null', function(done) {
+    fxpay.configure({appSelf: null});
     helper.appSelf.result = null;
 
     fxpay.validateAppReceipt(function(error, productInfo) {
@@ -160,8 +217,6 @@ describe('fxpay.validateAppReceipt()', function() {
       assert.equal(typeof productInfo, 'object');
       done();
     });
-
-    helper.appSelf.onsuccess();
   });
 
   it('fails when receipt is malformed', function(done) {

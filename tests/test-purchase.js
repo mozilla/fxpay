@@ -16,26 +16,6 @@ describe('fxpay.purchase() on B2G', function () {
     helper.receiptAdd.reset();
   });
 
-  it('should pass through init errors', function (done) {
-    // Trigger an init error:
-    helper.appSelf.error = {name: 'INVALID_MANIFEST'};
-
-    fxpay.init({
-      onerror: function(err) {
-        console.log('ignoring err', err);
-      }
-    });
-
-    helper.appSelf.onerror();
-
-    // Try to start a purchase.
-    fxpay.purchase(helper.apiProduct.guid, function(err, info) {
-      assert.equal(err, 'INVALID_MANIFEST');
-      assert.equal(typeof info, 'object');
-      done();
-    });
-  });
-
   it('should send a JWT to mozPay', function (done) {
     var webpayJWT = '<base64 JWT>';
     var productId = 'some-guid';

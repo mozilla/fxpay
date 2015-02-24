@@ -8,25 +8,33 @@ describe('fxpay.receipts.all()', function() {
     helper.tearDown();
   });
 
-  it('exposes mozApps receipts', function() {
+  it('exposes mozApps receipts', function(done) {
     var receipt = '<receipt>';
     fxpay.configure({
       appSelf: {
         receipts: [receipt]
       }
     });
-    var fetchedReceipts = fxpay.receipts.all();
-    assert.equal(fetchedReceipts[0], receipt);
-    assert.equal(fetchedReceipts.length, 1);
+    fxpay.receipts.all(function(error, fetchedReceipts) {
+      if (!error) {
+        assert.equal(fetchedReceipts[0], receipt);
+        assert.equal(fetchedReceipts.length, 1);
+      }
+      done(error);
+    });
   });
 
-  it('ignores missing receipts', function() {
+  it('ignores missing receipts', function(done) {
     fxpay.configure({appSelf: {}});  // no receipts property
-    var fetchedReceipts = fxpay.receipts.all();
-    assert.equal(fetchedReceipts.length, 0);
+    fxpay.receipts.all(function(error, fetchedReceipts) {
+      if (!error) {
+        assert.equal(fetchedReceipts.length, 0);
+      }
+      done(error);
+    });
   });
 
-  it('gets mozApps receipts and localStorage ones', function() {
+  it('gets mozApps receipts and localStorage ones', function(done) {
     var receipt1 = '<receipt1>';
     var receipt2 = '<receipt2>';
 
@@ -38,13 +46,17 @@ describe('fxpay.receipts.all()', function() {
     window.localStorage.setItem(helper.settings.localStorageKey,
                                 JSON.stringify([receipt2]));
 
-    var fetchedReceipts = fxpay.receipts.all();
-    assert.equal(fetchedReceipts[0], receipt1);
-    assert.equal(fetchedReceipts[1], receipt2);
-    assert.equal(fetchedReceipts.length, 2);
+    fxpay.receipts.all(function(error, fetchedReceipts) {
+      if (!error) {
+        assert.equal(fetchedReceipts[0], receipt1);
+        assert.equal(fetchedReceipts[1], receipt2);
+        assert.equal(fetchedReceipts.length, 2);
+      }
+      done(error);
+    });
   });
 
-  it('filters out dupe receipts', function() {
+  it('filters out dupe receipts', function(done) {
     var receipt1 = '<receipt1>';
 
     fxpay.configure({
@@ -55,17 +67,26 @@ describe('fxpay.receipts.all()', function() {
     window.localStorage.setItem(helper.settings.localStorageKey,
                                 JSON.stringify([receipt1]));
 
-    var fetchedReceipts = fxpay.receipts.all();
-    assert.equal(fetchedReceipts[0], receipt1);
-    assert.equal(fetchedReceipts.length, 1);
+    fxpay.receipts.all(function(error, fetchedReceipts) {
+      if (!error) {
+        assert.equal(fetchedReceipts[0], receipt1);
+        assert.equal(fetchedReceipts.length, 1);
+      }
+      done(error);
+    });
   });
 
-  it('handles initialization errors', function() {
+  it('handles appSelf errors', function(done) {
+    helper.appSelf.error = {name: 'INVALID_MANIFEST'};
     fxpay.configure({
-      appSelf: null  // default state before initializaion.
+      appSelf: null  // clear appSelf cache.
     });
-    var fetchedReceipts = fxpay.receipts.all();
-    assert.equal(fetchedReceipts.length, 0);
+    fxpay.receipts.all(function(error) {
+      assert.equal(error, 'INVALID_MANIFEST');
+      done();
+    });
+
+    helper.appSelf.onerror();
   });
 
 });

@@ -56,7 +56,7 @@ module.exports = function(grunt) {
       },
       minned: {
         files: {
-          'build/fxpay.min.js': libFiles,
+          'build/fxpay.min.js': 'build/fxpay.debug.js',
         }
       },
       debug: {
@@ -128,9 +128,11 @@ module.exports = function(grunt) {
                      packager.createTask(grunt, __dirname));
   grunt.registerTask('package', ['compress', 'createpackage']);
 
-  grunt.registerTask('compress', ['clean', 'uglify']);
+  // The `compress` step builds a debug version first and then uses that as
+  // the source for the minified version.
+  grunt.registerTask('compress', ['uglify:debug', 'uglify:minned']);
   grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
-  grunt.registerTask('release', ['compress', 'copy']);
+  grunt.registerTask('release', ['clean', 'compress', 'copy']);
 
   grunt.registerTask('default', 'test');
 };

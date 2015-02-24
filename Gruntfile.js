@@ -61,7 +61,10 @@ module.exports = function(grunt) {
       },
       debug: {
         options: {
-          beautify: true,
+          beautify: {
+            'beautify': true,
+            'indent_level': 2
+          },
           compress: false,
           mangle: false,
           preserveComments: true,
@@ -85,7 +88,12 @@ module.exports = function(grunt) {
     },
 
     clean: {
-      build: ['build/*.js', 'build/*.map'],
+      build: [
+        'build/*.js',
+        'build/*.map',
+        'dist/*.js',
+        'dist/*.map'
+      ],
     },
 
     copy: {

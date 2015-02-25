@@ -7,6 +7,8 @@ a web application.
 
 .. image:: https://travis-ci.org/mozilla/fxpay.svg?branch=master
     :target: https://travis-ci.org/mozilla/fxpay
+.. image:: https://badge.fury.io/bo/fxpay.svg
+    :target: http://badge.fury.io/bo/fxpay
 
 Usage
 =====

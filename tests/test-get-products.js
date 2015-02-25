@@ -36,9 +36,11 @@ describe('fxpay.getProducts()', function() {
       assert.equal(products[0].name, serverObjects[0].name);
       assert.equal(products[0].productId, serverObjects[0].guid);
       assert.equal(products[0].smallImageUrl, serverObjects[0].logo_url);
+      assert.equal(products[0].pricePointId, serverObjects[0].price_id);
       assert.equal(products[1].name, serverObjects[1].name);
       assert.equal(products[1].productId, serverObjects[1].guid);
       assert.equal(products[1].smallImageUrl, serverObjects[1].logo_url);
+      assert.equal(products[1].pricePointId, serverObjects[1].price_id);
       assert.equal(products.length, 2);
       done(err);
     });

@@ -109,7 +109,7 @@ Create A Release
 
 You have to do a couple things to create a release:
 
-* Run ``grunt release``. (This compresses the files and copies them to the dist dir).
+* Run ``grunt release``. This compresses the files and copies them to the dist dir.
 * Commit and push your changes.
 * Add and push a git tag corresponding to the version number so that bower
   picks up the file. For example, to tag a ``0.0.1`` release run

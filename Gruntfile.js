@@ -77,6 +77,19 @@ module.exports = function(grunt) {
 
     },
 
+    usebanner: {
+      chaff: {
+        options: {
+          position: 'top',
+          banner: ")]}'",
+          linebreak: true
+        },
+        files: {
+          src: ['build/fxpay.min.js.map']
+        }
+      }
+    },
+
     bump: {
       options: {
         // The pattern 'version': '..' will be updated in all these files.
@@ -111,6 +124,7 @@ module.exports = function(grunt) {
   // Always show stack traces when Grunt prints out an uncaught exception.
   grunt.option('stack', true);
 
+  grunt.loadNpmTasks('grunt-banner');
   grunt.loadNpmTasks('grunt-bump');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
@@ -130,7 +144,8 @@ module.exports = function(grunt) {
 
   // The `compress` step builds a debug version first and then uses that as
   // the source for the minified version.
-  grunt.registerTask('compress', ['uglify:debug', 'uglify:minned']);
+  grunt.registerTask('compress', [
+    'uglify:debug', 'uglify:minned', 'usebanner:chaff']);
   grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
   grunt.registerTask('release', ['clean', 'compress', 'copy']);
 

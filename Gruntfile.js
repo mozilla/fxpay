@@ -54,11 +54,27 @@ module.exports = function(grunt) {
       options: {
         sourceMap: true
       },
-      my_target: {
+      minned: {
         files: {
-          'build/fxpay.min.js': libFiles,
+          'build/fxpay.min.js': 'build/fxpay.debug.js',
+        }
+      },
+      debug: {
+        options: {
+          beautify: {
+            'beautify': true,
+            'indent_level': 2
+          },
+          compress: false,
+          mangle: false,
+          preserveComments: true,
+          sourceMap: false,
+        },
+        files: {
+          'build/fxpay.debug.js': libFiles,
         }
       }
+
     },
 
     bump: {
@@ -70,15 +86,37 @@ module.exports = function(grunt) {
         push: false,
       }
     },
+
+    clean: {
+      build: [
+        'build/*.js',
+        'build/*.map',
+        'dist/*.js',
+        'dist/*.map'
+      ],
+    },
+
+    copy: {
+      main: {
+        cwd: 'build/',
+        src: ['*.js', '*.map'],
+        dest: 'dist/',
+        filter: 'isFile',
+        expand: true,
+      }
+    },
+
   });
 
   // Always show stack traces when Grunt prints out an uncaught exception.
   grunt.option('stack', true);
 
   grunt.loadNpmTasks('grunt-bump');
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-karma');
 
   grunt.registerTask('ghdeploy',
                      'publish example site to github pages',
@@ -90,7 +128,11 @@ module.exports = function(grunt) {
                      packager.createTask(grunt, __dirname));
   grunt.registerTask('package', ['compress', 'createpackage']);
 
-  grunt.registerTask('compress', 'uglify');
+  // The `compress` step builds a debug version first and then uses that as
+  // the source for the minified version.
+  grunt.registerTask('compress', ['uglify:debug', 'uglify:minned']);
   grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
+  grunt.registerTask('release', ['clean', 'compress', 'copy']);
+
   grunt.registerTask('default', 'test');
 };

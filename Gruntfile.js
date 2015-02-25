@@ -144,8 +144,8 @@ module.exports = function(grunt) {
 
   // The `compress` step builds a debug version first and then uses that as
   // the source for the minified version.
-  grunt.registerTask('compress', [
-    'uglify:debug', 'uglify:minned', 'usebanner:chaff']);
+  grunt.registerTask('compress',
+    ['uglify:debug', 'uglify:minned', 'usebanner:chaff']);
   grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
   grunt.registerTask('release', ['clean', 'compress', 'copy']);
 

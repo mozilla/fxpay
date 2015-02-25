@@ -142,7 +142,7 @@
   "use strict";
   var exports = fxpay.settings = {};
   var pkgInfo = {
-    version: "0.0.12"
+    version: "0.0.13"
   };
   // this is updated by `grunt bump`
   var defaultSettings = {

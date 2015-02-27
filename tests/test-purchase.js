@@ -3,7 +3,7 @@ describe('fxpay.purchase() on B2G', function () {
 
   beforeEach(function() {
     helper.setUp();
-    mozPay = sinon.spy(mozPayStub);
+    mozPay = sinon.spy(helper.mozPayStub);
     fxpay.configure({
       appSelf: helper.appSelf,
       mozPay: mozPay,
@@ -244,15 +244,6 @@ describe('fxpay.purchase() on B2G', function () {
     });
 
     helper.appSelf.onsuccess();
-  }
-
-
-  function mozPayStub() {
-    // https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay
-    return {
-      onsuccess: function() {},
-      onerror: function() {}
-    };
   }
 
 });

@@ -120,7 +120,7 @@ You have to do a couple things to create a release:
 
   * Make sure all release notes in the draft are up to date.
   * If no release exists yet, create one and title it as the pending
-    version number.
+    version number. For example: ``0.0.1``.
   * Alternatively, you could manually tag the release with git by running
     ``git tag 0.0.1 && git push upstream 0.0.1``.
 

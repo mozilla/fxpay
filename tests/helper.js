@@ -204,4 +204,13 @@
   };
 
 
+  exports.mozPayStub = function mozPayStub() {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay
+    return {
+      onsuccess: function() {},
+      onerror: function() {},
+    };
+  };
+
+
 })(typeof exports === 'undefined' ? (this.helper = {}): exports);

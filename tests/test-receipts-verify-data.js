@@ -152,16 +152,6 @@ describe('fxpay.receipts.verifyData()', function() {
     });
   });
 
-  it('allows foreign app receipts with a setting', function(done) {
-    fxpay.configure({
-      allowAnyAppReceipt: true
-    });
-    var data = receipt({productUrl: 'wrong-app'});
-    fxpay.receipts.verifyData(data, function(err) {
-      done(err);
-    });
-  });
-
   it('allows wrong product URLs for test receipts', function(done) {
     // Only allow test receipts when fakeProducts is true.
     fxpay.configure({fakeProducts: true});

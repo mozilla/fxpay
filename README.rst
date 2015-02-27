@@ -112,18 +112,26 @@ Create A Release
 You have to do a couple things to create a release:
 
 * Run ``grunt release``. This compresses the files and copies them to the dist dir.
-* Commit and push your changes.
-* Add and push a git tag corresponding to the version number so that bower
-  picks up the file. For example, to tag a ``0.0.1`` release run
-  ``git tag 0.0.1 && git push upstream 0.0.1``
-* Add a release here: https://github.com/mozilla/fxpay/releases
-  (leave the title blank or just use the version number).
+
+  * Commit and push your changes to master.
+
+* Publish the pending `github release`_ (or create one) which will tag master
+  at the version string.
+
+  * Make sure all release notes in the draft are up to date.
+  * If no release exists yet, create one and title it as the pending
+    version number.
+  * Alternatively, you could manually tag the release with git by running
+    ``git tag 0.0.1 && git push upstream 0.0.1``.
+
 * Bump the version for the next release. Library version numbers are
   managed in multiple files.
   To increment the version number and update all files at once,
   run ``grunt bump``.
-* Commit and push your changes.
 
+  * Commit and push your changes.
+
+.. _`github release`: https://github.com/mozilla/fxpay/releases
 
 Changelog
 =========

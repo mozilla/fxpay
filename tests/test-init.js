@@ -47,7 +47,7 @@ describe('fxpay.init()', function() {
   it('should error with unknown options', function (done) {
     fxpay.init({
       onerror: function(err) {
-        assert.equal(err, 'INCORRECT_USAGE');
+        assert.instanceOf(err, fxpay.errors.IncorrectUsage);
         done();
       },
       oninit: function() {
@@ -66,7 +66,7 @@ describe('fxpay.init()', function() {
 
     fxpay.init({
       onerror: function(err) {
-        assert.equal(err, 'PAY_PLATFORM_UNAVAILABLE');
+        assert.instanceOf(err, fxpay.errors.PayPlatformUnavailable);
         done();
       }
     });
@@ -77,8 +77,8 @@ describe('fxpay.init()', function() {
 
     fxpay.init({
       onerror: function(err) {
-        console.log('GOT error', err);
-        assert.equal(err, 'INVALID_MANIFEST');
+        assert.instanceOf(err, fxpay.errors.InvalidApp);
+        assert.equal(err.code, 'INVALID_MANIFEST');
         done();
       }
     });
@@ -98,7 +98,7 @@ describe('fxpay.init()', function() {
 
     fxpay.init({
       onerror: function(err) {
-        assert.equal(err, 'UNDEFINED_APP_ORIGIN');
+        assert.instanceOf(err, fxpay.errors.InvalidApp);
         done();
       },
     });

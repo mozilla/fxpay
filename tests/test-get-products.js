@@ -85,11 +85,21 @@ describe('fxpay.getProducts()', function() {
     helper.server.respondWith('GET', /.*/, [404, {}, '']);
 
     fxpay.getProducts(function(err, products) {
-      assert.equal(err, 'BAD_API_RESPONSE');
+      assert.instanceOf(err, fxpay.errors.BadAPIResponse);
       assert.equal(products.length, 0);
       done();
     });
 
     helper.server.respond();
+  });
+
+  it('requires an origin when running as an app', function(done) {
+    fxpay.configure({appSelf: {}});  // no origin
+
+    fxpay.getProducts(function(err, products) {
+      assert.instanceOf(err, fxpay.errors.InvalidApp);
+      assert.equal(products.length, 0);
+      done();
+    });
   });
 });

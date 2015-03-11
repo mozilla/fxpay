@@ -45,14 +45,14 @@ describe('fxpay.jwt.decode()', function() {
 
   it('should error on missing segments', function(done) {
     fxpay.jwt.decode('one.two', function(err) {
-      assert.equal(err, 'WRONG_JWT_SEGMENT_COUNT');
+      assert.instanceOf(err, fxpay.errors.InvalidJwt);
       done();
     });
   });
 
   it('should error on invalid binary data', function(done) {
     fxpay.jwt.decode('<algo>.this{}IS not*base64 encoded.<sig>', function(err) {
-      assert.equal(err, 'INVALID_JWT_DATA');
+      assert.instanceOf(err, fxpay.errors.InvalidJwt);
       done();
     });
   });
@@ -60,7 +60,7 @@ describe('fxpay.jwt.decode()', function() {
   it('should error on non JSON data within JWT', function(done) {
     var encJwt = '<algo>.' + btoa('(not / valid JSON}') + '.<sig>';
     fxpay.jwt.decode(encJwt, function(err) {
-      assert.equal(err, 'INVALID_JWT_DATA');
+      assert.instanceOf(err, fxpay.errors.InvalidJwt);
       done();
     });
   });
@@ -73,7 +73,7 @@ describe('fxpay.jwt.getPayUrl()', function() {
   it('should pass through parse errors', function(done) {
     var encJwt = '<algo>.' + btoa('(not / valid JSON}') + '.<sig>';
     fxpay.jwt.getPayUrl(encJwt, function(err) {
-      assert.equal(err, 'INVALID_JWT_DATA');
+      assert.instanceOf(err, fxpay.errors.InvalidJwt);
       done();
     });
   });
@@ -82,7 +82,7 @@ describe('fxpay.jwt.getPayUrl()', function() {
     var payRequest = {typ: 'unknown-type'};
     var encJwt = '<algo>.' + btoa(JSON.stringify(payRequest)) + '.<sig>';
     fxpay.jwt.getPayUrl(encJwt, function(err) {
-      assert.equal(err, 'UNEXPECTED_JWT_TYPE');
+      assert.instanceOf(err, fxpay.errors.InvalidJwt);
       done();
     });
   });
@@ -96,7 +96,7 @@ describe('fxpay.jwt.getPayUrl()', function() {
     var payRequest = {typ: 'someType'};
     var encJwt = '<algo>.' + btoa(JSON.stringify(payRequest)) + '.<sig>';
     fxpay.jwt.getPayUrl(encJwt, function(err) {
-      assert.equal(err, 'INVALID_PAY_PROVIDER_URL');
+      assert.instanceOf(err, fxpay.errors.ConfigurationError);
       done();
     });
   });

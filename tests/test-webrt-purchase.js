@@ -35,7 +35,8 @@ describe('fxpay.purchase() on broken webRT', function () {
 
   it('should pass through non-cancel errors', function(done) {
     fxpay.purchase(productId, function(err) {
-      assert.equal(err, 'SOME_RANDOM_ERROR');
+      assert.instanceOf(err, fxpay.errors.PayPlatformError);
+      assert.equal(err.code, 'SOME_RANDOM_ERROR');
       done();
     });
 

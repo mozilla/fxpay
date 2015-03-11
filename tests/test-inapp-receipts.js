@@ -101,7 +101,7 @@ describe('fxpay.init(): receipts', function() {
       },
       oninit: function() {},
       onrestore: function(err, info) {
-        assert.equal(err, 'INVALID_RECEIPT');
+        assert.instanceOf(err, fxpay.errors.InvalidReceipt);
         assert.equal(info.productId, '1');
         assert.equal(info.receiptInfo.status, receiptResponse.status);
         assert.equal(info.receiptInfo.reason, receiptResponse.reason);
@@ -122,8 +122,8 @@ describe('fxpay.init(): receipts', function() {
       },
       oninit: function() {},
       onrestore: function(err, info) {
-        assert.equal(err, 'INVALID_RECEIPT');
-        assert.equal(typeof info, 'object');
+        assert.instanceOf(err, fxpay.errors.InvalidReceipt);
+        assert.typeOf(info, 'object');
         done();
       }
     });
@@ -192,7 +192,7 @@ describe('fxpay.init(): receipts', function() {
       },
       oninit: function() {},
       onrestore: function(err) {
-        assert.equal(err, 'BAD_API_RESPONSE');
+        assert.instanceOf(err, fxpay.errors.BadAPIResponse);
         done();
       }
     });

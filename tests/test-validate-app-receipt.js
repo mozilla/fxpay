@@ -55,7 +55,7 @@ describe('fxpay.validateAppReceipt()', function() {
     fxpay.validateAppReceipt(function(error, productInfo) {
       assert.equal(productInfo.receiptInfo.status, badResponse.status);
       assert.equal(productInfo.receiptInfo.reason, badResponse.reason);
-      assert.equal(error, 'INVALID_RECEIPT');
+      assert.instanceOf(error, fxpay.errors.InvalidReceipt);
       done();
     });
 
@@ -68,8 +68,8 @@ describe('fxpay.validateAppReceipt()', function() {
     var validator = new helper.ReceiptValidator();
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'INVALID_RECEIPT');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.InvalidReceipt);
+      assert.typeOf(productInfo, 'object');
       done();
     });
 
@@ -85,8 +85,8 @@ describe('fxpay.validateAppReceipt()', function() {
     var validator = new helper.ReceiptValidator();
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'INVALID_RECEIPT');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.InvalidReceipt);
+      assert.typeOf(productInfo, 'object');
       done();
     });
 
@@ -100,8 +100,8 @@ describe('fxpay.validateAppReceipt()', function() {
     var validator = new helper.ReceiptValidator();
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'INVALID_RECEIPT');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.InvalidReceipt);
+      assert.typeOf(productInfo, 'object');
       done();
     });
 
@@ -140,8 +140,8 @@ describe('fxpay.validateAppReceipt()', function() {
     helper.appSelf.receipts = [testReceipt];
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'TEST_RECEIPT_NOT_ALLOWED');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.TestReceiptNotAllowed);
+      assert.typeOf(productInfo, 'object');
       done();
     });
   });
@@ -177,8 +177,8 @@ describe('fxpay.validateAppReceipt()', function() {
     var validator = new helper.ReceiptValidator();
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'APP_RECEIPT_MISSING');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.AppReceiptMissing);
+      assert.typeOf(productInfo, 'object');
       done();
     });
 
@@ -189,8 +189,8 @@ describe('fxpay.validateAppReceipt()', function() {
     fxpay.configure({mozApps: null, appSelf: null});
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'PAY_PLATFORM_UNAVAILABLE');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.PayPlatformUnavailable);
+      assert.typeOf(productInfo, 'object');
       done();
     });
 
@@ -201,8 +201,8 @@ describe('fxpay.validateAppReceipt()', function() {
     helper.appSelf.result = null;
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'PAY_PLATFORM_UNAVAILABLE');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.PayPlatformUnavailable);
+      assert.typeOf(productInfo, 'object');
       done();
     });
 
@@ -213,8 +213,8 @@ describe('fxpay.validateAppReceipt()', function() {
     helper.appSelf.receipts = [makeReceipt(), makeReceipt()];
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'NOT_IMPLEMENTED_ERROR');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.NotImplementedError);
+      assert.typeOf(productInfo, 'object');
       done();
     });
   });
@@ -225,8 +225,8 @@ describe('fxpay.validateAppReceipt()', function() {
     var validator = new helper.ReceiptValidator();
 
     fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(error, 'APP_RECEIPT_MISSING');
-      assert.equal(typeof productInfo, 'object');
+      assert.instanceOf(error, fxpay.errors.AppReceiptMissing);
+      assert.typeOf(productInfo, 'object');
       done();
     });
 

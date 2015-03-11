@@ -97,7 +97,8 @@ describe('fxpay.purchase() on the web', function() {
   it('should call back with payment errors', function (done) {
 
     fxpay.purchase(productId, function(err) {
-      assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+      assert.instanceOf(err, fxpay.errors.FailedWindowMessage);
+      assert.equal(err.code, 'DIALOG_CLOSED_BY_USER');
       assert(windowSpy.close.called);
       done();
     });
@@ -183,12 +184,12 @@ describe('fxpay.purchase() on the web', function() {
   it('should close payment window on pay module errors', function (done) {
 
     fxpay.purchase(productId, function(err) {
-      assert.equal(err, 'UNEXPECTED_JWT_TYPE');
+      assert.instanceOf(err, fxpay.errors.InvalidJwt);
       assert(windowSpy.close.called);
       done();
     });
 
-    // Force an UNEXPECTED_JWT_TYPE error.
+    // Force an unexpected JWT type error.
     var req = {typ: 'unknown/provider/id'};
     var badJwt = '<algo>.' + btoa(JSON.stringify(req)) + '.<sig>';
 
@@ -202,7 +203,8 @@ describe('fxpay.purchase() on the web', function() {
 
     fxpay.purchase(productId, function(err) {
       assert(window.clearInterval.called, 'clearInterval should be called');
-      assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+      assert.instanceOf(err, fxpay.errors.PayWindowClosedByUser);
+      assert.equal(err.code, 'DIALOG_CLOSED_BY_USER');
       done();
     });
 
@@ -230,7 +232,7 @@ describe('fxpay.pay.processPayment()', function() {
   it('should reject calls without a paymentWindow', function(done) {
     fxpay.configure({mozPay: false});
     fxpay.pay.processPayment('<jwt>', function(error) {
-      assert.equal(error, 'MISSING_PAYMENT_WINDOW');
+      assert.instanceOf(error, fxpay.errors.IncorrectUsage);
       done();
     });
   });
@@ -266,17 +268,8 @@ describe('fxpay.pay.acceptPayMessage()', function() {
     fxpay.pay.acceptPayMessage(
       makeEvent({status: 'failed', errorCode: 'EXTERNAL_CODE'}),
       defaultOrigin, fakeWindow, function(err) {
-        assert.equal(err, 'EXTERNAL_CODE');
-        done();
-      }
-    );
-  });
-
-  it('calls back with generic error code', function(done) {
-    fxpay.pay.acceptPayMessage(
-      makeEvent({status: 'failed', errorCode: null}),
-      defaultOrigin, fakeWindow, function(err) {
-        assert.equal(err, 'PAY_WINDOW_FAIL_MESSAGE');
+        assert.instanceOf(err, fxpay.errors.FailedWindowMessage);
+        assert.equal(err.code, 'EXTERNAL_CODE');
         done();
       }
     );
@@ -286,7 +279,7 @@ describe('fxpay.pay.acceptPayMessage()', function() {
     fxpay.pay.acceptPayMessage(
       makeEvent({status: 'cheezborger'}),
       defaultOrigin, fakeWindow, function(err) {
-        assert.equal(err, 'UNKNOWN_MESSAGE_STATUS');
+        assert.instanceOf(err, fxpay.errors.FailedWindowMessage);
         done();
       }
     );
@@ -296,7 +289,7 @@ describe('fxpay.pay.acceptPayMessage()', function() {
     fxpay.pay.acceptPayMessage(
       makeEvent({data: null}), defaultOrigin,
       fakeWindow, function(err) {
-        assert.equal(err, 'UNKNOWN_MESSAGE_STATUS');
+        assert.instanceOf(err, fxpay.errors.FailedWindowMessage);
         done();
       }
     );
@@ -304,9 +297,9 @@ describe('fxpay.pay.acceptPayMessage()', function() {
 
   it('rejects foreign messages', function(done) {
     fxpay.pay.acceptPayMessage(
-      makeEvent({origin: 'http://bar.com'}),
-      'http://foo.com', fakeWindow, function(err) {
-        assert.equal(err, 'UNKNOWN_MESSAGE_ORIGIN');
+      makeEvent({origin: 'http://bar.com'}), 'http://foo.com', fakeWindow,
+      function(err) {
+        assert.instanceOf(err, fxpay.errors.UnknownMessageOrigin);
         done();
       }
     );
@@ -317,7 +310,8 @@ describe('fxpay.pay.acceptPayMessage()', function() {
     fxpay.pay.acceptPayMessage(
       makeEvent({status: 'unloaded'}),
       defaultOrigin, fakeWindow, function(err) {
-        assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+        assert.instanceOf(err, fxpay.errors.PayWindowClosedByUser);
+        assert.equal(err.code, 'DIALOG_CLOSED_BY_USER');
         done();
       }
     );

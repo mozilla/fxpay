@@ -144,7 +144,7 @@ describe('fxpay.API()', function () {
     });
 
     api.post('/some/path', null, function(err) {
-      assert.instanceOf(err, fxpay.errors.APIRequestAborted);
+      assert.instanceOf(err, fxpay.errors.ApiRequestAborted);
       done();
     });
 
@@ -157,7 +157,7 @@ describe('fxpay.API()', function () {
     });
 
     api.post('/some/path', null, function(err) {
-      assert.instanceOf(err, fxpay.errors.APIRequestError);
+      assert.instanceOf(err, fxpay.errors.ApiRequestError);
       done();
     });
 
@@ -172,7 +172,7 @@ describe('fxpay.API()', function () {
                        contribStatusURL: '/somewhere'})]);
 
     api.post('/some/path', null, function(err) {
-      assert.instanceOf(err, fxpay.errors.BadAPIResponse);
+      assert.instanceOf(err, fxpay.errors.BadApiResponse);
       done();
     });
 
@@ -188,7 +188,7 @@ describe('fxpay.API()', function () {
       /* jshint +W044 */
 
     api.post('/some/path', null, function(err) {
-      assert.instanceOf(err, fxpay.errors.BadJSONResponse);
+      assert.instanceOf(err, fxpay.errors.BadJsonResponse);
       done();
     });
 
@@ -262,7 +262,7 @@ describe('fxpay.API()', function () {
     });
 
     api.post('/timeout', null, function(err) {
-      assert.instanceOf(err, fxpay.errors.APIRequestTimeout);
+      assert.instanceOf(err, fxpay.errors.ApiRequestTimeout);
       done();
     });
 

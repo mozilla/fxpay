@@ -1,4 +1,4 @@
-describe('fxpay.init(): receipts', function() {
+describe('fxpay.init(): in-app receipts', function() {
   var utils = fxpay.getattr('utils');
   var defaultProductUrl = 'http://boar4485.testmanifest.com';
   var receipt = makeReceipt();
@@ -192,7 +192,7 @@ describe('fxpay.init(): receipts', function() {
       },
       oninit: function() {},
       onrestore: function(err) {
-        assert.instanceOf(err, fxpay.errors.BadAPIResponse);
+        assert.instanceOf(err, fxpay.errors.BadApiResponse);
         done();
       }
     });

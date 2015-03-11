@@ -85,7 +85,7 @@ describe('fxpay.getProducts()', function() {
     helper.server.respondWith('GET', /.*/, [404, {}, '']);
 
     fxpay.getProducts(function(err, products) {
-      assert.instanceOf(err, fxpay.errors.BadAPIResponse);
+      assert.instanceOf(err, fxpay.errors.BadApiResponse);
       assert.equal(products.length, 0);
       done();
     });

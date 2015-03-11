@@ -59,7 +59,7 @@ describe('fxpay.purchase() on B2G', function () {
     var productId = 'some-guid';
 
     fxpay.purchase(productId, function(err, info) {
-      assert.equal(err, 'TRANSACTION_TIMEOUT');
+      assert.instanceOf(err, fxpay.errors.PurchaseTimeout);
       assert.equal(info.productId, productId);
       done();
     }, {
@@ -84,7 +84,8 @@ describe('fxpay.purchase() on B2G', function () {
     var productId = 'some-guid';
 
     fxpay.purchase(productId, function(err, info) {
-      assert.equal(err, 'DIALOG_CLOSED_BY_USER');
+      assert.instanceOf(err, fxpay.errors.PayPlatformError);
+      assert.equal(err.code, 'DIALOG_CLOSED_BY_USER');
       assert.equal(info.productId, productId);
       done();
     });
@@ -102,7 +103,7 @@ describe('fxpay.purchase() on B2G', function () {
   it('should report invalid transaction state', function (done) {
 
     fxpay.purchase(helper.apiProduct.guid, function(err) {
-      assert.equal(err, 'INVALID_TRANSACTION_STATE');
+      assert.instanceOf(err, fxpay.errors.ConfigurationError);
       done();
     });
 
@@ -210,7 +211,8 @@ describe('fxpay.purchase() on B2G', function () {
   it('should pass through receipt errors', function (done) {
 
     fxpay.purchase(helper.apiProduct.guid, function(err) {
-      assert.equal(err, 'ADD_RECEIPT_ERROR');
+      assert.instanceOf(err, fxpay.errors.AddReceiptError);
+      assert.equal(err.code, 'ADD_RECEIPT_ERROR');
       done();
     });
 

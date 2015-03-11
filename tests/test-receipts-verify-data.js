@@ -15,21 +15,21 @@ describe('fxpay.receipts.verifyData()', function() {
 
   it('fails on non-strings', function(done) {
     fxpay.receipts.verifyData({not: 'a receipt'}, function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
 
   it('fails on too many key segments', function(done) {
     fxpay.receipts.verifyData('one~too~many', function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
 
   it('fails on not enough JWT segments', function(done) {
     fxpay.receipts.verifyData('one.two', function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -37,7 +37,7 @@ describe('fxpay.receipts.verifyData()', function() {
   it('fails on invalid base64 encoding', function(done) {
     fxpay.receipts.verifyData(receipt({receipt: 'not%valid&&base64'}),
                               function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -45,7 +45,7 @@ describe('fxpay.receipts.verifyData()', function() {
   it('fails on invalid JSON', function(done) {
     fxpay.receipts.verifyData('jwtAlgo.' + btoa('^not valid JSON') + '.jwtSig',
                               function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -56,7 +56,7 @@ describe('fxpay.receipts.verifyData()', function() {
         storedata: 'storedata'
       }
     }), function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -65,7 +65,7 @@ describe('fxpay.receipts.verifyData()', function() {
     fxpay.receipts.verifyData(
         'jwtAlgo.' + btoa(JSON.stringify({product: {}})) + '.jwtSig',
         function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -73,7 +73,7 @@ describe('fxpay.receipts.verifyData()', function() {
   it('fails on non-string storedata', function(done) {
     fxpay.receipts.verifyData(receipt({storedata: {}}),
                               function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -81,7 +81,7 @@ describe('fxpay.receipts.verifyData()', function() {
   it('fails on foreign product URL for packaged app', function(done) {
     var data = receipt({productUrl: 'wrong-app'});
     fxpay.receipts.verifyData(data, function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -96,7 +96,7 @@ describe('fxpay.receipts.verifyData()', function() {
 
     var data = receipt({productUrl: 'http://wrong-site.com'});
     fxpay.receipts.verifyData(data, function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -166,7 +166,7 @@ describe('fxpay.receipts.verifyData()', function() {
     fxpay.receipts.verifyData(receipt(null,
                                       {verify: 'http://mykracksite.ru'}),
                               function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -174,8 +174,8 @@ describe('fxpay.receipts.verifyData()', function() {
   it('disallows test receipts when not testing', function(done) {
     fxpay.receipts.verifyData(receipt(null, {typ: 'test-receipt'}),
                               function(err, info) {
-      assert.equal(err, 'TEST_RECEIPT_NOT_ALLOWED');
-      assert.equal(typeof info, 'object');
+      assert.instanceOf(err, fxpay.errors.TestReceiptNotAllowed);
+      assert.typeOf(info, 'object');
       done();
     });
   });

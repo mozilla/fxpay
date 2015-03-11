@@ -82,7 +82,8 @@ describe('fxpay.receipts.all()', function() {
       appSelf: null  // clear appSelf cache.
     });
     fxpay.receipts.all(function(error) {
-      assert.equal(error, 'INVALID_MANIFEST');
+      assert.instanceOf(error, fxpay.errors.InvalidApp);
+      assert.equal(error.code, 'INVALID_MANIFEST');
       done();
     });
 

@@ -17,7 +17,7 @@ describe('fxpay.receipts.verifyAppData()', function() {
     fxpay.receipts.verifyAppData(
         makeReceipt({storedata: 'foo=baz&barz=zonk'}),
         function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });

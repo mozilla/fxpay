@@ -193,7 +193,8 @@ describe('fxpay.utils.getAppSelf()', function() {
 
   it('returns mozApps errors', function(done) {
     fxpay.utils.getAppSelf(function(error, appSelf) {
-      assert.equal(error, 'SOME_ERROR');
+      assert.instanceOf(error, fxpay.errors.InvalidApp);
+      assert.equal(error.code, 'SOME_ERROR');
       assert.strictEqual(appSelf, null);
       done();
     });

@@ -15,7 +15,7 @@ describe('fxpay.receipts.verifyInAppProductData()', function() {
 
   it('fails on missing product', function(done) {
     fxpay.receipts.verifyInAppProductData({}, function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -24,7 +24,7 @@ describe('fxpay.receipts.verifyInAppProductData()', function() {
     fxpay.receipts.verifyInAppProductData(
         makeReceipt({storedata: 'not%a!valid(string'}),
         function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -32,7 +32,7 @@ describe('fxpay.receipts.verifyInAppProductData()', function() {
   it('handles malformed storedata', function(done) {
     fxpay.receipts.verifyInAppProductData(makeReceipt({storedata: '&&&'}),
                                           function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
@@ -41,7 +41,7 @@ describe('fxpay.receipts.verifyInAppProductData()', function() {
     fxpay.receipts.verifyInAppProductData(
         makeReceipt({storedata: 'foo=baz&barz=zonk'}),
         function(err) {
-      assert.equal(err, 'INVALID_RECEIPT');
+      assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });

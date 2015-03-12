@@ -47,6 +47,7 @@ describe('fxpay.init(): in-app receipts', function() {
           assert.equal(info.name, helper.apiProduct.name);
           assert.equal(info.smallImageUrl, helper.apiProduct.logo_url);
           assert.equal(info.receiptInfo.status, 'ok');
+          assert.equal(info.receiptInfo.receipt, receipt);
         }
         done(err);
       }

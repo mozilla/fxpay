@@ -37,6 +37,7 @@ describe('fxpay.validateAppReceipt()', function() {
 
     fxpay.validateAppReceipt(function(error, productInfo) {
       assert.equal(productInfo.receiptInfo.status, 'ok');
+      assert.equal(productInfo.receiptInfo.receipt, receipt);
       assert.equal(productInfo.productId, appId);
       assert.equal(productInfo.productUrl, productUrl);
       done(error);

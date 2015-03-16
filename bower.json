@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git://github.com/mozilla/fxpay.git"
   },
+  "dependencies": {
+    "es6-promise": "~2.0.1"
+  },
   "main": "dist/fxpay.min.js",
   "ignore": [
     "**/.*",

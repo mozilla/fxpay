@@ -1,9 +1,19 @@
 (function() {
   "use strict";
 
-  function showError(code, message) {
-    console.error(message || 'error code:', code);
-    $('#error').text(code);
+  function showResult(result, error) {
+    $('#error').text(error ? error.toString(): "");
+    $('#results span').text(result);
+  }
+
+  function logProductInfo(productInfo) {
+    console.log('productInfo:', productInfo);
+    if (productInfo && productInfo.receiptInfo) {
+      console.log('receipt status:', productInfo.receiptInfo.status);
+      if (productInfo.receiptInfo.reason) {
+        console.log('receipt status reason:', productInfo.receiptInfo.reason);
+      }
+    }
   }
 
   fxpay.configure({
@@ -30,24 +40,14 @@
     ],
   });
 
-  fxpay.validateAppReceipt(function(error, info) {
-    $('#error').text("");
-    var result;
-    if (info.receiptInfo) {
-      console.log('receipt status:', info.receiptInfo.status);
-      if (info.receiptInfo.reason) {
-        console.log('receipt status reason:', info.receiptInfo.reason);
-      }
-    }
-    if (error) {
-      showError(error, 'invalid receipt');
-      result = 'INVALID';
-    } else {
-      console.log('receipt is valid; app was purchased');
-      console.log('product URL:', info.productUrl);
-      result = 'VALID';
-    }
-    $('#results span').text(result);
+  fxpay.validateAppReceipt().then(function(productInfo) {
+    logProductInfo(productInfo);
+    console.log('receipt is valid; app was purchased');
+    console.log('product URL:', productInfo.productUrl);
+    showResult('VALID');
+  }).catch(function(reason) {
+    logProductInfo(reason.productInfo);
+    showResult('INVALID', reason.error || reason);
   });
 
   console.log('initialized hosted paid app');

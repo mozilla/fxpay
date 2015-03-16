@@ -20,6 +20,16 @@ describe('fxpay.errors.createError()', function() {
     assert.equal(customError.name, 'MyError');
   });
 
+  it('should set an empty productInfo object', function() {
+    assert.typeOf(customError.productInfo, 'object');
+  });
+
+  it('should accept a productInfo object', function() {
+    var info = {someProperty: 'foo'};
+    assert.equal(CustomError('message', {productInfo: info}).productInfo,
+                 info);
+  });
+
   it('should stringify the class name', function() {
     assert.equal(CustomError().toString(), 'MyError');
   });

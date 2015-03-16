@@ -35,13 +35,13 @@ describe('fxpay.validateAppReceipt()', function() {
       },
     });
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
+    fxpay.validateAppReceipt().then(function(productInfo) {
       assert.equal(productInfo.receiptInfo.status, 'ok');
       assert.equal(productInfo.receiptInfo.receipt, receipt);
       assert.equal(productInfo.productId, appId);
       assert.equal(productInfo.productUrl, productUrl);
-      done(error);
-    });
+      done();
+    }).catch(done);
 
     validator.finish();
   });
@@ -53,12 +53,14 @@ describe('fxpay.validateAppReceipt()', function() {
       response: badResponse,
     });
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.equal(productInfo.receiptInfo.status, badResponse.status);
-      assert.equal(productInfo.receiptInfo.reason, badResponse.reason);
-      assert.instanceOf(error, fxpay.errors.InvalidReceipt);
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.equal(reason.productInfo.receiptInfo.status, badResponse.status);
+      assert.equal(reason.productInfo.receiptInfo.reason, badResponse.reason);
+      assert.instanceOf(reason, fxpay.errors.InvalidReceipt);
       done();
-    });
+    }).catch(done);
 
     validator.finish();
   });
@@ -68,11 +70,13 @@ describe('fxpay.validateAppReceipt()', function() {
 
     var validator = new helper.ReceiptValidator();
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.InvalidReceipt);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.InvalidReceipt);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
 
     validator.finish();
   });
@@ -85,11 +89,13 @@ describe('fxpay.validateAppReceipt()', function() {
 
     var validator = new helper.ReceiptValidator();
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.InvalidReceipt);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.InvalidReceipt);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
 
     validator.finish();
   });
@@ -100,11 +106,13 @@ describe('fxpay.validateAppReceipt()', function() {
 
     var validator = new helper.ReceiptValidator();
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.InvalidReceipt);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.InvalidReceipt);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
 
     validator.finish();
   });
@@ -114,9 +122,9 @@ describe('fxpay.validateAppReceipt()', function() {
 
     var validator = new helper.ReceiptValidator();
 
-    fxpay.validateAppReceipt(function(error) {
-      done(error);
-    });
+    fxpay.validateAppReceipt().then(function() {
+      done();
+    }).catch(done);
 
     validator.finish();
   });
@@ -127,9 +135,9 @@ describe('fxpay.validateAppReceipt()', function() {
 
     var validator = new helper.ReceiptValidator();
 
-    fxpay.validateAppReceipt(function(error) {
-      done(error);
-    });
+    fxpay.validateAppReceipt().then(function() {
+      done();
+    }).catch(done);
 
     validator.finish();
   });
@@ -140,11 +148,14 @@ describe('fxpay.validateAppReceipt()', function() {
     });
     helper.appSelf.receipts = [testReceipt];
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.TestReceiptNotAllowed);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.TestReceiptNotAllowed);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
+
   });
 
   it('accepts test receipts', function(done) {
@@ -162,12 +173,10 @@ describe('fxpay.validateAppReceipt()', function() {
         'https://payments-alt\\.allizom\\.org/developers/test-receipt/'),
     });
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      if (!error) {
-        assert.equal(productInfo.receiptInfo.status, 'ok');
-      }
-      done(error);
-    });
+    fxpay.validateAppReceipt().then(function(productInfo) {
+      assert.equal(productInfo.receiptInfo.status, 'ok');
+      done();
+    }).catch(done);
 
     validator.finish();
   });
@@ -177,11 +186,13 @@ describe('fxpay.validateAppReceipt()', function() {
 
     var validator = new helper.ReceiptValidator();
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.AppReceiptMissing);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.AppReceiptMissing);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
 
     validator.finish();
   });
@@ -189,11 +200,13 @@ describe('fxpay.validateAppReceipt()', function() {
   it('fails when mozApps is null', function(done) {
     fxpay.configure({mozApps: null, appSelf: null});
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.PayPlatformUnavailable);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.PayPlatformUnavailable);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
 
   });
 
@@ -201,11 +214,13 @@ describe('fxpay.validateAppReceipt()', function() {
     fxpay.configure({appSelf: null});
     helper.appSelf.result = null;
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.PayPlatformUnavailable);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.PayPlatformUnavailable);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
 
     helper.appSelf.onsuccess();
   });
@@ -213,11 +228,13 @@ describe('fxpay.validateAppReceipt()', function() {
   it('fails when multiple receipts are installed', function(done) {
     helper.appSelf.receipts = [makeReceipt(), makeReceipt()];
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.NotImplementedError);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.NotImplementedError);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
   });
 
   it('fails when receipt is malformed', function(done) {
@@ -225,11 +242,13 @@ describe('fxpay.validateAppReceipt()', function() {
 
     var validator = new helper.ReceiptValidator();
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
-      assert.instanceOf(error, fxpay.errors.AppReceiptMissing);
-      assert.typeOf(productInfo, 'object');
+    fxpay.validateAppReceipt().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(reason) {
+      assert.instanceOf(reason, fxpay.errors.AppReceiptMissing);
+      assert.typeOf(reason.productInfo, 'object');
       done();
-    });
+    }).catch(done);
 
     validator.finish();
   });
@@ -245,10 +264,10 @@ describe('fxpay.validateAppReceipt()', function() {
 
     var validator = new helper.ReceiptValidator();
 
-    fxpay.validateAppReceipt(function(error, productInfo) {
+    fxpay.validateAppReceipt().then(function(productInfo) {
       assert.equal(productInfo.productId, appId);
-      done(error);
-    });
+      done();
+    }).catch(done);
 
     validator.finish();
   });

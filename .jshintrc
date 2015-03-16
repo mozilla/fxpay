@@ -26,9 +26,10 @@
     "describe",
     "exports",
     "fxpay",
-    "it",
     "helper",
+    "it",
     "process",
+    "Promise",
     "sinon"
   ],
   "shadow": false,

@@ -38,15 +38,14 @@ $(function() {
 
     console.log('getting products from', apiUrlBase);
 
-    fxpay.getProducts(function(err, products) {
-      if (err) {
-        console.error('error getting products:', err);
-        return showError(err);
-      }
+    fxpay.getProducts().then(function(products) {
       products.forEach(function(productInfo) {
         console.info('got product:', productInfo);
         addProduct(productsUl, productInfo);
       });
+    }).catch(function(err) {
+      console.error('error getting products:', err);
+      showError(err);
     });
   }
 

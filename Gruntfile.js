@@ -42,7 +42,8 @@ module.exports = function(grunt) {
           // Allow an optional pattern for test files with --tests.
           {pattern: grunt.option('tests') || 'tests/test*.js',
            included: true}
-        ])
+        ]),
+        logLevel: grunt.option('log-level') || 'ERROR',
       },
       dev: {
         configFile: 'karma.conf.js',

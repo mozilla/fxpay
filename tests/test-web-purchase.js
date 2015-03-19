@@ -77,16 +77,16 @@ describe('fxpay.purchase() on the web', function() {
     clock.restore();
   });
 
-  it('should open a payment window and call back', function (done) {
+  it('should open a payment window and resolve', function (done) {
 
-    fxpay.purchase(productId, function(err) {
+    fxpay.purchase(productId).then(function() {
       assert.equal(
         fakePayWindow.location, providerUrlTemplate.replace('{jwt}', fakeJwt));
       assert(windowSpy.close.called);
-      done(err);
-    });
+      done();
+    }).catch(done);
 
-    helper.finishPurchaseOk('<receipt>', {
+    helper.resolvePurchase({
       productData: {webpayJWT: fakeJwt},
       payCompleter: function() {
         simulatePostMessage({status: 'ok'});
@@ -94,16 +94,18 @@ describe('fxpay.purchase() on the web', function() {
     });
   });
 
-  it('should call back with payment errors', function (done) {
+  it('should reject with payment errors', function (done) {
 
-    fxpay.purchase(productId, function(err) {
+    fxpay.purchase(productId).then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(err) {
       assert.instanceOf(err, fxpay.errors.FailedWindowMessage);
       assert.equal(err.code, 'DIALOG_CLOSED_BY_USER');
       assert(windowSpy.close.called);
       done();
-    });
+    }).catch(done);
 
-    helper.finishPurchaseOk('<receipt>', {
+    helper.resolvePurchase({
       productData: {webpayJWT: fakeJwt},
       payCompleter: function() {
         simulatePostMessage({status: 'failed',
@@ -114,20 +116,20 @@ describe('fxpay.purchase() on the web', function() {
 
   it('should allow client to specify a custom window', function (done) {
 
-    fxpay.purchase(productId, function(err) {
+    fxpay.purchase(productId, {
+      paymentWindow: customPayWindow,
+      managePaymentWindow: true,
+    }).then(function() {
       assert.equal(
         customPayWindow.location,
         providerUrlTemplate.replace('{jwt}', fakeJwt));
       assert(customWindowSpy.resizeTo.called);
       assert(customWindowSpy.moveTo.called);
       assert(customWindowSpy.close.called);
-      done(err);
-    }, {
-      paymentWindow: customPayWindow,
-      managePaymentWindow: true,
-    });
+      done();
+    }).catch(done);
 
-    helper.finishPurchaseOk('<receipt>', {
+    helper.resolvePurchase({
       productData: {webpayJWT: fakeJwt},
       payCompleter: function() {
         simulatePostMessage({status: 'ok'});
@@ -137,17 +139,17 @@ describe('fxpay.purchase() on the web', function() {
 
   it('should not manage custom pay windows by default', function (done) {
 
-    fxpay.purchase(productId, function(err) {
+    fxpay.purchase(productId, {
+      paymentWindow: customPayWindow,
+    }).then(function() {
       assert.equal(
         customPayWindow.location,
         providerUrlTemplate.replace('{jwt}', fakeJwt));
       assert(!customWindowSpy.close.called);
-      done(err);
-    }, {
-      paymentWindow: customPayWindow,
-    });
+      done();
+    }).catch(done);
 
-    helper.finishPurchaseOk('<receipt>', {
+    helper.resolvePurchase({
       productData: {webpayJWT: fakeJwt},
       payCompleter: function() {
         simulatePostMessage({status: 'ok'});
@@ -160,11 +162,14 @@ describe('fxpay.purchase() on the web', function() {
       callback('SOME_EARLY_ERROR');
     };
 
-    fxpay.purchase(productId, function(err) {
+    fxpay.purchase(productId).then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(err) {
       assert.equal(err, 'SOME_EARLY_ERROR');
       assert(windowSpy.close.called);
       done();
-    });
+    }).catch(done);
+
   });
 
   it('should not close managed window on adapter errors', function (done) {
@@ -172,28 +177,33 @@ describe('fxpay.purchase() on the web', function() {
       callback('SOME_EARLY_ERROR');
     };
 
-    fxpay.purchase(productId, function(err) {
+    fxpay.purchase(productId, {
+      paymentWindow: customPayWindow,
+    }).then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(err) {
       assert.equal(err, 'SOME_EARLY_ERROR');
       assert(!customWindowSpy.close.called);
       done();
-    }, {
-      paymentWindow: customPayWindow,
-    });
+    }).catch(done);
+
   });
 
   it('should close payment window on pay module errors', function (done) {
 
-    fxpay.purchase(productId, function(err) {
+    fxpay.purchase(productId).then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidJwt);
       assert(windowSpy.close.called);
       done();
-    });
+    }).catch(done);
 
     // Force an unexpected JWT type error.
     var req = {typ: 'unknown/provider/id'};
     var badJwt = '<algo>.' + btoa(JSON.stringify(req)) + '.<sig>';
 
-    helper.finishPurchaseOk('<receipt>', {
+    helper.resolvePurchase({
       productData: {webpayJWT: badJwt},
       payCompleter: function() {},
     });
@@ -201,12 +211,14 @@ describe('fxpay.purchase() on the web', function() {
 
   it('should respond to user closed window', function (done) {
 
-    fxpay.purchase(productId, function(err) {
+    fxpay.purchase(productId).then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(err) {
       assert(window.clearInterval.called, 'clearInterval should be called');
       assert.instanceOf(err, fxpay.errors.PayWindowClosedByUser);
       assert.equal(err.code, 'DIALOG_CLOSED_BY_USER');
       done();
-    });
+    }).catch(done);
 
     // Respond to fetching the JWT.
     helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/,

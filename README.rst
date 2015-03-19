@@ -99,6 +99,12 @@ like this::
 
     grunt karma:run --grep='should open a payment window on the web'
 
+If you should need to change the karma log-level (default is ERROR)
+you can do so as follows::
+
+    grunt test --log-level=DEBUG
+
+
 Check For Lint
 ~~~~~~~~~~~~~~
 

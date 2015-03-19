@@ -62,40 +62,57 @@
   };
 
 
-  exports.finishPurchaseOk = function(receipt, opt) {
+  exports.resolvePurchase = function(opt) {
+    var cfg = fxpay.getattr('settings');
     var helper = exports;
     opt = fxpay.utils.defaults(opt, {
+      receipt: '<keys>~<receipt>',
       mozPay: null,
       productData: null,
       payCompleter: null,
+      fetchProductsPattern: new RegExp('.*/payments/.*/in-app/.*'),
+      enableTransPolling: false,
+      mozPayResolver: function(domRequest) {
+        domRequest.onsuccess();
+      },
+      addReceiptResolver: function(domRequest) {
+        domRequest.onsuccess();
+      },
     });
-    opt.fetchProductsPattern = (opt.fetchProductsPattern ||
-                                new RegExp('.*/payments/.*/in-app/.*'));
+
+    if (!opt.transData) {
+      opt.transData = helper.transactionData({receipt: opt.receipt});
+    }
 
     // Respond to fetching the JWT.
-    helper.server.respondWith('POST', /.*\/webpay\/inapp\/prepare/,
-                              helper.productData(opt.productData));
+    helper.server.respondWith(
+      'POST',
+      cfg.apiUrlBase + cfg.apiVersionPrefix + '/webpay/inapp/prepare/',
+      helper.productData(opt.productData));
     helper.server.respond();
 
     if (opt.mozPay) {
       console.log('Simulate a payment completion with mozPay');
-      opt.mozPay.returnValues[0].onsuccess();
+      // Resolve DOMRequest for navigator.mozPay().
+      opt.mozPayResolver(opt.mozPay.returnValues[0]);
     } else if (opt.payCompleter) {
       console.log('Simulate a payment completion with custom function');
       opt.payCompleter();
     }
 
-    // Respond to validating the transaction.
-    helper.server.respondWith('GET', /.*\/transaction\/XYZ/,
-                              helper.transactionData({receipt: receipt}));
+    // Respond to checking the transaction state.
+    helper.server.autoRespond = !!opt.enableTransPolling;
+    helper.server.respondWith('GET', cfg.apiUrlBase + '/transaction/XYZ',
+                              opt.transData);
     helper.server.respond();
 
-    // Respond to getting product info.
+    // Resolve DOMRequest for mozApps.getSelf().addReceipt().
+    opt.addReceiptResolver(helper.receiptAdd);
+
+    // Respond to fetching the product object after successful transaction.
     helper.server.respondWith('GET', opt.fetchProductsPattern,
                               [200, {"Content-Type": "application/json"},
                                JSON.stringify(helper.apiProduct)]);
-
-    helper.receiptAdd.onsuccess();
     helper.server.respond();
   };
 

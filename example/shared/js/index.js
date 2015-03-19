@@ -87,9 +87,9 @@ $(function() {
     $('#error').text('');
   }
 
-  function showError(msg) {
-    console.error(msg);
-    $('#error').text(msg);
+  function showError(error) {
+    console.error(error.toString());
+    $('#error').text(error.toString());
   }
 
   function queryParam(name) {
@@ -121,15 +121,14 @@ $(function() {
     var prod = $(this).data('product');
     console.log('purchasing', prod.name, prod.productId);
 
-    fxpay.purchase(prod.productId, function(err, product) {
-      if (err) {
-        console.error('error purchasing product',
-                      (product && product.productId),
-                      'message:', err);
-        return showError(err);
-      }
+    fxpay.purchase(prod.productId).then(function(product) {
       console.log('product:', product.productId, product, 'purchased');
       productBought(product);
+    }).catch(function (err) {
+      console.error('error purchasing product',
+                    (err.productInfo && err.productInfo.productId),
+                    'message:', err.toString());
+      showError(err);
     });
 
     // TODO: update the UI here with a spinner or something.

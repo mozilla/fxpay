@@ -9,6 +9,8 @@ a web application.
     :target: https://travis-ci.org/mozilla/fxpay
 .. image:: https://badge.fury.io/bo/fxpay.svg
     :target: http://badge.fury.io/bo/fxpay
+.. image:: https://david-dm.org/mozilla/fxpay/dev-status.svg
+    :target: https://david-dm.org/mozilla/fxpay#info=devDependencies
 
 Usage
 =====

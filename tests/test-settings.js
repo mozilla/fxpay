@@ -117,4 +117,10 @@ describe('fxpay.settings', function() {
     assert.ok(settings.allowTestReceipts !== nonDefaultValue);
   });
 
+  it('should error with unknown options', function () {
+    assert.throws(function() {
+      settings.configure({notAvalidOption: false});
+    }, fxpay.errors.IncorrectUsage);
+  });
+
 });

@@ -10,7 +10,7 @@ describe('fxpay.validateAppReceipt()', function() {
     fxpay.configure({
       appSelf: helper.appSelf,
       receiptCheckSites: [
-        'https://receiptcheck-payments-alt.allizom.org',
+        'https://fake-receipt-check-server.net',
         'https://payments-alt.allizom.org',
       ]
     });

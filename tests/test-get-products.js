@@ -4,7 +4,7 @@ describe('fxpay.getProducts()', function() {
   beforeEach(function() {
     helper.setUp();
     fxpay.configure({
-      appSelf: helper.appSelf
+      appSelf: helper.appSelf,
     });
   });
 
@@ -14,8 +14,7 @@ describe('fxpay.getProducts()', function() {
 
   it('resolves promise with product info', function(done) {
 
-    var prodHelper = new ProductHelper();
-    var serverObjects = prodHelper.serverObjects;
+    var serverObjects = setUpApiResponses();
 
     fxpay.getProducts().then(function(products) {
       assert.equal(products[0].name, serverObjects[0].name);
@@ -30,27 +29,24 @@ describe('fxpay.getProducts()', function() {
       done();
     }).catch(done);
 
-    prodHelper.finish();
   });
 
   it('still supports old callback interface', function(done) {
 
-    var prodHelper = new ProductHelper();
-    var serverObjects = prodHelper.serverObjects;
+    var serverObjects = setUpApiResponses();
 
     fxpay.getProducts(function(error, products) {
       assert.equal(products[0].name, serverObjects[0].name);
       done(error);
     });
 
-    prodHelper.finish();
   });
 
   it('can retrieve fake products', function(done) {
 
     fxpay.configure({fakeProducts: true});
 
-    var prodHelper = new ProductHelper({
+    var serverObjects = setUpApiResponses({
       serverObjects: [
         {"guid": "guid1", "app": "fxpay", "price_id": 1,
          "name": "Clown Shoes", "logo_url": "http://site/image1.png"},
@@ -62,17 +58,17 @@ describe('fxpay.getProducts()', function() {
     });
 
     fxpay.getProducts().then(function(products) {
-      assert.equal(products[0].name, prodHelper.serverObjects[0].name);
-      assert.equal(products[1].name, prodHelper.serverObjects[1].name);
+      assert.equal(products[0].name, serverObjects[0].name);
+      assert.equal(products[1].name, serverObjects[1].name);
       assert.equal(products.length, 2);
       done();
     }).catch(done);
 
-    prodHelper.finish();
   });
 
   it('calls back with API errors', function(done) {
 
+    helper.server.respondImmediately = true;
     helper.server.respondWith('GET', /.*/, [404, {}, '']);
 
     fxpay.getProducts().then(function() {
@@ -82,11 +78,11 @@ describe('fxpay.getProducts()', function() {
       done();
     }).catch(done);
 
-    helper.server.respond();
   });
 
   it('still supports callback interface for errors', function(done) {
 
+    helper.server.respondImmediately = true;
     helper.server.respondWith('GET', /.*/, [404, {}, '']);
 
     fxpay.getProducts(function(error, products) {
@@ -95,7 +91,6 @@ describe('fxpay.getProducts()', function() {
       done();
     });
 
-    helper.server.respond();
   });
 
   it('requires an origin when running as an app', function(done) {
@@ -109,8 +104,20 @@ describe('fxpay.getProducts()', function() {
     }).catch(done);
   });
 
+  it('requires a JSON response from the server', function(done) {
 
-  function ProductHelper(opt) {
+    setUpApiResponses({serverObjects: null});
+
+    fxpay.getProducts().then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(err) {
+      assert.instanceOf(err, fxpay.errors.BadApiResponse);
+      done();
+    }).catch(done);
+  });
+
+
+  function setUpApiResponses(opt) {
     opt = utils.defaults(opt, {
       serverObjects: [
         {"guid": "guid3", "app": "fxpay", "price_id": 237,
@@ -123,21 +130,25 @@ describe('fxpay.getProducts()', function() {
                '/in-app/?active=1',
     });
 
-    this.serverObjects = opt.serverObjects;
-  }
+    // When working with promises, we need to define responses up front
+    // and respond as each request comes in.
+    helper.server.respondImmediately = true;
 
-  ProductHelper.prototype.finish = function() {
     helper.server.respondWith(
       'GET', this.url,
       [200, {"Content-Type": "application/json"},
       JSON.stringify({
-        "meta": {"next": null, "previous": null,
-                 "total_count": this.serverObjects.length,
-                 "offset": 0, "limit": 25},
-        "objects": this.serverObjects
+        meta: {
+          next: null,
+          previous: null,
+          total_count: opt.serverObjects ? opt.serverObjects.length: 0,
+          offset: 0,
+          limit: 25,
+        },
+        objects: opt.serverObjects,
       })]);
 
-    helper.server.respond();
-  };
+    return opt.serverObjects;
+  }
 
 });

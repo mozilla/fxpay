@@ -13,7 +13,7 @@ describe('fxpay.purchase() on the web', function() {
   var handlers;
   var clock;
 
-  beforeEach(function(done) {
+  beforeEach(function() {
     helper.setUp();
     handlers = {};
     fakePayWindow = {
@@ -52,15 +52,6 @@ describe('fxpay.purchase() on the web', function() {
           handlers[type] = handler;
         },
         removeEventListener: function() {},
-      },
-    });
-
-    fxpay.init({
-      oninit: function() {
-        done();
-      },
-      onerror: function(err) {
-        done(err);
       },
     });
 

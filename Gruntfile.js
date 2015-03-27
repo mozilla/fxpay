@@ -1,5 +1,4 @@
 var ghdeploy = require('./tasks/ghdeploy');
-var packager = require('./tasks/packager');
 
 
 // List module files in order so that dependencies work right:
@@ -61,7 +60,7 @@ module.exports = function(grunt) {
       },
       minned: {
         files: {
-          'build/fxpay.min.js': 'build/fxpay.debug.js',
+          'build/lib/fxpay.min.js': 'build/lib/fxpay.debug.js',
         }
       },
       debug: {
@@ -76,7 +75,7 @@ module.exports = function(grunt) {
           sourceMap: false,
         },
         files: {
-          'build/fxpay.debug.js': libFiles,
+          'build/lib/fxpay.debug.js': libFiles,
         }
       }
 
@@ -90,7 +89,7 @@ module.exports = function(grunt) {
           linebreak: true
         },
         files: {
-          src: ['build/fxpay.min.js.map']
+          src: ['build/lib/fxpay.min.js.map']
         }
       }
     },
@@ -119,24 +118,46 @@ module.exports = function(grunt) {
     },
 
     clean: {
-      build: [
-        'build/*.js',
-        'build/*.map',
-        'dist/*.js',
-        'dist/*.map'
-      ],
+      build: ['build/**/*', '!build/.gitkeep'],
+      dist: ['dist/*', '!dist/.gitkeep'],
     },
 
     copy: {
-      main: {
-        cwd: 'build/',
+      lib: {
+        cwd: 'build/lib/',
         src: ['*.js', '*.map'],
         dest: 'dist/',
         filter: 'isFile',
         expand: true,
+      },
+      'example-packaged': {
+        cwd: 'example/packaged/',
+        src: '*',
+        dest: 'build/app/',
+        expand: true,
+      },
+      'example-shared': {
+        cwd: 'example/shared/',
+        src: '**/*',
+        dest: 'build/app/',
+        expand: true,
+      },
+      'lib-to-package': {
+        cwd: 'build/lib/',
+        src: '*',
+        dest: 'build/app/',
+        expand: true,
       }
     },
 
+    zip: {
+      app: {
+        cwd: 'build/app/',
+        src: 'build/app/**',
+        dest: 'build/app.zip',
+        compression: 'DEFLATE',
+      }
+    }
   });
 
   // Always show stack traces when Grunt prints out an uncaught exception.
@@ -150,23 +171,31 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-zip');
 
   grunt.registerTask('ghdeploy',
                      'publish example site to github pages',
                      ghdeploy.createTask(grunt, __dirname,
                                          {removeFiles: ['node_modules']}));
-
-  grunt.registerTask('createpackage',
-                     'create a packaged example app',
-                     packager.createTask(grunt, __dirname));
-  grunt.registerTask('package', ['compress', 'createpackage']);
+  grunt.registerTask('package', [
+    'clean:build',
+    'compress',
+    'copy:example-packaged',
+    'copy:example-shared',
+    'copy:lib-to-package',
+    'zip',
+  ]);
 
   // The `compress` step builds a debug version first and then uses that as
   // the source for the minified version.
-  grunt.registerTask('compress',
-    ['bower', 'uglify:debug', 'uglify:minned', 'usebanner:chaff']);
-  grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
-  grunt.registerTask('release', ['clean', 'compress', 'copy']);
+  grunt.registerTask('compress', [
+    'bower',
+    'uglify:debug',
+    'uglify:minned',
+    'usebanner:chaff'
+  ]);
 
+  grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
+  grunt.registerTask('release', ['clean', 'compress', 'copy:lib']);
   grunt.registerTask('default', 'test');
 };

@@ -9,14 +9,14 @@ var router = express.Router();
 var projectDir = path.normalize(__dirname + '/../..');
 var hostedDir = projectDir + '/example/hosted';
 var media = projectDir + '/example/shared';
-var fxPayRelPath = 'build/fxpay.min.js';
+var fxPayRelPath = 'build/lib/fxpay.min.js';
 
 if (!fs.existsSync(projectDir + '/' + fxPayRelPath)) {
   throw new Error(fxPayRelPath + ' does not exist. ' +
                   'You need to run `grunt compress` first');
 }
 
-router.use(morgan('dev'))  // logging
+router.use(morgan('dev'));  // logging
 
 router.get('/fxpay.min.js:suffix?', function (req, res) {
   res.sendFile(fxPayRelPath + (req.params.suffix || ''),
@@ -38,6 +38,6 @@ router.use('/', express.static(media));
 
 app.use('/', router);
 
-var port = process.env['PORT'] || 3000;
+var port = process.env.PORT || 3000;
 app.listen(port);
 console.log('Listening on port ' + port);

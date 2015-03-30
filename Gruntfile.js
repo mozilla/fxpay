@@ -118,8 +118,14 @@ module.exports = function(grunt) {
     },
 
     clean: {
-      build: ['build/**/*', '!build/.gitkeep'],
-      dist: ['dist/*', '!dist/.gitkeep'],
+      build: [
+        'build/**/*',
+        '!build/.gitkeep'
+      ],
+      dist: [
+        'dist/*',
+        '!dist/.gitkeep'
+      ],
     },
 
     copy: {
@@ -157,7 +163,19 @@ module.exports = function(grunt) {
         dest: 'build/app.zip',
         compression: 'DEFLATE',
       }
+    },
+
+    jsdoc : {
+      docs: {
+        src: ['lib/fxpay/*.js'],
+        options: {
+          destination: 'build/docs',
+          template: 'node_modules/jsdoc-simple-template',
+          readme: 'README.md',
+        },
+      }
     }
+
   });
 
   // Always show stack traces when Grunt prints out an uncaught exception.
@@ -170,6 +188,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-zip');
 
@@ -197,5 +216,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
   grunt.registerTask('release', ['clean', 'compress', 'copy:lib']);
+  grunt.registerTask('docs', ['clean:build', 'jsdoc']);
   grunt.registerTask('default', 'test');
 };

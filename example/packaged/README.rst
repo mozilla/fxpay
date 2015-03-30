@@ -20,7 +20,7 @@ after you've installed the developer tools listed in the main README::
 
     grunt package
 
-This will create ``build/application`` and ``build/application.zip``.
+This will create ``build/app`` and ``build/app.zip``.
 You can install the app from that directory using the `WebIDE`_.
 
 .. _`packaged app`: https://developer.mozilla.org/en-US/Marketplace/Options/Packaged_apps

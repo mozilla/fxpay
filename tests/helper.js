@@ -13,7 +13,8 @@
     exports.server = sinon.fakeServer.create();
     exports.settings = fxpay.settings.configure({
       apiUrlBase: 'http://tests-should-never-hit-this.com',
-      mozApps: exports.mozAppsStub
+      mozApps: exports.mozAppsStub,
+      productReceiptMap: null,
     }, {
       reset: true
     });
@@ -37,7 +38,7 @@
     data.typ = data.typ || 'purchase-receipt';
     data.iss = data.iss || 'https://payments-alt.allizom.org';
     data.verify = (data.verify ||
-                   'https://receiptcheck-payments-alt.allizom.org/verify/');
+                   'https://fake-receipt-check-server.net/verify/');
     data.product = data.product || {
       url: opt.productUrl || helper.someAppOrigin,
       storedata: opt.storedata || 'contrib=297&id=500419&inapp_id=1'
@@ -202,17 +203,20 @@
   exports.ReceiptValidator = function ReceiptValidator(opt) {
     opt = utils.defaults(opt, {
       response: {status: 'ok'},
+      onValidationResponse: undefined,
       onRequest: function() {},
-      verifyUrl: 'https://receiptcheck-payments-alt.allizom.org/verify/',
+      verifyUrl: 'https://fake-receipt-check-server.net/verify/',
     });
 
-    helper.server.respondWith(
-      'POST', opt.verifyUrl,
-      function(request) {
+    if (!opt.onValidationResponse) {
+      opt.onValidationResponse = function(request) {
         opt.onRequest(request.requestBody);
         request.respond(200, {"Content-Type": "application/json"},
                         JSON.stringify(opt.response));
-      });
+      };
+    }
+
+    helper.server.respondWith('POST', opt.verifyUrl, opt.onValidationResponse);
   };
 
   exports.ReceiptValidator.prototype.finish = function() {

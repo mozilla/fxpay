@@ -1,4 +1,6 @@
 describe('fxpay.receipts.verifyInAppProductData()', function() {
+  var products = fxpay.getattr('products');
+  var someProduct = new products.Product({productId: 'some-uuid'});
   var receiptCheckSite = 'https://niceverifier.org';
 
   beforeEach(function() {
@@ -14,7 +16,7 @@ describe('fxpay.receipts.verifyInAppProductData()', function() {
   });
 
   it('fails on missing product', function(done) {
-    fxpay.receipts.verifyInAppProductData({}, function(err) {
+    fxpay.receipts.verifyInAppProductData({}, someProduct, function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
@@ -23,16 +25,20 @@ describe('fxpay.receipts.verifyInAppProductData()', function() {
   it('fails on corrupted storedata', function(done) {
     fxpay.receipts.verifyInAppProductData(
         makeReceipt({storedata: 'not%a!valid(string'}),
+        someProduct,
         function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
+      assert.equal(err.productInfo.productId, someProduct.productId);
       done();
     });
   });
 
   it('handles malformed storedata', function(done) {
     fxpay.receipts.verifyInAppProductData(makeReceipt({storedata: '&&&'}),
+                                          someProduct,
                                           function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
+      assert.equal(err.productInfo.productId, someProduct.productId);
       done();
     });
   });
@@ -40,14 +46,16 @@ describe('fxpay.receipts.verifyInAppProductData()', function() {
   it('fails on missing storedata', function(done) {
     fxpay.receipts.verifyInAppProductData(
         makeReceipt({storedata: 'foo=baz&barz=zonk'}),
+        someProduct,
         function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
+      assert.equal(err.productInfo.productId, someProduct.productId);
       done();
     });
   });
 
   it('passes through receipt data', function(done) {
-    var productId = 'some-guid';
+    var productId = 'receipt-product-guid';
     var productUrl = 'app://some-packaged-origin';
     var storedata = 'inapp_id=' + productId;
     helper.appSelf.origin = productUrl;
@@ -55,6 +63,7 @@ describe('fxpay.receipts.verifyInAppProductData()', function() {
     fxpay.receipts.verifyInAppProductData(
         makeReceipt({storedata: storedata,
                      productUrl: productUrl}),
+        someProduct,
         function(err, data, info) {
       if (!err) {
         assert.equal(info.productId, productId);

@@ -39,10 +39,26 @@ $(function() {
     console.log('getting products from', apiUrlBase);
 
     fxpay.getProducts().then(function(products) {
-      products.forEach(function(productInfo) {
-        console.info('got product:', productInfo);
-        addProduct(productsUl, productInfo);
+
+      products.forEach(function(product) {
+        console.info('got product:', product);
+        addProduct(productsUl, product);
+
+        if (product.hasReceipt()) {
+          product.validateReceipt().then(function(restoredProduct) {
+            console.log('product', restoredProduct.productId, restoredProduct,
+                        'restored from receipt');
+            productBought(restoredProduct);
+          }).catch(function(error) {
+            console.error('error restoring product',
+                          error.productInfo.productId, 'message:',
+                          error.toString());
+            showError(error);
+          });
+        }
+
       });
+
     }).catch(function(err) {
       console.error('error getting products:', err);
       showError(err);
@@ -230,28 +246,13 @@ $(function() {
     fakeProducts: true
   });
 
-  fxpay.init({
-    onerror: function(err) {
-      console.error('error during initialization:', err);
-      showError(err);
-    },
-    oninit: function() {
-      console.log('fxpay initialized successfully');
-      initApi();
-      if (navigator.mozApps && !fxpay.settings.appSelf) {
-        // We're running on Firefox web so provide an option
-        // to install as an app.
-        $('#install-banner').show();
-      }
-    },
-    onrestore: function(err, info) {
-      if (err) {
-        console.error('error restoring product', info.productId,
-                      'message:', err);
-        return showError(err);
-      }
-      console.log('product', info.productId, info, 'restored from receipt');
-      productBought(info);
-    }
-  });
+
+  initApi();
+
+  if (navigator.mozApps && !fxpay.settings.appSelf) {
+    // We're running on Firefox web so provide an option
+    // to install as an app.
+    $('#install-banner').show();
+  }
+
 });

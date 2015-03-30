@@ -1,4 +1,6 @@
 describe('fxpay.receipts.verifyData()', function() {
+  var products = fxpay.getattr('products');
+  var someProduct = new products.Product({productId: 'some-uuid'});
   var receiptCheckSite = 'https://niceverifier.org';
 
   beforeEach(function() {
@@ -14,21 +16,21 @@ describe('fxpay.receipts.verifyData()', function() {
   });
 
   it('fails on non-strings', function(done) {
-    fxpay.receipts.verifyData({not: 'a receipt'}, function(err) {
+    fxpay.receipts.verifyData({not: 'a receipt'}, someProduct, function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
 
   it('fails on too many key segments', function(done) {
-    fxpay.receipts.verifyData('one~too~many', function(err) {
+    fxpay.receipts.verifyData('one~too~many', someProduct, function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
   });
 
   it('fails on not enough JWT segments', function(done) {
-    fxpay.receipts.verifyData('one.two', function(err) {
+    fxpay.receipts.verifyData('one.two', someProduct, function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
@@ -36,6 +38,7 @@ describe('fxpay.receipts.verifyData()', function() {
 
   it('fails on invalid base64 encoding', function(done) {
     fxpay.receipts.verifyData(receipt({receipt: 'not%valid&&base64'}),
+                              someProduct,
                               function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
@@ -44,6 +47,7 @@ describe('fxpay.receipts.verifyData()', function() {
 
   it('fails on invalid JSON', function(done) {
     fxpay.receipts.verifyData('jwtAlgo.' + btoa('^not valid JSON') + '.jwtSig',
+                              someProduct,
                               function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
@@ -55,7 +59,7 @@ describe('fxpay.receipts.verifyData()', function() {
       product: {
         storedata: 'storedata'
       }
-    }), function(err) {
+    }), someProduct, function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
@@ -64,6 +68,7 @@ describe('fxpay.receipts.verifyData()', function() {
   it('fails on missing storedata', function(done) {
     fxpay.receipts.verifyData(
         'jwtAlgo.' + btoa(JSON.stringify({product: {}})) + '.jwtSig',
+        someProduct,
         function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
@@ -72,6 +77,7 @@ describe('fxpay.receipts.verifyData()', function() {
 
   it('fails on non-string storedata', function(done) {
     fxpay.receipts.verifyData(receipt({storedata: {}}),
+                              someProduct,
                               function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
@@ -80,7 +86,7 @@ describe('fxpay.receipts.verifyData()', function() {
 
   it('fails on foreign product URL for packaged app', function(done) {
     var data = receipt({productUrl: 'wrong-app'});
-    fxpay.receipts.verifyData(data, function(err) {
+    fxpay.receipts.verifyData(data, someProduct, function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
@@ -95,7 +101,7 @@ describe('fxpay.receipts.verifyData()', function() {
     });
 
     var data = receipt({productUrl: 'http://wrong-site.com'});
-    fxpay.receipts.verifyData(data, function(err) {
+    fxpay.receipts.verifyData(data, someProduct, function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
     });
@@ -110,7 +116,7 @@ describe('fxpay.receipts.verifyData()', function() {
     });
 
     var data = receipt({productUrl: webOrigin});
-    fxpay.receipts.verifyData(data, function(err) {
+    fxpay.receipts.verifyData(data, someProduct, function(err) {
       done(err);
     });
   });
@@ -120,7 +126,7 @@ describe('fxpay.receipts.verifyData()', function() {
     // TODO: remove this when fixed in Marketplace. bug 1034264.
     var data = receipt({productUrl: 'the-origin'});
 
-    fxpay.receipts.verifyData(data, function(err) {
+    fxpay.receipts.verifyData(data, someProduct, function(err) {
       done(err);
     });
   });
@@ -129,7 +135,7 @@ describe('fxpay.receipts.verifyData()', function() {
     helper.appSelf.origin = 'app://the-app';
     var data = receipt({productUrl: helper.appSelf.origin});
 
-    fxpay.receipts.verifyData(data, function(err) {
+    fxpay.receipts.verifyData(data, someProduct, function(err) {
       done(err);
     });
   });
@@ -138,7 +144,7 @@ describe('fxpay.receipts.verifyData()', function() {
     helper.appSelf.origin = 'http://hosted-app';
     var data = receipt({productUrl: helper.appSelf.origin});
 
-    fxpay.receipts.verifyData(data, function(err) {
+    fxpay.receipts.verifyData(data, someProduct, function(err) {
       done(err);
     });
   });
@@ -147,7 +153,7 @@ describe('fxpay.receipts.verifyData()', function() {
     helper.appSelf.origin = 'https://hosted-app';
     var data = receipt({productUrl: helper.appSelf.origin});
 
-    fxpay.receipts.verifyData(data, function(err) {
+    fxpay.receipts.verifyData(data, someProduct, function(err) {
       done(err);
     });
   });
@@ -157,6 +163,7 @@ describe('fxpay.receipts.verifyData()', function() {
     fxpay.configure({fakeProducts: true});
     fxpay.receipts.verifyData(receipt({productUrl: 'wrong-app'},
                                       {typ: 'test-receipt'}),
+                              someProduct,
                               function(err) {
       done(err);
     });
@@ -165,6 +172,7 @@ describe('fxpay.receipts.verifyData()', function() {
   it('fails on disallowed receipt check URLs', function(done) {
     fxpay.receipts.verifyData(receipt(null,
                                       {verify: 'http://mykracksite.ru'}),
+                              someProduct,
                               function(err) {
       assert.instanceOf(err, fxpay.errors.InvalidReceipt);
       done();
@@ -173,6 +181,7 @@ describe('fxpay.receipts.verifyData()', function() {
 
   it('disallows test receipts when not testing', function(done) {
     fxpay.receipts.verifyData(receipt(null, {typ: 'test-receipt'}),
+                              someProduct,
                               function(err, info) {
       assert.instanceOf(err, fxpay.errors.TestReceiptNotAllowed);
       assert.typeOf(info, 'object');

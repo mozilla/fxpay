@@ -166,7 +166,7 @@ describe('fxpay.purchase() on B2G', function () {
   it('should add receipt to device with localStorage', function (done) {
     var receipt = '<receipt>';
 
-    setUpLocStorAddReceipt(done);
+    setUpLocStorAddReceipt();
 
     // Without addReceipt(), receipt should go in localStorage.
 
@@ -182,10 +182,28 @@ describe('fxpay.purchase() on B2G', function () {
     helper.resolvePurchase({receipt: receipt, mozPay: mozPay});
   });
 
+  it('should error when no storage mechanisms exist', function(done) {
+    var receipt = '<receipt>';
+    delete helper.appSelf.addReceipt;  // older FxOSs do not have this.
+
+    fxpay.configure({
+      localStorage: null,  // no fallback.
+    });
+
+    fxpay.purchase(helper.apiProduct.guid).then(function() {
+      done(Error('unexpected success'));
+    }).catch(function(error) {
+      assert.instanceOf(error, fxpay.errors.PayPlatformUnavailable);
+      done();
+    }).catch(done);
+
+    helper.resolvePurchase({receipt: receipt, mozPay: mozPay});
+  });
+
   it('should not add dupes to localStorage', function (done) {
     var receipt = '<receipt>';
 
-    setUpLocStorAddReceipt(done);
+    setUpLocStorAddReceipt();
 
     // Set up an already stored receipt.
     window.localStorage.setItem(helper.settings.localStorageKey,
@@ -226,17 +244,9 @@ describe('fxpay.purchase() on B2G', function () {
   });
 
 
-  function setUpLocStorAddReceipt(done) {
+  function setUpLocStorAddReceipt() {
     // Set up a purchase where mozApps does not support addReceipt().
     delete helper.appSelf.addReceipt;
-
-    // Re-initialize to detect lack of addReceipt().
-    fxpay.init({
-      oninit: function() {},
-      onerror: function(err) {
-        done(err);
-      }
-    });
 
     helper.appSelf.onsuccess();
   }

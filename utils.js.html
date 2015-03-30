@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+
+    <h1 class="page-title">Source: utils.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Utils module.
+ * @module fxpay/utils
+ */
+
+
+(function() {
+  'use strict';
+
+  var exports = fxpay.utils = {};
+  var errors = fxpay.getattr('errors');
+
+ /**
+  * Populates an object with defaults if the key is not yet defined.
+  * Similar to _.defaults except this takes only a single defaults object.
+  * @param {object} object - the object to populate defaults on
+  * @param {object} defaults - the defaults to use
+  * @returns {object}
+  */
+  exports.defaults = function(object, defaults) {
+    object = object || {};
+    Object.keys(defaults).forEach(function(key) {
+      if (typeof object[key] === 'undefined') {
+        object[key] = defaults[key];
+      }
+    });
+    return object;
+  };
+
+ /**
+  * Gets the app origin
+  * @param {object} settings - the origin of the app using fxpay
+  * @returns {string}
+  */
+  exports.getSelfOrigin = function(settings) {
+    if (!settings) {
+      settings = fxpay.getattr('settings');
+    }
+    if (settings.appSelf) {
+      // This might be null for type:web packaged apps.
+      // If that's a requirement, the caller should check for nulls.
+      return settings.appSelf.origin;
+    } else {
+      var win = settings.window;
+      if (win.location.origin) {
+        return win.location.origin;
+      } else {
+        return win.location.protocol + '//' + win.location.hostname;
+      }
+    }
+  };
+
+ /**
+  * Gets the the origin of the URL provided.
+  * @param {string} url - the URL to introspect the origin from
+  * @returns {string}
+  */
+  exports.getUrlOrigin = function(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    return a.origin || (a.protocol + '//' + a.host);
+  };
+
+ /**
+  * Gets the center coordinates for a passed width and height.
+  * Uses centering calcs that work on multiple monitors (bug 1122683).
+  * @param {number} w - width
+  * @param {number} h - height
+  * @returns {list}
+  */
+  exports.getCenteredCoordinates = function(w, h) {
+    var x = window.screenX +
+      Math.max(0, Math.floor((window.innerWidth - w) / 2));
+    var y = window.screenY +
+      Math.max(0, Math.floor((window.innerHeight - h) / 2));
+    return [x, y];
+  };
+
+  exports.reCenterWindow = function(winRef, w, h) {
+    var settings = fxpay.getattr('settings');
+    w = w || settings.winWidth;
+    h = h || settings.winHeight;
+    var xy = exports.getCenteredCoordinates(w, h);
+    try {
+      // Allow for the chrome as resizeTo args are the external
+      // window dimensions not the internal ones.
+      w = w + (winRef.outerWidth - winRef.innerWidth);
+      h = h + (winRef.outerHeight - winRef.innerHeight);
+      settings.log.log('width: ', w, 'height:', h);
+      winRef.resizeTo(w, h);
+      winRef.moveTo(xy[0], xy[1]);
+    } catch(e) {
+      settings.log.log("We don't have permission to resize this window");
+    }
+  };
+
+  exports.openWindow = function(options) {
+    var settings = fxpay.getattr('settings');
+    var defaults = {
+      url: '',
+      title: 'FxPay',
+      w: settings.winWidth,
+      h: settings.winHeight,
+    };
+
+    options = exports.defaults(options, defaults);
+    var xy = exports.getCenteredCoordinates(options.w, options.h);
+
+    var winOptString = 'toolbar=no,location=yes,directories=no,' +
+      'menubar=no,scrollbars=yes,resizable=no,copyhistory=no,' +
+      'width=' + options.w + ',height=' + options.h +
+      ',top=' + xy[1] + ',left=' + xy[0];
+
+    var windowRef = settings.window.open(options.url, options.title,
+                                         winOptString);
+    if (!windowRef) {
+      settings.log.error('window.open() failed. URL:', options.url);
+    }
+    return windowRef;
+  };
+
+  exports.getAppSelf = function getAppSelf(callback) {
+    var settings = fxpay.getattr('settings');
+
+    function storeAppSelf(appSelf) {
+      if (appSelf === null) {
+        throw new Error('cannot store a null appSelf');
+      }
+      settings.appSelf = appSelf;
+      return appSelf;
+    }
+
+    if (settings.appSelf !== null) {
+      // This means getAppSelf() has already run successfully so let's
+      // return the value immediately.
+      return callback(null, settings.appSelf);
+    }
+
+    if (!settings.mozApps) {
+      settings.log.info(
+          'web platform does not define mozApps, cannot get appSelf');
+      return callback(null, storeAppSelf(false));
+    }
+    var appRequest = settings.mozApps.getSelf();
+
+    appRequest.onsuccess = function() {
+      var appSelf = this.result;
+      // In the case where we're in a Firefox that supports mozApps but
+      // we're not running as an app, this could be falsey.
+      settings.log.info('got appSelf from mozApps.getSelf()');
+      callback(null, storeAppSelf(appSelf || false));
+    };
+
+    appRequest.onerror = function() {
+      var errCode = this.error.name;
+      settings.log.error('mozApps.getSelf() returned an error', errCode);
+      // We're not caching an appSelf result here.
+      // This allows nested functions to report errors better.
+      callback(errors.InvalidApp('invalid application: ' + errCode,
+                                 {code: errCode}), settings.appSelf);
+    };
+  };
+
+
+  exports.logDeprecation = function(msg, versionDeprecated) {
+    // Log a deprecation message with some extra info.
+    var settings = fxpay.getattr('settings');
+    settings.log.warn(
+        msg + '. This was deprecated in ' + versionDeprecated + '. ' +
+        'More info: https://github.com/mozilla/fxpay/releases/tag/' +
+        versionDeprecated);
+  };
+
+})();
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-fxpay_utils.html">fxpay/utils</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Mon Mar 30 2015 22:33:25 GMT+0100 (BST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

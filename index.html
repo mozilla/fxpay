@@ -1,35 +1,134 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi">
-    <link rel="stylesheet" type="text/css" href="css/index.css">
-    <title>fxpay demo</title>
-  </head>
-  <body>
-    <div id="app">
-      <div>
-        <select id="api-server">
-          <option value="dev" selected>API: marketplace-dev.allizom.org</option>
-          <option value="stage">API: marketplace.allizom.org</option>
-          <option value="prod">API: marketplace.firefox.com</option>
-        </select>
-      </div>
-      <div id="error"></div>
-      <div id="products">
-        <h2>Products</h2>
-        <ul></ul>
-      </div>
-      <div id="your-products">
-        <h2>Your Products</h2>
-        <ul>
-          <li class="placeholder product">You haven't bought any yet</li>
-        </ul>
-      </div>
-    </div>
-    <script type="text/javascript" src="js/lib/jquery-1.9.1.min.js"></script>
-    <script type="text/javascript" src="fxpay.js"></script>
-    <script type="text/javascript" src="js/index.js"></script>
-  </body>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>fxpay</h1><p>JavaScript library to support <a href="https://marketplace.firefox.com">Firefox Marketplace</a> payments in
+a web application.</p>
+<p><a href="https://travis-ci.org/mozilla/fxpay"><img src="https://travis-ci.org/mozilla/fxpay.svg?branch=master" alt="Build Status"></a>
+<img src="https://badge.fury.io/bo/fxpay.svg" alt="Bower Version">
+<a href="https://david-dm.org/mozilla/fxpay#info=devDependencies"><img src="https://david-dm.org/mozilla/fxpay/dev-status.svg" alt="devDependency Status"></a></p>
+<h2>Usage</h2><p>This is a complete <a href="https://developer.mozilla.org/en-US/Marketplace/Monetization/In-app_payments_section/fxPay_iap">guide to fxpay usage on MDN</a></p>
+<h2>Examples</h2><p>You can find working code in the <a href="https://github.com/mozilla/fxpay/tree/master/example/">example</a> directory of this repository</p>
+<h2>FxPay Developers</h2><p>To hack on this library you need <a href="http://nodejs.org/">NodeJS</a> and <a href="https://www.npmjs.org/">npm</a> installed.
+After cloning the source, cd to the root and install all dependencies:</p>
+<pre class="prettyprint source"><code>npm install</code></pre><p>To execute scripts, you should add the local <code>.bin</code> directory to
+your <code>$PATH</code>:</p>
+<pre class="prettyprint source"><code>PATH=&quot;./node_modules/.bin:${PATH}&quot;
+export PATH</code></pre><p>This is pretty standard for any Node project so you you might already have it.</p>
+<p>To test that you have your path set up, type <code>which grunt</code> and make
+sure you see a path to the executable.</p>
+<h3>Compression</h3><p>To build yourself a compressed version of <code>fxpay.js</code>, run this:</p>
+<pre class="prettyprint source"><code>grunt compress</code></pre><p>The compressed source file will appear in the <code>build</code> directory
+as <code>fxpay.min.js</code>. You'll also get a <a href="http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/">source map</a> file in
+the same directory as <code>fxpay.min.js.map</code>.</p>
+<p><strong>IMPORTANT</strong>: To use this library in a web page you have to
+compress it first because the source code spans multiple files.
+The usage instructions above explain how to install public releases from
+Bower which is of course easier.</p>
+<h3>Running Tests</h3><p>From a source checkout, run all tests and lint checks like this:</p>
+<pre class="prettyprint source"><code>grunt test</code></pre><p>To run the JavaScript unit tests continuously while you are developing, type:</p>
+<pre class="prettyprint source"><code>grunt karma:dev</code></pre><p>This opens a web browser and will report test results to your <a href="https://developer.mozilla.org/en-US/docs/Web/API/console">console</a>.
+As you edit a code file, it will re-run the tests.
+<strong>NOTE</strong>: this can be buggy sometimes.</p>
+<p>To fire off a single test run with a browser and see the results, type:</p>
+<pre class="prettyprint source"><code>grunt karma:run</code></pre><p>Here's how to run a specific test file:</p>
+<pre class="prettyprint source"><code>grunt karma:run --tests tests/test-get-products.js</code></pre><p>You can also use grep patterns to match files:</p>
+<pre class="prettyprint source"><code>grunt karma:run --tests 'tests/test-get-*'</code></pre><p>If you want to run a specific test function, you can use
+a grep pattern to match the name in the <code>describe()</code> or <code>it()</code>
+definition. For example, run all tests under
+<code>describe('fxpay.purchase()')</code> like this:</p>
+<pre class="prettyprint source"><code>grunt karma:run --grep='fxpay.purchase()'</code></pre><p>or run a test defined as <code>it('should open a payment window on the web')</code>
+like this:</p>
+<pre class="prettyprint source"><code>grunt karma:run --grep='should open a payment window on the web'</code></pre><p>If you should need to change the karma log-level (default is ERROR)
+you can do so as follows:</p>
+<pre class="prettyprint source"><code>grunt test --log-level=DEBUG</code></pre><h3>Check For Lint</h3><p>To check for syntax errors (lint), run:</p>
+<pre class="prettyprint source"><code>grunt jshint</code></pre><h3>Create A Release</h3><p>You have to do a couple things to create a release:</p>
+<ul>
+<li><p>Run <code>grunt release</code>. This compresses the files and copies them to the dist dir.</p>
+<ul>
+<li>Commit and push your changes to master.</li>
+</ul>
+</li>
+<li><p>Publish the pending <a href="https://github.com/mozilla/fxpay/releases">github release</a> (or create one) which will tag master
+at the version string.</p>
+<ul>
+<li>Make sure all release notes in the draft are up to date.</li>
+<li>If no release exists yet, create one and title it as the pending
+version number. For example: <code>0.0.1</code>.</li>
+<li>Alternatively, you could manually tag the release with git by running
+<code>git tag 0.0.1 &amp;&amp; git push upstream 0.0.1</code>.</li>
+</ul>
+</li>
+<li><p>Bump the version for the next release. Library version numbers are
+managed in multiple files.
+To increment the version number and update all files at once,
+run <code>grunt bump</code>.</p>
+<ul>
+<li>Commit and push your changes.</li>
+</ul>
+</li>
+</ul>
+<h2>Changelog</h2><p>See https://github.com/mozilla/fxpay/releases</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-fxpay_utils.html">fxpay/utils</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Mon Mar 30 2015 22:33:25 GMT+0100 (BST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
 </html>

@@ -109,7 +109,7 @@ You have to do a couple things to create a release:
 
   * Commit and push your changes to master.
 
-* Publish the pending [github release][release] (or create one) which will tag master
+* Publish the pending [github release][releases] (or create one) which will tag master
   at the version string.
 
   * Make sure all release notes in the draft are up to date.

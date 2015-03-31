@@ -126,6 +126,15 @@ You have to do a couple things to create a release:
   * Commit and push your changes.
 
 
+### Build the docs
+
+To build the JSDoc API docs locally run `grunt docs`. The built docs can be found
+in `build/docs`.
+
+For anyone with the commit bit that wants to publish the docs to the gh-pages branch
+of this repo run: `grunt publish-docs`.
+
+
 ## Changelog
 
 See https://github.com/mozilla/fxpay/releases

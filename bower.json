@@ -22,7 +22,6 @@
     "node_modules",
     "package.json",
     "stackato.yml",
-    "tasks",
     "tests"
   ],
   "license": "MPL-2.0"

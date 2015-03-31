@@ -8,3 +8,5 @@ node_modules
 
 # For gh-pages
 .ghpages
+
+.grunt/*

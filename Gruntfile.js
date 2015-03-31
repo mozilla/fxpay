@@ -1,6 +1,3 @@
-var ghdeploy = require('./tasks/ghdeploy');
-
-
 // List module files in order so that dependencies work right:
 // TODO: use UMD for this.
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1137584
@@ -174,6 +171,15 @@ module.exports = function(grunt) {
           readme: 'README.md',
         },
       }
+    },
+
+    'gh-pages': {
+      options: {
+        base: 'build/docs',
+        message: 'Updating docs',
+        repo: 'git@github.com:mozilla/fxpay.git'
+      },
+      src: ['**']
     }
 
   });
@@ -188,14 +194,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-gh-pages');
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-zip');
 
-  grunt.registerTask('ghdeploy',
-                     'publish example site to github pages',
-                     ghdeploy.createTask(grunt, __dirname,
-                                         {removeFiles: ['node_modules']}));
   grunt.registerTask('package', [
     'clean:build',
     'compress',
@@ -213,6 +216,8 @@ module.exports = function(grunt) {
     'uglify:minned',
     'usebanner:chaff'
   ]);
+
+  grunt.registerTask('publish-docs', ['docs', 'gh-pages']);
 
   grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
   grunt.registerTask('release', ['clean', 'compress', 'copy:lib']);

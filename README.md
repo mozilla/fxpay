@@ -134,10 +134,12 @@ in `build/docs`.
 For anyone with the commit bit that wants to publish the docs to the gh-pages branch
 of this repo run: `grunt publish-docs`.
 
+The current API docs are available here: [FxPay API Docs](https://mozilla.github.io/fxpay/) *(Note: they are currently under development).*
+
 
 ## Changelog
 
-See https://github.com/mozilla/fxpay/releases
+See the [release page][releases]
 
 
 [mkt]: https://marketplace.firefox.com
@@ -147,4 +149,4 @@ See https://github.com/mozilla/fxpay/releases
 [mdn-docs]: https://developer.mozilla.org/en-US/Marketplace/Monetization/In-app_payments_section/fxPay_iap
 [example]: https://github.com/mozilla/fxpay/tree/master/example/
 [sourcemaps]: http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
-[release]: https://github.com/mozilla/fxpay/releases
+[releases]: https://github.com/mozilla/fxpay/releases

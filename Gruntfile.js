@@ -169,6 +169,7 @@ module.exports = function(grunt) {
           destination: 'build/docs',
           template: 'node_modules/jsdoc-simple-template',
           readme: 'README.md',
+          configure: 'jsdoc.conf.json',
         },
       }
     },

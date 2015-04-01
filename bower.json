@@ -22,7 +22,8 @@
     "node_modules",
     "package.json",
     "stackato.yml",
-    "tests"
+    "tests",
+    "jsdoc.conf.json"
   ],
   "license": "MPL-2.0"
 }

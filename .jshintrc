@@ -30,6 +30,7 @@
     "it",
     "process",
     "Promise",
+    "requirejs",
     "sinon"
   ],
   "shadow": false,

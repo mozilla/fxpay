@@ -2,8 +2,9 @@ define([
   'errors',
   'fxpay',
   'helper',
+  'settings',
   'utils'
-], function(errors, fxpay, helper, utils) {
+], function(errors, fxpay, helper, settings, utils) {
 
   describe('fxpay.getProducts()', function() {
 
@@ -60,7 +61,7 @@ define([
           {"guid": "guid2", "app": "fxpay", "price_id": 2,
            "name": "Belt and Suspenders", "logo_url": "http://site/image2.png"}
         ],
-        url: helper.settings.apiUrlBase + helper.settings.apiVersionPrefix +
+        url: settings.apiUrlBase + settings.apiVersionPrefix +
                  '/payments/stub-in-app-products/',
       });
 
@@ -132,7 +133,7 @@ define([
           {"guid": "guid4", "app": "fxpay", "price_id": 238,
            "name": "Majestic Cheese", "logo_url": "http://site/image2.png"}
         ],
-        url: helper.settings.apiUrlBase + helper.settings.apiVersionPrefix +
+        url: settings.apiUrlBase + settings.apiVersionPrefix +
                  '/payments/' + encodeURIComponent(helper.someAppOrigin) +
                  '/in-app/?active=1',
       });

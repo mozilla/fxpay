@@ -2,8 +2,9 @@ define([
   'errors',
   'fxpay',
   'helper',
-  'receipts'
-], function(errors, fxpay, helper, receipts) {
+  'receipts',
+  'settings'
+], function(errors, fxpay, helper, receipts, settings) {
 
   describe('receipts.all()', function() {
 
@@ -50,7 +51,7 @@ define([
           receipts: [receipt1]
         }
       });
-      window.localStorage.setItem(helper.settings.localStorageKey,
+      window.localStorage.setItem(settings.localStorageKey,
                                   JSON.stringify([receipt2]));
 
       receipts.all(function(error, fetchedReceipts) {
@@ -71,7 +72,7 @@ define([
           receipts: [receipt1]
         }
       });
-      window.localStorage.setItem(helper.settings.localStorageKey,
+      window.localStorage.setItem(settings.localStorageKey,
                                   JSON.stringify([receipt1]));
 
       receipts.all(function(error, fetchedReceipts) {

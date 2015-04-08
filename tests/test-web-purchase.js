@@ -40,7 +40,7 @@ define([
         resizeTo: sinon.spy(customPayWindow, 'resizeTo'),
         moveTo: sinon.spy(customPayWindow, 'moveTo'),
       };
-      providerUrlTemplate = helper.settings.payProviderUrls[payReq.typ];
+      providerUrlTemplate = settings.payProviderUrls[payReq.typ];
 
 
       fxpay.configure({

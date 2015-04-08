@@ -5,7 +5,6 @@ define([
 ], function(exports, settings, utils) {
 
   exports.server = null;
-  exports.settings = null;
   exports.someAppOrigin = 'app://my-app';
   // Product info as returned from a GET request to the API.
   exports.apiProduct = {guid: 'server-guid', name: "Name from API",
@@ -13,7 +12,7 @@ define([
 
   exports.setUp = function setUp() {
     exports.server = sinon.fakeServer.create();
-    exports.settings = settings.configure({
+    settings.configure({
       apiUrlBase: 'http://tests-should-never-hit-this.com',
       mozApps: exports.mozAppsStub,
       productReceiptMap: null,

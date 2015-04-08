@@ -244,7 +244,7 @@ define([
       if (opt.fetchAllProducts) {
         // When testing init, we need to respond to fxpay.getProducts()
         helper.server.respondWith(
-          'GET', helper.settings.apiUrlBase + helper.settings.apiVersionPrefix +
+          'GET', settings.apiUrlBase + settings.apiVersionPrefix +
                    '/payments/' + encodeURIComponent(defaultProductUrl) +
                    '/in-app/?active=1',
           [200, {"Content-Type": "application/json"},

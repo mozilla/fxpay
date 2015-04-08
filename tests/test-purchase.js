@@ -1,8 +1,9 @@
 define([
   'errors',
   'fxpay',
-  'helper'
-], function(errors, fxpay, helper) {
+  'helper',
+  'settings'
+], function(errors, fxpay, helper, settings) {
 
   describe('fxpay.purchase() on B2G', function () {
     var mozPay;
@@ -180,7 +181,7 @@ define([
       fxpay.purchase(helper.apiProduct.guid).then(function(productInfo) {
         assert.equal(
           JSON.parse(
-            window.localStorage.getItem(helper.settings.localStorageKey))[0],
+            window.localStorage.getItem(settings.localStorageKey))[0],
           receipt);
         assert.equal(productInfo.productId, helper.apiProduct.guid);
         done();
@@ -213,12 +214,12 @@ define([
       setUpLocStorAddReceipt();
 
       // Set up an already stored receipt.
-      window.localStorage.setItem(helper.settings.localStorageKey,
+      window.localStorage.setItem(settings.localStorageKey,
                                   JSON.stringify([receipt]));
 
       fxpay.purchase(helper.apiProduct.guid).then(function(productInfo) {
         var addedReceipts = JSON.parse(
-          window.localStorage.getItem(helper.settings.localStorageKey));
+          window.localStorage.getItem(settings.localStorageKey));
 
         // Make sure a new receipt wasn't added.
         assert.equal(addedReceipts.length, 1);

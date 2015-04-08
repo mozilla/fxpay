@@ -153,11 +153,12 @@ $(function() {
   $('#delete-purchases').click(function(evt) {
     clearPurchases();
     console.log('clearing all receipts');
-    if (fxpay.settings.appSelf) {
+    var appSelf = navigator.mozApps && navigator.mozApps.getSelf();
+    if (appSelf) {
       console.log('removing receipts from mozApps');
       var num = 0;
-      fxpay.settings.appSelf.receipts.forEach(function(receipt) {
-        var req = fxpay.settings.appSelf.removeReceipt(receipt);
+      appSelf.receipts.forEach(function(receipt) {
+        var req = appSelf.removeReceipt(receipt);
         num++;
         req.onsuccess = function() {
           console.log('receipt successfully removed');
@@ -249,7 +250,7 @@ $(function() {
 
   initApi();
 
-  if (navigator.mozApps && !fxpay.settings.appSelf) {
+  if (navigator.mozApps && !navigator.mozApps.getSelf()) {
     // We're running on Firefox web so provide an option
     // to install as an app.
     $('#install-banner').show();

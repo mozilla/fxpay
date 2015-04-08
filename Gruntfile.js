@@ -44,23 +44,7 @@ module.exports = function(grunt) {
         files: {
           'build/lib/fxpay.min.js': 'build/lib/fxpay.debug.js',
         }
-      },
-      debug: {
-        options: {
-          beautify: {
-            'beautify': true,
-            'indent_level': 2
-          },
-          compress: false,
-          mangle: false,
-          preserveComments: true,
-          sourceMap: false,
-        },
-        files: {
-          'build/lib/fxpay.debug.js': 'lib/**/*.js',
-        }
       }
-
     },
 
     usebanner: {
@@ -166,6 +150,28 @@ module.exports = function(grunt) {
         repo: 'git@github.com:mozilla/fxpay.git'
       },
       src: ['**']
+    },
+
+    requirejs: {
+      debug: {
+        options: {
+          include: ['../../node_modules/almond/almond'],
+          findNestedDependencies: true,
+          name: 'fxpay',
+          optimize: 'none',
+          out: 'build/lib/fxpay.debug.js',
+          baseUrl: 'lib/fxpay',
+          normalizeDirDefines: 'all',
+          skipModuleInsertion: true,
+          paths: {
+            promise: '../bower_components/es6-promise/promise',
+          },
+          wrap: {
+            start: grunt.file.read('umd/start.frag'),
+            end: grunt.file.read('umd/end.frag')
+          },
+        }
+      }
     }
 
   });
@@ -179,6 +185,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-gh-pages');
   grunt.loadNpmTasks('grunt-jsdoc');
@@ -198,7 +205,7 @@ module.exports = function(grunt) {
   // the source for the minified version.
   grunt.registerTask('compress', [
     'bower',
-    'uglify:debug',
+    'requirejs',
     'uglify:minned',
     'usebanner:chaff'
   ]);

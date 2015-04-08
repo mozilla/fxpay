@@ -40,7 +40,7 @@
     "sinon": "1.14.1"
   },
   "scripts": {
-    "test": "node -e \"require('grunt').cli()\" null test"
+    "test": "node -e \"require('grunt').cli()\" null bower test"
   },
   "author": "Kumar McMillan",
   "contributors": [],

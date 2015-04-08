@@ -204,8 +204,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('publish-docs', ['docs', 'gh-pages']);
-
-  grunt.registerTask('test', ['bower', 'jshint', 'karma:run']);
+  grunt.registerTask('test', ['jshint', 'karma:run']);
   grunt.registerTask('release', ['clean', 'compress', 'copy:lib']);
   grunt.registerTask('docs', ['clean:build', 'jsdoc']);
   grunt.registerTask('default', 'test');

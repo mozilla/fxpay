@@ -187,6 +187,8 @@ define([
         exports.receiptAdd._receipt = receipt;
         return exports.receiptAdd;
       };
+      this.onsuccess = function() {};
+      this.onerror = function() {};
     },
     onsuccess: function() {},
     onerror: function() {}

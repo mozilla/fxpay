@@ -9,7 +9,12 @@ module.exports = function(config) {
 
 
     // frameworks to use
-    frameworks: ['mocha', 'sinon', 'chai'],
+    frameworks: [
+      'mocha',
+      'requirejs',
+      'sinon',
+      'chai'
+    ],
 
 
     // list of files / patterns to load in the browser.
@@ -18,9 +23,7 @@ module.exports = function(config) {
 
 
     // list of files to exclude
-    exclude: [
-
-    ],
+    exclude: [],
 
 
     // test results reporter to use

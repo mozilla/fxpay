@@ -1,17 +1,18 @@
-(function(exports) {
-  var utils = fxpay.getattr('utils');
+define([
+  'exports',
+  'settings',
+  'utils'
+], function(exports, settings, utils) {
 
   exports.server = null;
-  exports.settings = null;
   exports.someAppOrigin = 'app://my-app';
   // Product info as returned from a GET request to the API.
   exports.apiProduct = {guid: 'server-guid', name: "Name from API",
                         logo_url: "img.jpg"};
 
-
   exports.setUp = function setUp() {
     exports.server = sinon.fakeServer.create();
-    exports.settings = fxpay.settings.configure({
+    settings.configure({
       apiUrlBase: 'http://tests-should-never-hit-this.com',
       mozApps: exports.mozAppsStub,
       productReceiptMap: null,
@@ -40,7 +41,7 @@
     data.verify = (data.verify ||
                    'https://fake-receipt-check-server.net/verify/');
     data.product = data.product || {
-      url: opt.productUrl || helper.someAppOrigin,
+      url: opt.productUrl || exports.someAppOrigin,
       storedata: opt.storedata || 'contrib=297&id=500419&inapp_id=1'
     };
     data.user = data.user || {
@@ -64,9 +65,7 @@
 
 
   exports.resolvePurchase = function(opt) {
-    var cfg = fxpay.getattr('settings');
-    var helper = exports;
-    opt = fxpay.utils.defaults(opt, {
+    opt = utils.defaults(opt, {
       receipt: '<keys>~<receipt>',
       mozPay: null,
       productData: null,
@@ -82,15 +81,17 @@
     });
 
     if (!opt.transData) {
-      opt.transData = helper.transactionData({receipt: opt.receipt});
+      opt.transData = exports.transactionData({receipt: opt.receipt});
     }
 
     // Respond to fetching the JWT.
-    helper.server.respondWith(
+    exports.server.respondWith(
       'POST',
-      cfg.apiUrlBase + cfg.apiVersionPrefix + '/webpay/inapp/prepare/',
-      helper.productData(opt.productData));
-    helper.server.respond();
+      settings.apiUrlBase + settings.apiVersionPrefix
+        + '/webpay/inapp/prepare/',
+      exports.productData(opt.productData));
+
+    exports.server.respond();
 
     if (opt.mozPay) {
       console.log('Simulate a payment completion with mozPay');
@@ -102,24 +103,24 @@
     }
 
     // Respond to checking the transaction state.
-    helper.server.autoRespond = !!opt.enableTransPolling;
-    helper.server.respondWith('GET', cfg.apiUrlBase + '/transaction/XYZ',
+    exports.server.autoRespond = !!opt.enableTransPolling;
+    exports.server.respondWith('GET', settings.apiUrlBase + '/transaction/XYZ',
                               opt.transData);
-    helper.server.respond();
+    exports.server.respond();
 
     // Resolve DOMRequest for mozApps.getSelf().addReceipt().
-    opt.addReceiptResolver(helper.receiptAdd);
+    opt.addReceiptResolver(exports.receiptAdd);
 
     // Respond to fetching the product object after successful transaction.
-    helper.server.respondWith('GET', opt.fetchProductsPattern,
+    exports.server.respondWith('GET', opt.fetchProductsPattern,
                               [200, {"Content-Type": "application/json"},
-                               JSON.stringify(helper.apiProduct)]);
-    helper.server.respond();
+                               JSON.stringify(exports.apiProduct)]);
+    exports.server.respond();
   };
 
 
   exports.productData = function(overrides, status) {
-    // Create a JSON helper.server response to a request for product data.
+    // Create a JSON exports.server response to a request for product data.
     overrides = overrides || {};
     var data = {
       webpayJWT: '<jwt>',
@@ -136,7 +137,7 @@
 
 
   exports.transactionData = function(overrides, status) {
-    // Create a JSON helper.server response to a request for transaction data.
+    // Create a JSON exports.server response to a request for transaction data.
     overrides = overrides || {};
     var data = {
       status: 'complete',
@@ -186,6 +187,8 @@
         exports.receiptAdd._receipt = receipt;
         return exports.receiptAdd;
       };
+      this.onsuccess = function() {};
+      this.onerror = function() {};
     },
     onsuccess: function() {},
     onerror: function() {}
@@ -216,14 +219,13 @@
       };
     }
 
-    helper.server.respondWith('POST', opt.verifyUrl, opt.onValidationResponse);
+    exports.server.respondWith('POST', opt.verifyUrl, opt.onValidationResponse);
   };
 
   exports.ReceiptValidator.prototype.finish = function() {
     // Send the receipt validation response:
-    helper.server.respond();
+    exports.server.respond();
   };
-
 
   exports.mozPayStub = function mozPayStub() {
     // https://developer.mozilla.org/en-US/docs/Web/API/Navigator.mozPay
@@ -233,5 +235,4 @@
     };
   };
 
-
-})(typeof exports === 'undefined' ? (this.helper = {}): exports);
+});

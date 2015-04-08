@@ -1,23 +1,6 @@
-// List module files in order so that dependencies work right:
-// TODO: use UMD for this.
-// https://bugzilla.mozilla.org/show_bug.cgi?id=1137584
-var libFiles = [
-  __dirname + '/lib/bower_components/es6-promise/promise.js',
-  __dirname + '/lib/fxpay/init_module.js',
-  __dirname + '/lib/fxpay/errors.js',
-  __dirname + '/lib/fxpay/utils.js',
-  __dirname + '/lib/fxpay/settings.js',
-  __dirname + '/lib/fxpay/api.js',
-  __dirname + '/lib/fxpay/jwt.js',
-  __dirname + '/lib/fxpay/pay.js',
-  __dirname + '/lib/fxpay/products.js',
-  __dirname + '/lib/fxpay/receipts.js',
-  __dirname + '/lib/fxpay/adapter.js',
-  __dirname + '/lib/fxpay/index.js',
-];
-
-
 module.exports = function(grunt) {
+  var testOption = grunt.option('tests');
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
@@ -33,12 +16,14 @@ module.exports = function(grunt) {
 
     karma: {
       options: {
-        files: libFiles.slice(0).concat([
-          'tests/helper.js',
-          // Allow an optional pattern for test files with --tests.
-          {pattern: grunt.option('tests') || 'tests/test*.js',
-           included: true}
-        ]),
+        files: [
+          'tests/test-main.js',
+          {pattern: 'lib/fxpay/*.js', included: false},
+          {pattern: 'tests/helper.js', included: false},
+          {pattern: testOption || 'tests/test*.js', included: false},
+          {pattern: 'lib/bower_components/es6-promise/promise.js',
+           included: false}
+        ],
         logLevel: grunt.option('log-level') || 'ERROR',
       },
       dev: {
@@ -72,7 +57,7 @@ module.exports = function(grunt) {
           sourceMap: false,
         },
         files: {
-          'build/lib/fxpay.debug.js': libFiles,
+          'build/lib/fxpay.debug.js': 'lib/**/*.js',
         }
       }
 
@@ -219,8 +204,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('publish-docs', ['docs', 'gh-pages']);
-
-  grunt.registerTask('test', ['jshint', 'compress', 'karma:run']);
+  grunt.registerTask('test', ['jshint', 'karma:run']);
   grunt.registerTask('release', ['clean', 'compress', 'copy:lib']);
   grunt.registerTask('docs', ['clean:build', 'jsdoc']);
   grunt.registerTask('default', 'test');

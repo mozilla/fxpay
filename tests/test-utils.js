@@ -166,6 +166,20 @@ define([
 
   });
 
+  describe('utils.serialize()', function() {
+
+    it('should serialize object', function() {
+      assert.equal(utils.serialize({foo: 'bar', baz: 'zup'}),
+                   'foo=bar&baz=zup');
+    });
+
+    it('should urlencode keys + values', function() {
+      assert.equal(
+        utils.serialize({'album name': 'Back in Black', 'artist': 'AC/DC'}),
+        'album%20name=Back%20in%20Black&artist=AC%2FDC');
+    });
+
+  });
 
   describe('utils.getAppSelf()', function() {
 

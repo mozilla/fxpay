@@ -1,5 +1,12 @@
+var path = require('path');
+
 module.exports = function(grunt) {
   var testOption = grunt.option('tests');
+
+  var nodeModulesPath = __dirname + '/node_modules';
+  var almondPath = nodeModulesPath + '/almond/almond.js';
+  var almondInclude = path.relative(
+    __dirname + '/lib/fxpay', almondPath).replace(/\.js$/, '');
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -34,17 +41,6 @@ module.exports = function(grunt) {
         configFile: 'karma.conf.js',
         singleRun: true
       },
-    },
-
-    uglify: {
-      options: {
-        sourceMap: true
-      },
-      minned: {
-        files: {
-          'build/lib/fxpay.min.js': 'build/lib/fxpay.debug.js',
-        }
-      }
     },
 
     usebanner: {
@@ -152,10 +148,12 @@ module.exports = function(grunt) {
       src: ['**']
     },
 
+    // Builds an unminned optimized combined
+    // library file.
     requirejs: {
       debug: {
         options: {
-          include: ['../../node_modules/almond/almond'],
+          include: [almondInclude],
           findNestedDependencies: true,
           name: 'fxpay',
           optimize: 'none',
@@ -172,12 +170,29 @@ module.exports = function(grunt) {
           },
         }
       }
+    },
+
+    // Takes the requirejs optimized debug file
+    // and compresses it and creates the sourcemap.
+    uglify: {
+      options: {
+        sourceMap: true
+      },
+      minned: {
+        files: {
+          'build/lib/fxpay.min.js': 'build/lib/fxpay.debug.js',
+        }
+      }
+    },
+
+    fileExists: {
+      almond: {
+        src: [almondPath],
+        errorMessage: 'Please run npm install first',
+      }
     }
 
   });
-
-  // Always show stack traces when Grunt prints out an uncaught exception.
-  grunt.option('stack', true);
 
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-banner');
@@ -192,6 +207,32 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-zip');
 
+  grunt.registerMultiTask('fileExists', 'Check files are present', function (){
+    var files = grunt.file.expand({
+      nonull: true
+    }, this.data.src);
+    var len = files.length;
+    grunt.log.writeln(
+      'Checking existence of %d file%s', len, (len === 1 ? '' : 's'));
+    var filesExist = files.every(function (file) {
+      grunt.verbose.writeln('Checking file: %s', file);
+      var fileExists = grunt.file.exists(file);
+      if (!fileExists) {
+        grunt.log.error("%s doesn't exist", file);
+      }
+      return fileExists;
+    });
+    if (filesExist) {
+      grunt.log.ok();
+    } else {
+      var errorMessage = this.data.errorMessage;
+      if (errorMessage) {
+        grunt.log.error(errorMessage);
+      }
+    }
+    return filesExist;
+  });
+
   grunt.registerTask('package', [
     'clean:build',
     'compress',
@@ -204,6 +245,7 @@ module.exports = function(grunt) {
   // The `compress` step builds a debug version first and then uses that as
   // the source for the minified version.
   grunt.registerTask('compress', [
+    'fileExists:almond',
     'bower',
     'requirejs',
     'uglify:minned',

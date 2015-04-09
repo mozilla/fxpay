@@ -9,7 +9,7 @@ var router = express.Router();
 var projectDir = path.normalize(__dirname + '/../..');
 var hostedDir = projectDir + '/example/hosted';
 var media = projectDir + '/example/shared';
-var fxPayRelPath = 'build/lib/fxpay.min.js';
+var fxPayRelPath = 'build/lib/fxpay.debug.js';
 
 if (!fs.existsSync(projectDir + '/' + fxPayRelPath)) {
   throw new Error(fxPayRelPath + ' does not exist. ' +
@@ -18,7 +18,7 @@ if (!fs.existsSync(projectDir + '/' + fxPayRelPath)) {
 
 router.use(morgan('dev'));  // logging
 
-router.get('/fxpay.min.js:suffix?', function (req, res) {
+router.get('/fxpay.debug.js:suffix?', function (req, res) {
   res.sendFile(fxPayRelPath + (req.params.suffix || ''),
                {root: projectDir});
 });

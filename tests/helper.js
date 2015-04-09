@@ -190,8 +190,6 @@ define([
       this.onsuccess = function() {};
       this.onerror = function() {};
     },
-    onsuccess: function() {},
-    onerror: function() {}
   };
 
 

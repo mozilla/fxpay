@@ -2670,7 +2670,7 @@ define('settings',[
 ], function(exports, adapter, errors) {
 
   'use strict';
-  var pkgInfo = {"version": "0.0.15"};  // this is updated by `grunt bump`
+  var pkgInfo = {"version": "0.0.16"};  // this is updated by `grunt bump`
 
   var defaultSettings = {
 
@@ -3201,6 +3201,9 @@ define('fxpay',[
   //
 
   var Promise = promise.Promise;
+
+  exports.errors = errors;
+  exports.settings = settings;
 
   exports.configure = function() {
     return settings.configure.apply(settings, arguments);

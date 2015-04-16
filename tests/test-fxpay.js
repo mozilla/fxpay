@@ -2,8 +2,9 @@ define([
   'errors',
   'fxpay',
   'helper',
+  'receipts',
   'settings',
-], function(errorsModule, fxpay, helper, settingsModule) {
+], function(errorsModule, fxpay, helper, receipts, settingsModule) {
 
   describe('fxpay', function() {
 
@@ -21,6 +22,11 @@ define([
 
     it('should expose fxpay.settings', function() {
       assert.equal(fxpay.settings.fakeProducts, settingsModule.fakeProducts);
+    });
+
+    it('should expose fxpay.receipts', function() {
+      assert.equal(fxpay.receipts.validateInAppProductReceipt,
+                   receipts.validateInAppProductReceipt);
     });
 
   });

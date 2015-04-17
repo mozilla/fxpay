@@ -35,6 +35,11 @@ This is pretty standard for any Node project so you you might already have it.
 To test that you have your path set up, type `which grunt` and make
 sure you see a path to the executable.
 
+Before going any further, you'll need to install the bower components
+used for development. Run this:
+
+    grunt bower
+
 ### Compression
 
 To build yourself a compressed version of `fxpay.js`, run this:

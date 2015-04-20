@@ -262,7 +262,7 @@ Similar to _.defaults except this takes only a single defaults object.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line20">line 20</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line21">line 21</a>
     </li></ul></dd>
     
 
@@ -411,7 +411,7 @@ Similar to _.defaults except this takes only a single defaults object.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line143">line 143</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line139">line 139</a>
     </li></ul></dd>
     
 
@@ -584,7 +584,7 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line71">line 71</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line69">line 69</a>
     </li></ul></dd>
     
 
@@ -633,7 +633,7 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
 
     
 
-    <h4 class="name" id=".getSelfOrigin"><span class="type-signature">(static) </span>getSelfOrigin<span class="signature">(settings<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id=".getSelfOrigin"><span class="type-signature">(static) </span>getSelfOrigin<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
@@ -649,67 +649,6 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>settings</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>the origin of the app using fxpay</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -894,7 +833,7 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line58">line 58</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -1066,7 +1005,7 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line199">line 199</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
@@ -1387,7 +1326,7 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line113">line 113</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line110">line 110</a>
     </li></ul></dd>
     
 
@@ -1616,7 +1555,7 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line86">line 86</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line84">line 84</a>
     </li></ul></dd>
     
 
@@ -1657,6 +1596,162 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
 </dl>
 
     
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".serialize"><span class="type-signature">(static) </span>serialize<span class="signature">(obj)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Take an object of key value pairs and serialize it into a url-encoded
+query string.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>object to serialize</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line209">line 209</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// returns foo=bar&amp;baz=zup
+utils.serialize({"foo": "bar", "baz": "zup"});</code></pre>
 
 
 
@@ -1794,7 +1889,7 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line185">line 185</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line179">line 179</a>
     </li></ul></dd>
     
 
@@ -1840,7 +1935,7 @@ Uses centering calcs that work on multiple monitors (bug 1122683).</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Wed Apr 01 2015 16:13:07 GMT+0100 (BST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Mon Apr 20 2015 15:39:19 GMT+0100 (BST)
 </footer>
 
 <script> prettyPrint(); </script>

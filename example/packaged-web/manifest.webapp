@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "name": "FxPay Web Package",
+  "description": "Example of a packaged app of type:web that can do server-less in-app payments",
+  "developer": {
+      "name": "Kumar McMillan"
+   },
+  "icons": {
+    "128": "/img/kiwi_128.png",
+    "64": "/img/kiwi_64.png",
+    "48": "/img/kiwi_48.png",
+    "32": "/img/kiwi_32.png"
+  },
+  "launch_path": "/index.html",
+  "installs_allowed_from": ["*"],
+  "type": "web"
+}

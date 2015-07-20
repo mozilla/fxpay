@@ -101,17 +101,6 @@ define([
 
     });
 
-    it('requires an origin when running as an app', function(done) {
-      fxpay.configure({appSelf: {}});  // no origin
-
-      fxpay.getProducts().then(function() {
-        done(Error('unexpected success'));
-      }).catch(function(err) {
-        assert.instanceOf(err, errors.InvalidApp);
-        done();
-      }).catch(done);
-    });
-
     it('requires a JSON response from the server', function(done) {
 
       setUpApiResponses({serverObjects: null});

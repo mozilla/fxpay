@@ -174,9 +174,11 @@ define([
       this.origin = exports.someAppOrigin;
       this.manifest = {
         installs_allowed_from: ['*'],
+        origin: this.origin,
+        type: 'privileged',
         permissions: {
           systemXHR: {description: "Required to access payment API"}
-        }
+        },
       };
       this.receipts = [];
       // This is the result of getSelf(). Setting it to this makes

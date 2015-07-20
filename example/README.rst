@@ -9,11 +9,14 @@ play around with them.
 `hosted app with in-app purchases <hosted/>`_
     A hosted web app that can sell and restore in-app products.
 
-`packaged app with in-app purchases <packaged/>`_
-    A packaged app that can sell and restore in-app products.
-
 `hosted paid app <hosted-paid-app/>`_
     A hosted web app that validates its receipt to ensure the user paid for it.
+
+`packaged web app with in-app purchases <packaged-web/>`_
+    A packaged app (``type: web``) that can sell and restore in-app products.
+
+`privileged packaged app with in-app purchases <packaged/>`_
+    A packaged app (``type: privileged``) that can sell and restore in-app products.
 
 Using A Custom Webpay
 ---------------------

@@ -131,8 +131,66 @@ define([
 
     it('should return the app origin', function() {
       assert.equal(
-        utils.getSelfOrigin({appSelf: {origin: 'app://origin'}}),
+        utils.getSelfOrigin({
+          appSelf: {
+            origin: 'app://origin',
+            manifest: {
+              origin: 'app://origin',
+              type: 'privileged',
+            },
+          },
+        }),
         'app://origin');
+    });
+
+    it('should return the marketplace GUID origin', function() {
+      assert.equal(
+        utils.getSelfOrigin({
+          log: {info: function() {}},
+          appSelf: {
+            origin: 'app://unusable-origin',
+            manifest: {
+              type: 'web',
+            },
+            manifestURL: ('https://marketplace-dev.allizom.org' +
+                          '/app/some-guid/manifest.webapp'),
+          },
+        }),
+        'marketplace:some-guid');
+    });
+
+    it('should fall back to marketplace when no declared origin', function() {
+      assert.equal(
+        utils.getSelfOrigin({
+          log: {info: function() {}},
+          // Set up a privileged app that has not declared an origin.
+          appSelf: {
+            origin: 'app://unusable-origin',
+            manifest: {
+              type: 'privileged',
+              origin: null,
+            },
+            manifestURL: ('https://marketplace-dev.allizom.org' +
+                          '/app/some-guid/manifest.webapp'),
+          },
+        }),
+        'marketplace:some-guid');
+    });
+
+    it('should error on non-marketplace packages', function() {
+      assert.throws(function() {
+        utils.getSelfOrigin({
+          appSelf: {
+            // This would be a randomly generated origin by the platform.
+            origin: 'app://unusable-origin',
+            manifest: {
+              type: 'web',
+              origin: null,
+            },
+            manifestURL: 'http://some-random-site/f/manifest.webapp',
+          },
+        });
+      }, errors.InvalidAppOrigin);
     });
 
     it('should fall back to location origin', function() {
@@ -149,6 +207,7 @@ define([
         utils.getSelfOrigin({window: {location: stubLocation}}),
         'http://foo.com:3000');
     });
+
   });
 
 

@@ -104,10 +104,22 @@ module.exports = function(grunt) {
         dest: 'build/app/',
         expand: true,
       },
-      'example-shared': {
+      'example-packaged-web': {
+        cwd: 'example/packaged-web/',
+        src: '*',
+        dest: 'build/app-web/',
+        expand: true,
+      },
+      'example-shared-to-pkg': {
         cwd: 'example/shared/',
         src: '**/*',
         dest: 'build/app/',
+        expand: true,
+      },
+      'example-shared-to-web-pkg': {
+        cwd: 'example/shared/',
+        src: '**/*',
+        dest: 'build/app-web/',
         expand: true,
       },
       'lib-to-package': {
@@ -115,7 +127,13 @@ module.exports = function(grunt) {
         src: '*',
         dest: 'build/app/',
         expand: true,
-      }
+      },
+      'lib-to-web-package': {
+        cwd: 'build/lib/',
+        src: '*',
+        dest: 'build/app-web/',
+        expand: true,
+      },
     },
 
     zip: {
@@ -124,7 +142,13 @@ module.exports = function(grunt) {
         src: 'build/app/**',
         dest: 'build/app.zip',
         compression: 'DEFLATE',
-      }
+      },
+      appWeb: {
+        cwd: 'build/app-web/',
+        src: 'build/app-web/**',
+        dest: 'build/app-web.zip',
+        compression: 'DEFLATE',
+      },
     },
 
     jsdoc : {
@@ -237,8 +261,11 @@ module.exports = function(grunt) {
     'clean:build',
     'compress',
     'copy:example-packaged',
-    'copy:example-shared',
+    'copy:example-packaged-web',
+    'copy:example-shared-to-pkg',
+    'copy:example-shared-to-web-pkg',
     'copy:lib-to-package',
+    'copy:lib-to-web-package',
     'zip',
   ]);
 
